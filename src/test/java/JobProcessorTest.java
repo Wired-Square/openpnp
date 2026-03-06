@@ -311,6 +311,76 @@ public class JobProcessorTest {
         assertEquals(27, partChanges(), 3);
     }
 
+    @Test
+    public void testAutoRankByHeight() throws Exception {
+        // This test verifies that auto-rank by height groups parts by height band.
+        // With a tight tolerance (0.1mm), parts of different heights should not be mixed
+        // within the same planning cycle on a multi-nozzle machine.
+        setup("testAutoRankByHeight");
+        jobProcessor.setAutoRankByHeight(true);
+        jobProcessor.setHeightGroupingTolerance(0.1); // tight: only same-height parts grouped
+
+        run();
+        saveCsv();
+        saveSvg();
+
+        // verify that within each cycle, all planned parts have the same height (within tolerance)
+        for (PlannerStepResults result : results) {
+            List<PlannedPlacement> placements = result.getPlannedPlacements();
+            if (placements.size() <= 1) {
+                continue;
+            }
+            double referenceHeight = placements.get(0).jobPlacement.getPartHeight();
+            for (PlannedPlacement p : placements) {
+                double height = p.jobPlacement.getPartHeight();
+                assertEquals(referenceHeight, height, 0.1,
+                        String.format("Height mismatch in cycle: %.2f vs %.2f for %s",
+                                referenceHeight, height, p.jobPlacement));
+            }
+        }
+
+        // all 96 parts should still be placed
+        int totalPlaced = 0;
+        for (PlannerStepResults result : results) {
+            totalPlaced += result.getPlannedPlacements().size();
+        }
+        assertEquals(96, totalPlaced);
+    }
+
+    @Test
+    public void testAutoRankByHeightWiderTolerance() throws Exception {
+        // With a wider tolerance (0.3mm), heights 0.25 and 0.5 can mix, but 0.25 and 0.75 cannot.
+        setup("testAutoRankByHeightWide");
+        jobProcessor.setAutoRankByHeight(true);
+        jobProcessor.setHeightGroupingTolerance(0.3);
+
+        run();
+        saveCsv();
+        saveSvg();
+
+        // verify that within each cycle, all parts are within 0.3mm of the reference height
+        for (PlannerStepResults result : results) {
+            List<PlannedPlacement> placements = result.getPlannedPlacements();
+            if (placements.size() <= 1) {
+                continue;
+            }
+            double referenceHeight = placements.get(0).jobPlacement.getPartHeight();
+            for (PlannedPlacement p : placements) {
+                double height = p.jobPlacement.getPartHeight();
+                assertEquals(referenceHeight, height, 0.3,
+                        String.format("Height mismatch in cycle: %.2f vs %.2f for %s",
+                                referenceHeight, height, p.jobPlacement));
+            }
+        }
+
+        // all 96 parts should still be placed
+        int totalPlaced = 0;
+        for (PlannerStepResults result : results) {
+            totalPlaced += result.getPlannedPlacements().size();
+        }
+        assertEquals(96, totalPlaced);
+    }
+
     private void setup(String testName) throws Exception {
         this.testName = testName;
         workingDirectory = Files.createTempDir();

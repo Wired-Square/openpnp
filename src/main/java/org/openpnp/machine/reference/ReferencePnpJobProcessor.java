@@ -149,10 +149,26 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
     @Attribute(required = false)
     boolean preRotateAllNozzles = true;
 
+    /**
+     * When enabled, auto-assigns ranks to placements based on part height groups.
+     * Parts within the height tolerance are placed in the same rank group.
+     * Height groups are spaced 10 ranks apart so that the rank windowing mechanism
+     * ensures all parts in one height band complete before the next band starts.
+     * This prevents tall already-placed parts from colliding with nozzles placing
+     * shorter parts nearby on multi-nozzle machines.
+     */
+    @Attribute(required = false)
+    boolean autoRankByHeight = false;
+
+    @Attribute(required = false)
+    double heightGroupingTolerance = 1.0;
+
     @Element(required = false)
     public PnpJobPlanner planner = new SimplePnpJobPlanner();
 
     protected Job job;
+
+    private Map<JobPlacement, Integer> autoRankOverrides = new HashMap<>();
 
     protected Machine machine;
 
@@ -279,7 +295,11 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
             previousPlacePlanStartLocation = previousPickPlanStartLocation = new Location(LengthUnit.Millimeters);
             
             checkSetupErrors();
-            
+
+            if (autoRankByHeight) {
+                assignHeightRanks(jobPlacements, heightGroupingTolerance);
+            }
+
             prepMachine();
             
             prepFeeders();
@@ -649,7 +669,7 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
             }
 
             for (PlannedPlacement plannedPlacement : plannedPlacements) {
-                Logger.debug("Placement {} has rank {}", plannedPlacement, plannedPlacement.jobPlacement.getRank());
+                Logger.debug("Placement {} has rank {}", plannedPlacement, getEffectiveRank(plannedPlacement.jobPlacement));
                 plannedPlacement.jobPlacement.setStatus(Status.Processing);
             }
             
@@ -2124,6 +2144,14 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
     }
 
     // All the placements that we can consider placing right now.
+    private int getEffectiveRank(JobPlacement jobPlacement) {
+        Integer override = autoRankOverrides.get(jobPlacement);
+        if (override != null) {
+            return override;
+        }
+        return jobPlacement.getRank();
+    }
+
     // This is all the pending placements, excluding high-rank placements that are blocked by incomplete lower-ranked placements.
     // We are allowed to process up to 9 ranks higher than the lowest incomplete rank. Ranks N+10 and higher are blocked.
     protected List<JobPlacement> getOpenPendingJobPlacements() {
@@ -2131,7 +2159,7 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
         int blockedRank = currentRank+10;
         Logger.debug("Current rank is {}. Blocked up to rank {}",currentRank,blockedRank);
         return this.jobPlacements.stream().filter((jobPlacement) -> {
-            return jobPlacement.getStatus() == Status.Pending && jobPlacement.getRank()<blockedRank;
+            return jobPlacement.getStatus() == Status.Pending && getEffectiveRank(jobPlacement)<blockedRank;
         }).collect(Collectors.toList());
     }
 
@@ -2146,7 +2174,7 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
         return this.jobPlacements.stream().filter((jobPlacement) -> {
             return jobPlacement.getStatus() != Status.Complete;
         }).mapToInt((jobPlacement) -> {
-            return jobPlacement.getRank();
+            return getEffectiveRank(jobPlacement);
         }).min().orElse(Placement.defaultRank);
     }
 
@@ -2228,6 +2256,22 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
 
     public void setPreRotateAllNozzles(boolean preRotateAllNozzles) {
         this.preRotateAllNozzles = preRotateAllNozzles;
+    }
+
+    public boolean isAutoRankByHeight() {
+        return autoRankByHeight;
+    }
+
+    public void setAutoRankByHeight(boolean autoRankByHeight) {
+        this.autoRankByHeight = autoRankByHeight;
+    }
+
+    public double getHeightGroupingTolerance() {
+        return heightGroupingTolerance;
+    }
+
+    public void setHeightGroupingTolerance(double heightGroupingTolerance) {
+        this.heightGroupingTolerance = heightGroupingTolerance;
     }
 
     /**
@@ -2733,12 +2777,44 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
     }    
     
     /**
+     * Assign auto-ranks to job placements based on part height groups.
+     * Parts are sorted by height and grouped by tolerance. Each group is assigned a rank
+     * spaced 10 apart so that the rank windowing mechanism in getOpenPendingJobPlacements()
+     * ensures all parts in one height band complete before the next band starts.
+     */
+    void assignHeightRanks(List<JobPlacement> jobPlacements, double tolerance) {
+        autoRankOverrides.clear();
+
+        // sort by height to find natural groupings
+        List<JobPlacement> sorted = jobPlacements.stream()
+                .sorted(Comparator.comparingDouble(JobPlacement::getPartHeight))
+                .collect(Collectors.toList());
+
+        if (sorted.isEmpty()) {
+            return;
+        }
+
+        int rank = 0;
+        double groupHeight = sorted.get(0).getPartHeight();
+        for (JobPlacement jp : sorted) {
+            double height = jp.getPartHeight();
+            if (Math.abs(height - groupHeight) > tolerance) {
+                rank += 10;
+                groupHeight = height;
+            }
+            autoRankOverrides.put(jp, rank);
+        }
+        Logger.debug("Auto height ranking: {} groups for {} placements (tolerance={}mm)",
+                (rank / 10) + 1, jobPlacements.size(), tolerance);
+    }
+
+    /**
      * A simple two-pass planner which tries to fill each nozzle with a placement on
      * each cycle while minimizing nozzle tip changes.
-     * 
+     *
      * The first pass tries to find a placement for each nozzle which will not require a
      * nozzle tip change.
-     * 
+     *
      * The second pass allows nozzle tip changes while respecting any already used nozzle
      * tips for the cycle.
      */

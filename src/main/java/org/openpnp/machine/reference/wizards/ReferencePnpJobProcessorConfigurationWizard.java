@@ -30,6 +30,7 @@ import javax.swing.border.TitledBorder;
 import org.openpnp.Translations;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
+import org.openpnp.gui.support.DoubleConverter;
 import org.openpnp.gui.support.IntegerConverter;
 import org.openpnp.machine.reference.ReferencePnpJobProcessor;
 import org.openpnp.machine.reference.ReferencePnpJobProcessor.JobOrderHint;
@@ -52,6 +53,8 @@ public class ReferencePnpJobProcessorConfigurationWizard extends AbstractConfigu
     private JCheckBox preRotateAllNozzles;
     private JTextField feederFaultLimitTextField;
     private JTextField feederFaultWindowSizeTextField;
+    private JCheckBox autoRankByHeight;
+    private JTextField heightGroupingToleranceTextField;
 
     public ReferencePnpJobProcessorConfigurationWizard(ReferencePnpJobProcessor jobProcessor) {
         this.jobProcessor = jobProcessor;
@@ -67,6 +70,10 @@ public class ReferencePnpJobProcessorConfigurationWizard extends AbstractConfigu
                 FormSpecs.RELATED_GAP_COLSPEC,
                 FormSpecs.DEFAULT_COLSPEC,},
                 new RowSpec[] {
+                        FormSpecs.RELATED_GAP_ROWSPEC,
+                        FormSpecs.DEFAULT_ROWSPEC,
+                        FormSpecs.RELATED_GAP_ROWSPEC,
+                        FormSpecs.DEFAULT_ROWSPEC,
                         FormSpecs.RELATED_GAP_ROWSPEC,
                         FormSpecs.DEFAULT_ROWSPEC,
                         FormSpecs.RELATED_GAP_ROWSPEC,
@@ -155,6 +162,21 @@ public class ReferencePnpJobProcessorConfigurationWizard extends AbstractConfigu
         feederFaultWindowSizeTextField = new JTextField();
         panelGeneral.add(feederFaultWindowSizeTextField, "4, 18");
         feederFaultWindowSizeTextField.setColumns(10);
+
+        JLabel lblAutoRankByHeight = new JLabel(Translations.getString("MachineSetup.JobProcessors.ReferencePnpJobProcessor.Label.AutoRankByHeight")); //$NON-NLS-1$
+        lblAutoRankByHeight.setToolTipText(Translations.getString("MachineSetup.JobProcessors.ReferencePnpJobProcessor.Label.AutoRankByHeight.toolTipText")); //$NON-NLS-1$
+        panelGeneral.add(lblAutoRankByHeight, "2, 20, right, default");
+
+        autoRankByHeight = new JCheckBox();
+        panelGeneral.add(autoRankByHeight, "4, 20");
+
+        JLabel lblHeightGroupingTolerance = new JLabel(Translations.getString("MachineSetup.JobProcessors.ReferencePnpJobProcessor.Label.HeightGroupingTolerance")); //$NON-NLS-1$
+        lblHeightGroupingTolerance.setToolTipText(Translations.getString("MachineSetup.JobProcessors.ReferencePnpJobProcessor.Label.HeightGroupingTolerance.toolTipText")); //$NON-NLS-1$
+        panelGeneral.add(lblHeightGroupingTolerance, "2, 22, right, default");
+
+        heightGroupingToleranceTextField = new JTextField();
+        panelGeneral.add(heightGroupingToleranceTextField, "4, 22");
+        heightGroupingToleranceTextField.setColumns(10);
     }
 
     @Override
@@ -170,7 +192,12 @@ public class ReferencePnpJobProcessorConfigurationWizard extends AbstractConfigu
         addWrappedBinding(jobProcessor, "preRotateAllNozzles", preRotateAllNozzles, "selected");
         addWrappedBinding(jobProcessor, "feederFaultLimit", feederFaultLimitTextField, "text", intConverter);
         addWrappedBinding(jobProcessor, "feederFaultWindowSize", feederFaultWindowSizeTextField, "text", intConverter);
+        addWrappedBinding(jobProcessor, "autoRankByHeight", autoRankByHeight, "selected");
+
+        DoubleConverter doubleConverter = new DoubleConverter("%f"); //$NON-NLS-1$
+        addWrappedBinding(jobProcessor, "heightGroupingTolerance", heightGroupingToleranceTextField, "text", doubleConverter);
 
         ComponentDecorators.decorateWithAutoSelect(maxVisionRetriesTextField);
+        ComponentDecorators.decorateWithAutoSelect(heightGroupingToleranceTextField);
     }
 }
