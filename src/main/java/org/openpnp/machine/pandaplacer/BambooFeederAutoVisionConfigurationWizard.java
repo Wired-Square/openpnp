@@ -676,6 +676,11 @@ extends AbstractReferenceFeederConfigurationWizard {
                     applyAction.actionPerformed(e);
                     UiUtils.submitUiMachineTask(() -> {
                         feeder.autoSetup();
+                        return null;
+                    }, (r) -> {
+                        notifyChange();
+                    }, (t) -> {
+                        UiUtils.showError(t);
                     });
                 }
             });
