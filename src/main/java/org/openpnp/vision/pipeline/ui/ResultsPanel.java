@@ -88,7 +88,11 @@ public class ResultsPanel extends JPanel {
         JButton pinResultButton = new JButton(pinResultAction);
         pinResultButton.setHideActionText(true);
         toolBar.add(pinResultButton);
-        
+
+        JButton freezeButton = new JButton(freezeAction);
+        freezeButton.setHideActionText(true);
+        toolBar.add(freezeButton);
+
         JSeparator separator = new JSeparator();
         separator.setOrientation(SwingConstants.VERTICAL);
         toolBar.add(separator);
@@ -431,6 +435,30 @@ public class ResultsPanel extends JPanel {
                 putValue(SMALL_ICON, Icons.pinDisabled);
 
                 updateAllEverything();
+            }
+        }
+    };
+
+    public final Action freezeAction = new AbstractAction() {
+        {
+            putValue(SMALL_ICON, Icons.freezeDisabled);
+            putValue(NAME, "");
+            putValue(SHORT_DESCRIPTION, "Freeze image capture.");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            boolean frozen = editor.isFrozen();
+            if (!frozen) {
+                editor.setFrozen(true);
+                putValue(SMALL_ICON, Icons.freezeEnabled);
+                putValue(SHORT_DESCRIPTION, "Unfreeze image capture.");
+            }
+            else {
+                editor.setFrozen(false);
+                putValue(SMALL_ICON, Icons.freezeDisabled);
+                putValue(SHORT_DESCRIPTION, "Freeze image capture.");
+                editor.process();
             }
         }
     };

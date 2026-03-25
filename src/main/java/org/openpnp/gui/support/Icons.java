@@ -85,6 +85,9 @@ public class Icons {
     public static Icon pinDisabled = getIcon("/icons/pin_disabled.svg");
     public static Icon pinEnabled = getIcon("/icons/pin_enabled.svg");
 
+    public static Icon freezeDisabled = getIcon("/icons/freeze_disabled.svg");
+    public static Icon freezeEnabled = getIcon("/icons/freeze_enabled.svg");
+
     public static Icon powerOn = getIcon("/icons/power_button_on.svg");
     public static Icon powerOff = getIcon("/icons/power_button_off.svg");
 

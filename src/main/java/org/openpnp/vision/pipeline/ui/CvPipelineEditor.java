@@ -177,10 +177,13 @@ public class CvPipelineEditor extends JPanel {
 
     private final static Set<Class<? extends CvStage>> stageClasses;
 
+    public static final String FROZEN_IMAGE_PROPERTY = "frozenImage";
+
     private final CvPipeline pipeline;
     private PipelinePanel pipelinePanel;
     private ResultsPanel resultsPanel;
-    
+
+    private boolean frozen;
     private String originalVersion = "";
 
     public CvPipelineEditor(CvPipeline pipeline) {
@@ -222,8 +225,24 @@ public class CvPipelineEditor extends JPanel {
     }
 
     public void process() {
-        UiUtils.messageBoxOnException(() -> getPipeline().process());
+        UiUtils.messageBoxOnException(() -> {
+            if (frozen) {
+                getPipeline().setProperty(FROZEN_IMAGE_PROPERTY, getPipeline().getLastCapturedImage());
+            }
+            else {
+                getPipeline().setProperty(FROZEN_IMAGE_PROPERTY, null);
+            }
+            getPipeline().process();
+        });
         resultsPanel.refresh();
+    }
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
     }
 
     public void stageSelected(CvStage stage) {

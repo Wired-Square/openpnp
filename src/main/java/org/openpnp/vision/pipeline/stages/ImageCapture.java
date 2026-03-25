@@ -15,6 +15,7 @@ import org.openpnp.vision.pipeline.CvStage;
 import org.openpnp.vision.pipeline.Property;
 import org.openpnp.vision.pipeline.Stage;
 import org.openpnp.vision.pipeline.TerminalException;
+import org.openpnp.vision.pipeline.ui.CvPipelineEditor;
 import org.openpnp.vision.pipeline.ui.PipelinePropertySheetTable;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
@@ -91,6 +92,12 @@ public class ImageCapture extends CvStage {
     }
     @Override
     public Result process(CvPipeline pipeline) throws Exception {
+        BufferedImage frozenImage = (BufferedImage) pipeline.getProperty(CvPipelineEditor.FROZEN_IMAGE_PROPERTY);
+        if (frozenImage != null) {
+            Mat image = OpenCvUtils.toMat(frozenImage);
+            return new Result(image, ColorSpace.Bgr);
+        }
+
         Camera camera = (Camera) pipeline.getProperty("camera");
         if (camera == null) {
             throw new Exception("No Camera set on pipeline.");
@@ -99,12 +106,12 @@ public class ImageCapture extends CvStage {
             // Light, settle and capture the image. Keep the lights on for possible averaging.
             camera.actuateLightBeforeCapture((defaultLight ? null : getLight()));
             try {
-                BufferedImage bufferedImage = camera.settleAndCapture(settleOption); 
-                // Remember the last captured image. This specifically records the native camera image, 
+                BufferedImage bufferedImage = camera.settleAndCapture(settleOption);
+                // Remember the last captured image. This specifically records the native camera image,
                 // i.e. it does not apply averaging (we want an unaltered raw image for analysis purposes).
                 pipeline.setLastCapturedImage(bufferedImage);
                 Mat image = OpenCvUtils.toMat(bufferedImage);
-                if (count <= 1) { 
+                if (count <= 1) {
                     return new Result(image, ColorSpace.Bgr);
                 }
                 else {
@@ -125,7 +132,7 @@ public class ImageCapture extends CvStage {
                 }
             }
             finally {
-                // Always switch off the light. 
+                // Always switch off the light.
                 camera.actuateLightAfterCapture();
             }
         }

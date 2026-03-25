@@ -66,6 +66,13 @@ public class CvPipelineEditorDialog extends JDialog {
         editor.initializeFocus();
     }
 
+    @Override
+    public void dispose() {
+        editor.setFrozen(false);
+        editor.getPipeline().setProperty(CvPipelineEditor.FROZEN_IMAGE_PROPERTY, null);
+        super.dispose();
+    }
+
     public void pipelineChanged() {
     }
 }
