@@ -146,8 +146,11 @@ public class ActuatorControlDialog extends JDialog {
         readBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 UiUtils.submitUiMachineTask(() -> {
-                    String s = actuator.read();
+                    return actuator.read();
+                }, (s) -> {
                     readTf.setText(s == null ? "" : s);
+                }, (t) -> {
+                    UiUtils.showError(t);
                 });
             }
         });
@@ -156,9 +159,13 @@ public class ActuatorControlDialog extends JDialog {
         readWithDoubleBtn = new JButton("Read with Double");
         readWithDoubleBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                double param = Double.parseDouble(withDoubleTf.getText());
                 UiUtils.submitUiMachineTask(() -> {
-                    String s = actuator.read(Double.parseDouble(withDoubleTf.getText()));
+                    return actuator.read(param);
+                }, (s) -> {
                     readTf.setText(s == null ? "" : s);
+                }, (t) -> {
+                    UiUtils.showError(t);
                 });
             }
         });

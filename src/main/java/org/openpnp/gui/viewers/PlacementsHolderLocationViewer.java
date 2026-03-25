@@ -1639,10 +1639,9 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
                             phl.setLocation(location);
                             phl.setLocalToGlobalTransform(tx);
                         }
-                        Helpers.selectObjectTableRow(MainFrame.get().getJobTab().
-                                getPlacementsHolderLocationsTable(), phl);
-                        
                         SwingUtilities.invokeLater(() -> {
+                            Helpers.selectObjectTableRow(MainFrame.get().getJobTab().
+                                    getPlacementsHolderLocationsTable(), phl);
                             MainFrame.get().getJobTab().refreshSelectedRow();
                         });
                         

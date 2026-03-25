@@ -723,9 +723,11 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
         // The part is now on the nozzle.
         MovableUtils.fireTargetedUserAction(nozzle);
-        if (MainFrame.get().getTabs().getSelectedComponent() == MainFrame.get().getFeedersTab() 
+        if (MainFrame.get().getTabs().getSelectedComponent() == MainFrame.get().getFeedersTab()
                 && Configuration.get().getTablesLinked() == TablesLinked.Linked) {
-            MainFrame.get().getPartsTab().selectPartInTableAndUpdateLinks(feeder.getPart());
+            SwingUtilities.invokeLater(() ->
+                MainFrame.get().getPartsTab().selectPartInTableAndUpdateLinks(feeder.getPart())
+            );
         }
     }
 

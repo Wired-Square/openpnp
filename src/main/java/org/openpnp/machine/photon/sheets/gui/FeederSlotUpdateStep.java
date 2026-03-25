@@ -17,6 +17,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FeederSlotUpdateStep extends JPanel {
 
@@ -118,10 +119,14 @@ public class FeederSlotUpdateStep extends JPanel {
                         break;  // We don't want to accidentally program a feeder floor after they clicked finish
                     }
 
-                    feederAddressSpinner.setEnabled(false);
-                    int feederAddress = (int) feederAddressSpinner.getValue();
+                    AtomicInteger feederAddressHolder = new AtomicInteger();
+                    SwingUtilities.invokeAndWait(() -> {
+                        feederAddressSpinner.setEnabled(false);
+                        feederAddressHolder.set((int) feederAddressSpinner.getValue());
+                    });
+                    int feederAddress = feederAddressHolder.get();
 
-                    statusLabel.setText(String.format(FOUND_FEEDER, feederAddress));
+                    SwingUtilities.invokeLater(() -> statusLabel.setText(String.format(FOUND_FEEDER, feederAddress)));
 
                     updateFeederAddress(uuid, feederAddress);
 
@@ -136,14 +141,16 @@ public class FeederSlotUpdateStep extends JPanel {
 
                     if (feederAddress == 254) {
                         shouldStopThread = true;
-                        statusLabel.setText(MAX_HIT);
+                        SwingUtilities.invokeLater(() -> statusLabel.setText(MAX_HIT));
                         break;
                     }
 
                     // Set the max feeder address at least to what we've just programmed, as a convenience for searching.
                     photonProperties.setMaxFeederAddress(Math.max(photonProperties.getMaxFeederAddress(), feederAddress));
-                    feederAddressSpinner.setValue(feederAddress + 1);
-                    feederAddressSpinner.setEnabled(true);
+                    SwingUtilities.invokeLater(() -> {
+                        feederAddressSpinner.setValue(feederAddress + 1);
+                        feederAddressSpinner.setEnabled(true);
+                    });
                 } catch (Exception e) {
                     // UiUtils.showError(e);
                     shouldStopThread = true;
@@ -159,19 +166,17 @@ public class FeederSlotUpdateStep extends JPanel {
 
                 if (response == null) {
                     shouldStopThread = true;
-                    statusLabel.setText(FAILED);
-
+                    SwingUtilities.invokeLater(() -> statusLabel.setText(FAILED));
                     throw new Exception("Failed to update feeder slot address");
                 }
             });
             voidFuture.get();
 
-            statusLabel.setText(DONE);
+            SwingUtilities.invokeLater(() -> statusLabel.setText(DONE));
         }
 
         private String findUninitializedFeeder() throws ExecutionException, InterruptedException {
             Future<String> stringFuture = UiUtils.submitUiMachineTask(() -> {
-
                 UninitializedFeedersRespond command = new UninitializedFeedersRespond();
                 UninitializedFeedersRespond.Response response = command.send(photonBus);
 

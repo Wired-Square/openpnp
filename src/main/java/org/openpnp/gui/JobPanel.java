@@ -1452,16 +1452,16 @@ public class JobPanel extends JPanel {
 
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
+                    // Need to keep current focus owner so that the space bar can be
+                    // used after the initial click. Otherwise, button focus is lost
+                    // when table is updated
+                    Component comp = MainFrame.get().getFocusOwner();
+                    Helpers.selectNextTableRow(jobTable);
+                    comp.requestFocus();
+                    Location location = getSelection().getGlobalLocation();
                     UiUtils.submitUiMachineTask(() -> {
-                        // Need to keep current focus owner so that the space bar can be
-                        // used after the initial click. Otherwise, button focus is lost
-                        // when table is updated
-                    	Component comp = MainFrame.get().getFocusOwner();
-                    	Helpers.selectNextTableRow(jobTable);
-                    	comp.requestFocus();
                         HeadMountable tool = MainFrame.get().getMachineControls().getSelectedTool();
                         Camera camera = tool.getHead().getDefaultCamera();
-                        Location location = getSelection().getGlobalLocation();
                         MovableUtils.moveToLocationAtSafeZ(camera, location);
                         MovableUtils.fireTargetedUserAction(camera);
 
@@ -1740,13 +1740,15 @@ public class JobPanel extends JPanel {
     private final MachineListener machineListener = new MachineListener.Adapter() {
         @Override
         public void machineEnabled(Machine machine) {
-            updateJobActions();
+            SwingUtilities.invokeLater(() -> updateJobActions());
         }
 
         @Override
         public void machineDisabled(Machine machine, String reason) {
-            setState(State.Stopped);
-            updateJobActions();
+            SwingUtilities.invokeLater(() -> {
+                setState(State.Stopped);
+                updateJobActions();
+            });
         }
     };
 

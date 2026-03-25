@@ -654,15 +654,15 @@ public class JobPlacementsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
+            // Need to keep current focus owner so that the space bar can be
+            // used after the initial click. Otherwise, button focus is lost
+            // when table is updated
+            Component comp = MainFrame.get().getFocusOwner();
+            Helpers.selectNextTableRow(table);
+            comp.requestFocus();
+            Location location = Utils2D.calculateBoardPlacementLocation(boardOrPanelLocation,
+                    getSelection().getLocation());
             UiUtils.submitUiMachineTask(() -> {
-                // Need to keep current focus owner so that the space bar can be
-                // used after the initial click. Otherwise, button focus is lost
-                // when table is updated
-                Component comp = MainFrame.get().getFocusOwner();
-                Helpers.selectNextTableRow(table);
-                comp.requestFocus();
-                Location location = Utils2D.calculateBoardPlacementLocation(boardOrPanelLocation,
-                        getSelection().getLocation());
                 Camera camera = MainFrame.get().getMachineControls().getSelectedTool().getHead()
                         .getDefaultCamera();
                 MovableUtils.moveToLocationAtSafeZ(camera, location);

@@ -516,25 +516,29 @@ public class MachineControlsPanel extends JPanel {
 
         @Override
         public void machineEnabled(Machine machine) {
-            updateStartStopButton(machine.isEnabled());
-            setEnabled(true);
-            EventQueue.invokeLater(() -> updateDros());
+            EventQueue.invokeLater(() -> {
+                updateStartStopButton(machine.isEnabled());
+                setEnabled(true);
+                updateDros();
+            });
         }
 
         @Override
         public void machineEnableFailed(Machine machine, String reason) {
-            updateStartStopButton(machine.isEnabled());
+            EventQueue.invokeLater(() -> updateStartStopButton(machine.isEnabled()));
         }
 
         @Override
         public void machineDisabled(Machine machine, String reason) {
-            updateStartStopButton(machine.isEnabled());
-            setEnabled(false);
+            EventQueue.invokeLater(() -> {
+                updateStartStopButton(machine.isEnabled());
+                setEnabled(false);
+            });
         }
 
         @Override
         public void machineDisableFailed(Machine machine, String reason) {
-            updateStartStopButton(machine.isEnabled());
+            EventQueue.invokeLater(() -> updateStartStopButton(machine.isEnabled()));
         }
 
         @Override
