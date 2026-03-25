@@ -152,6 +152,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        org.openpnp.gui.support.NumericTextFieldKeyHandler.install();
         monkeyPatchBeansBinding();
 
         for (String s : args) {
