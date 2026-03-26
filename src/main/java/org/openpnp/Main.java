@@ -153,6 +153,7 @@ public class Main {
 
     public static void main(String[] args) {
         org.openpnp.gui.support.NumericTextFieldKeyHandler.install();
+        org.openpnp.gui.support.TextFieldUndoHandler.install();
         monkeyPatchBeansBinding();
 
         for (String s : args) {
