@@ -6,6 +6,13 @@ public class PhotonProperties {
     static final String FEEDER_COMMUNICATION_MAX_RETRY = "PhotonFeeder.FeederCommunicationMaxRetry";
     static final String FEEDER_SLOTS_PROPERTY = "PhotonFeeder.FeederSlots";
     static final String MAX_FEEDER_ADDRESS = "PhotonFeeder.MaxFeederAddress";
+    static final String AUTO_SCAN_MODE = "PhotonFeeder.AutoScanMode";
+
+    public enum AutoScanMode {
+        Manual,
+        ScanOnEnable,
+        ScanOnHomed
+    }
 
     final Machine machine;
 
@@ -41,6 +48,25 @@ public class PhotonProperties {
 
     public void setMaxFeederAddress(int maxFeederAddress) {
         machine.setProperty(MAX_FEEDER_ADDRESS, maxFeederAddress);
+    }
+
+    public AutoScanMode getAutoScanMode() {
+        String mode = (String) machine.getProperty(AUTO_SCAN_MODE);
+
+        if (mode == null) {
+            return AutoScanMode.Manual;
+        }
+
+        try {
+            return AutoScanMode.valueOf(mode);
+        }
+        catch (IllegalArgumentException e) {
+            return AutoScanMode.Manual;
+        }
+    }
+
+    public void setAutoScanMode(AutoScanMode mode) {
+        machine.setProperty(AUTO_SCAN_MODE, mode.name());
     }
 
     public synchronized PhotonFeederSlots getFeederSlots() {

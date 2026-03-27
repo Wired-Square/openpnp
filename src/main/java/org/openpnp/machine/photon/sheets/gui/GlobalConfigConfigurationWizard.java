@@ -11,6 +11,7 @@ import org.openpnp.gui.support.JBindings;
 import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.machine.photon.PhotonFeeder;
 import org.openpnp.machine.photon.PhotonProperties;
+import org.openpnp.machine.photon.PhotonProperties.AutoScanMode;
 import org.openpnp.model.Configuration;
 import org.openpnp.util.UiUtils;
 
@@ -27,6 +28,7 @@ public class GlobalConfigConfigurationWizard extends AbstractConfigurationWizard
     private final FeederSearchProgressBar progressBarPanel;
     private final JButton searchButton;
     private final JSpinner maxFeederSpinner;
+    private final JComboBox<AutoScanMode> autoScanCombo;
     private final JButton btnStartFeedSlotsWizard;
     private final JLabel lblNewLabel;
 
@@ -43,11 +45,13 @@ public class GlobalConfigConfigurationWizard extends AbstractConfigurationWizard
                 FormSpecs.RELATED_GAP_COLSPEC,
                 FormSpecs.DEFAULT_COLSPEC,
                 FormSpecs.RELATED_GAP_COLSPEC,
-                ColumnSpec.decode("50dlu"),
+                ColumnSpec.decode("max(50dlu;pref)"),
                 ColumnSpec.decode("4dlu:grow"),
                 FormSpecs.DEFAULT_COLSPEC,
                 FormSpecs.RELATED_GAP_COLSPEC,},
                 new RowSpec[]{
+                        FormSpecs.RELATED_GAP_ROWSPEC,
+                        FormSpecs.DEFAULT_ROWSPEC,
                         FormSpecs.RELATED_GAP_ROWSPEC,
                         FormSpecs.DEFAULT_ROWSPEC,
                         FormSpecs.RELATED_GAP_ROWSPEC,
@@ -68,8 +72,15 @@ public class GlobalConfigConfigurationWizard extends AbstractConfigurationWizard
         searchButton.addActionListener(searchAction);
         searchPanel.add(searchButton, "6, 2");
 
+        JLabel lblAutoScan = new JLabel("Auto Scan");
+        searchPanel.add(lblAutoScan, "2, 4");
+
+        autoScanCombo = new JComboBox<>(AutoScanMode.values());
+        autoScanCombo.setSelectedItem(photonProperties.getAutoScanMode());
+        searchPanel.add(autoScanCombo, "4, 4");
+
         progressBarPanel = new FeederSearchProgressBar();
-        searchPanel.add(progressBarPanel, "2, 4, 5, 1, fill, fill");
+        searchPanel.add(progressBarPanel, "2, 6, 5, 1, fill, fill");
         progressBarPanel.setVisible(false);
         progressBarPanel.setNumberOfElements(initialMaxFeederAddress);
 
@@ -111,6 +122,7 @@ public class GlobalConfigConfigurationWizard extends AbstractConfigurationWizard
     @Override
     public void createBindings() {
         bind(UpdateStrategy.READ_WRITE, photonProperties, "maxFeederAddress", maxFeederSpinner, "value");
+        bind(UpdateStrategy.READ_WRITE, photonProperties, "autoScanMode", autoScanCombo, "selectedItem");
     }
 
     private final Action searchAction = new AbstractAction() {

@@ -51,6 +51,8 @@ public class PhotonFeeder extends ReferenceFeeder {
 
     private static PhotonBusInterface photonBus;
 
+    private static boolean autoScanListenerRegistered = false;
+
     @Attribute(required = false)
     protected boolean moveWhileFeeding = true;
 
@@ -63,8 +65,61 @@ public class PhotonFeeder extends ReferenceFeeder {
                 // Ensure actuators are added to the machine when it has PhotonFeeders
                 getDataActuator();
                 populatePhotonBus();
+                registerAutoScanListener(configuration);
             }
         });
+    }
+
+    private static synchronized void registerAutoScanListener(Configuration configuration) {
+        if (autoScanListenerRegistered) {
+            return;
+        }
+        autoScanListenerRegistered = true;
+
+        configuration.getMachine().addListener(new MachineListener.Adapter() {
+            @Override
+            public void machineEnabled(Machine machine) {
+                PhotonProperties props = new PhotonProperties(machine);
+                if (props.getAutoScanMode() == PhotonProperties.AutoScanMode.ScanOnEnable) {
+                    runAutoScan(props);
+                }
+            }
+
+            @Override
+            public void machineHomed(Machine machine, boolean isHomed) {
+                if (!isHomed) {
+                    return;
+                }
+                PhotonProperties props = new PhotonProperties(machine);
+                if (props.getAutoScanMode() == PhotonProperties.AutoScanMode.ScanOnHomed) {
+                    runAutoScan(props);
+                }
+            }
+        });
+    }
+
+    private static final int STATUS_UPDATE_INTERVAL = 10;
+
+    private static void runAutoScan(PhotonProperties props) {
+        try {
+            int maxAddress = props.getMaxFeederAddress();
+            org.openpnp.gui.MainFrame.get().setStatus("Scanning Photon feeders...");
+            findAllFeeders((address, state) -> {
+                if (address % STATUS_UPDATE_INTERVAL == 0 || address == maxAddress) {
+                    org.openpnp.gui.MainFrame.get().setStatus(
+                            String.format("Scanning Photon feeders... %d/%d", address, maxAddress));
+                }
+            });
+            org.openpnp.gui.MainFrame.get().setStatus("Photon feeder scan complete.");
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                org.openpnp.gui.MainFrame.get().getFeedersTab().updateView();
+                org.openpnp.gui.MainFrame.get().getJobTab().getJobPlacementsPanel().refresh();
+            });
+        }
+        catch (Exception e) {
+            Logger.error("Auto-scan of Photon feeders failed: " + e.getMessage());
+            org.openpnp.gui.MainFrame.get().setStatus("Photon feeder scan failed.");
+        }
     }
 
     public static void setBus(PhotonBusInterface bus) {
