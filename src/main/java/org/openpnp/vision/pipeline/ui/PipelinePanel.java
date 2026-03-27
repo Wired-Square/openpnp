@@ -7,6 +7,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -113,6 +116,35 @@ public class PipelinePanel extends JPanel {
         stagesTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         stagesTable.getColumnModel().getColumn(1).setPreferredWidth(50);
         stagesTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+        JPopupMenu stageContextMenu = new JPopupMenu();
+        stageContextMenu.add(insertAboveStageAction);
+        stageContextMenu.add(replaceStageAction);
+        stageContextMenu.add(insertBelowStageAction);
+        stageContextMenu.addSeparator();
+        stageContextMenu.add(deleteStageAction);
+        stagesTable.setComponentPopupMenu(stageContextMenu);
+        stagesTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    selectRowAtPoint(e);
+                }
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    selectRowAtPoint(e);
+                }
+            }
+            private void selectRowAtPoint(MouseEvent e) {
+                int row = stagesTable.rowAtPoint(e.getPoint());
+                if (row >= 0) {
+                    stagesTable.setRowSelectionInterval(row, row);
+                }
+            }
+        });
+
         JScrollPane scrollPaneStages = new JScrollPane(stagesTable);
         splitPaneStages.setLeftComponent(scrollPaneStages);
 
@@ -250,6 +282,32 @@ public class PipelinePanel extends JPanel {
         }
     }
 
+    private List<Class<? extends CvStage>> getSortedStageClasses() {
+        List<Class<? extends CvStage>> stageClasses = new ArrayList<>(CvPipelineEditor.getStageClasses());
+        stageClasses.sort(new Comparator<Class<? extends CvStage>>() {
+            @Override
+            public int compare(Class<? extends CvStage> o1, Class<? extends CvStage> o2) {
+                return o1.getSimpleName().toLowerCase()
+                        .compareTo(o2.getSimpleName().toLowerCase());
+            }
+        });
+        return stageClasses;
+    }
+
+    private Class<? extends CvStage> promptForStageClass(String title) {
+        ClassSelectionDialog<CvStage> dialog = new ClassSelectionDialog<>(
+                JOptionPane.getFrameForComponent(PipelinePanel.this), title,
+                "Please select a stage implemention from the list below.",
+                getSortedStageClasses());
+        dialog.setVisible(true);
+        return dialog.getSelectedClass();
+    }
+
+    private void selectStageRow(int modelIndex) {
+        int viewIndex = stagesTable.convertRowIndexToView(modelIndex);
+        stagesTable.changeSelection(viewIndex, 0, false, false);
+    }
+
     public Action newStageAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
@@ -259,19 +317,7 @@ public class PipelinePanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            List<Class<? extends CvStage>> stageClasses = new ArrayList<>(editor.getStageClasses());
-            stageClasses.sort(new Comparator<Class<? extends CvStage>>() {
-                @Override
-                public int compare(Class<? extends CvStage> o1, Class<? extends CvStage> o2) {
-                    return o1.getSimpleName().toLowerCase()
-                            .compareTo(o2.getSimpleName().toLowerCase());
-                }
-            });
-            ClassSelectionDialog<CvStage> dialog = new ClassSelectionDialog<>(
-                    JOptionPane.getFrameForComponent(PipelinePanel.this), "New stage",
-                    "Please select a stage implemention from the list below.", stageClasses);
-            dialog.setVisible(true);
-            Class<? extends CvStage> stageClass = dialog.getSelectedClass();
+            Class<? extends CvStage> stageClass = promptForStageClass("New stage");
             if (stageClass == null) {
                 return;
             }
@@ -280,6 +326,104 @@ public class PipelinePanel extends JPanel {
                 editor.getPipeline().add(stage);
                 stagesTableModel.refresh();
                 Helpers.selectLastTableRow(stagesTable);
+                editor.process();
+            }
+            catch (Exception e) {
+                MessageBoxes.errorBox(JOptionPane.getFrameForComponent(PipelinePanel.this), "Error",
+                        e);
+            }
+        }
+    };
+
+    public Action insertAboveStageAction = new AbstractAction() {
+        {
+            putValue(NAME, "Insert Above...");
+            putValue(SHORT_DESCRIPTION, "Insert a new stage above the selected stage.");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            CvStage selected = getSelectedStage();
+            if (selected == null) {
+                return;
+            }
+            Class<? extends CvStage> stageClass = promptForStageClass("Insert stage above");
+            if (stageClass == null) {
+                return;
+            }
+            try {
+                int index = editor.getPipeline().getStages().indexOf(selected);
+                CvStage stage = stageClass.newInstance();
+                editor.getPipeline().insert(stage, index);
+                stagesTableModel.refresh();
+                selectStageRow(index);
+                editor.process();
+            }
+            catch (Exception e) {
+                MessageBoxes.errorBox(JOptionPane.getFrameForComponent(PipelinePanel.this), "Error",
+                        e);
+            }
+        }
+    };
+
+    public Action insertBelowStageAction = new AbstractAction() {
+        {
+            putValue(NAME, "Insert Below...");
+            putValue(SHORT_DESCRIPTION, "Insert a new stage below the selected stage.");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            CvStage selected = getSelectedStage();
+            if (selected == null) {
+                return;
+            }
+            Class<? extends CvStage> stageClass = promptForStageClass("Insert stage below");
+            if (stageClass == null) {
+                return;
+            }
+            try {
+                int index = editor.getPipeline().getStages().indexOf(selected) + 1;
+                CvStage stage = stageClass.newInstance();
+                editor.getPipeline().insert(stage, index);
+                stagesTableModel.refresh();
+                selectStageRow(index);
+                editor.process();
+            }
+            catch (Exception e) {
+                MessageBoxes.errorBox(JOptionPane.getFrameForComponent(PipelinePanel.this), "Error",
+                        e);
+            }
+        }
+    };
+
+    public Action replaceStageAction = new AbstractAction() {
+        {
+            putValue(NAME, "Replace...");
+            putValue(SHORT_DESCRIPTION, "Replace the selected stage with a different type.");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            CvStage selected = getSelectedStage();
+            if (selected == null) {
+                return;
+            }
+            Class<? extends CvStage> stageClass = promptForStageClass("Replace stage");
+            if (stageClass == null) {
+                return;
+            }
+            try {
+                int index = editor.getPipeline().getStages().indexOf(selected);
+                String name = selected.getName();
+                boolean enabled = selected.isEnabled();
+                editor.getPipeline().remove(selected);
+                CvStage stage = stageClass.newInstance();
+                stage.setName(name);
+                stage.setEnabled(enabled);
+                editor.getPipeline().insert(stage, index);
+                stagesTableModel.refresh();
+                selectStageRow(index);
                 editor.process();
             }
             catch (Exception e) {
