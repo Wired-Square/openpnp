@@ -1078,8 +1078,6 @@ public class MainFrame extends JFrame {
 
     public void about() {
         AboutDialog dialog = new AboutDialog(this);
-        dialog.setSize(750, 550);
-        dialog.setLocationRelativeTo(null);
         dialog.setModal(true);
         dialog.setVisible(true);
     }

@@ -19,6 +19,8 @@
 
 package org.openpnp.gui;
 
+import org.openpnp.gui.support.DialogUtils;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -71,7 +73,6 @@ public class AboutDialog extends JDialog {
     private void createUi() {
         setTitle(String.format("About OpenPnP %s", Main.getVersionString()));
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setBounds(100, 100, 347, 360);
         getContentPane().setLayout(new BorderLayout());
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -110,5 +111,8 @@ public class AboutDialog extends JDialog {
 
         credits = new MarkupTextPane();
         tabbedPane.addTab("Credits", null, credits, null);
+
+        DialogUtils.addPadding(this);
+        DialogUtils.sizeAndCenter(this);
     }
 }

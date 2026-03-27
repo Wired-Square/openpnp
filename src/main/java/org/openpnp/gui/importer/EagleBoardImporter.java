@@ -19,6 +19,8 @@
 
 package org.openpnp.gui.importer;
 
+import org.openpnp.gui.support.DialogUtils;
+
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -735,8 +737,8 @@ public class EagleBoardImporter implements BoardImporter {
             btnImport.setAction(importAction);
             panel_2.add(btnImport);
 
-            setSize(400, 400);
-            setLocationRelativeTo(parent);
+            DialogUtils.addPadding(this);
+            DialogUtils.sizeAndCenter(this);
 
             JRootPane rootPane = getRootPane();
             KeyStroke stroke = KeyStroke.getKeyStroke("ESCAPE"); //$NON-NLS-1$

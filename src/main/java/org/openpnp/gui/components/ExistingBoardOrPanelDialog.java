@@ -19,6 +19,8 @@
 
 package org.openpnp.gui.components;
 
+import org.openpnp.gui.support.DialogUtils;
+
 import java.awt.BorderLayout;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
@@ -85,8 +87,6 @@ public class ExistingBoardOrPanelDialog extends JDialog {
             throw new UnsupportedOperationException("Unsupported operation for class " + type); //$NON-NLS-1$
         }
         fileExtension = "." + boardOrPanel + ".xml"; //$NON-NLS-1$ //$NON-NLS-2$
-        setBounds(100, 100, 600, 400);
-        setLocationRelativeTo(MainFrame.get());
 
         getContentPane().setLayout(new BorderLayout());
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -175,6 +175,9 @@ public class ExistingBoardOrPanelDialog extends JDialog {
                 buttonPane.add(cancelButton);
             }
         }
+
+        DialogUtils.addPadding(this);
+        DialogUtils.sizeAndCenter(this);
     }
 
     public File getFile() {

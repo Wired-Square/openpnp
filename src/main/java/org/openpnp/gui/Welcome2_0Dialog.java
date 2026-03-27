@@ -19,6 +19,8 @@
 
 package org.openpnp.gui;
 
+import org.openpnp.gui.support.DialogUtils;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -52,7 +54,6 @@ public class Welcome2_0Dialog extends JDialog {
         String title = String.format(Translations.getString("WelcomeDialog.title"), Main.getVersionString()); //$NON-NLS-1$
         setTitle(title);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setBounds(100, 100, 648, 434);
         getContentPane().setLayout(new BorderLayout());
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -97,5 +98,8 @@ public class Welcome2_0Dialog extends JDialog {
         catch (Exception e) {
             markupTextPane.setPlainText(e.toString());
         }
+
+        DialogUtils.addPadding(this);
+        DialogUtils.sizeAndCenter(this);
     }
 }
