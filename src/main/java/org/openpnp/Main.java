@@ -185,7 +185,19 @@ public class Main {
         final Configuration configuration = Configuration.get();
         Locale.setDefault(Configuration.get().getLocale());
 
+        Boolean cachedDarkMode = configureWaylandScaling(configuration.getThemeInfo() == null);
+
         ThemeInfo theme = configuration.getThemeInfo();
+        if (theme == null) {
+            boolean dark = (cachedDarkMode != null) ? cachedDarkMode : isSystemDarkMode();
+            if (dark) {
+                theme = new ThemeInfo("Dark", null, true, null,
+                        com.formdev.flatlaf.FlatDarkLaf.class.getName());
+            } else {
+                theme = new ThemeInfo("Light", null, false, null,
+                        com.formdev.flatlaf.FlatLightLaf.class.getName());
+            }
+        }
         new ThemeSettingsPanel().setTheme(theme, configuration.getFontSize(), configuration.isAlternateRows());
         ThemeDialog.getInstance().setOldTheme(theme);
         ToolTipManager.sharedInstance().setDismissDelay(60000);
@@ -203,5 +215,128 @@ public class Main {
                 }
             }
         });
+    }
+
+    /**
+     * On GNOME Wayland, Java Swing runs under XWayland, which has known issues
+     * with DPI scaling that cause FlatLaf to either double-scale or not scale
+     * at all.  This method queries GNOME's actual display scale and the native
+     * monitor resolution via D-Bus, then computes the correct
+     * {@code flatlaf.uiScale} from the formula:
+     *
+     * <pre>uiScale = toolkitWidth &times; gnomeScale / nativeWidth</pre>
+     *
+     * <p>This formula handles both XWayland modes:
+     * <ul>
+     *   <li><b>Classic (integer scaling):</b> coordinate space = logical size,
+     *       so toolkitWidth = nativeWidth/gnomeScale, giving uiScale = 1.</li>
+     *   <li><b>xwayland-native-scaling:</b> coordinate space = buffer size
+     *       = ceil(gnomeScale) &times; logical, giving uiScale = ceil(gnomeScale).</li>
+     * </ul>
+     *
+     * <p>If Java already reports system scaling (e.g. a future JDK with native
+     * Wayland support), or if the user/launcher has set {@code flatlaf.uiScale},
+     * this method does nothing.
+     */
+    /**
+     * Configures FlatLaf DPI scaling for GNOME Wayland sessions.  When
+     * {@code needsDarkMode} is true and we are on Wayland, the dark mode
+     * preference is queried in the same D-Bus connection to avoid opening
+     * a second connection later.
+     *
+     * @param needsDarkMode whether the caller also needs dark mode detection
+     * @return the dark mode result if it was queried as a side-effect
+     *         ({@code Boolean.TRUE}/{@code Boolean.FALSE}), or {@code null}
+     *         if dark mode was not queried (non-Wayland or early exit)
+     */
+    private static Boolean configureWaylandScaling(boolean needsDarkMode) {
+        if (!"wayland".equals(System.getenv("XDG_SESSION_TYPE"))) {
+            return null;
+        }
+        if (System.getProperty("flatlaf.uiScale") != null) {
+            if (needsDarkMode && com.formdev.flatlaf.util.SystemInfo.isLinux) {
+                return org.openpnp.util.GnomeDisplayConfig.isDesktopDarkMode();
+            }
+            return null;
+        }
+
+        // If Java already detects system scaling (future JDK with native Wayland),
+        // FlatLaf's isSystemScaling() will handle it correctly.
+        try {
+            double sysScale = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration()
+                    .getDefaultTransform().getScaleX();
+            if (sysScale > 1.0) {
+                if (needsDarkMode && com.formdev.flatlaf.util.SystemInfo.isLinux) {
+                    return org.openpnp.util.GnomeDisplayConfig.isDesktopDarkMode();
+                }
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+
+        // Query GNOME's display configuration and (optionally) dark mode
+        // preference in a single D-Bus session connection.
+        double[] config = needsDarkMode
+                ? org.openpnp.util.GnomeDisplayConfig.queryScaleWidthAndDarkMode()
+                : org.openpnp.util.GnomeDisplayConfig.queryScaleAndNativeWidth();
+        double gnomeScale = config[0];
+        double nativeWidth = config[1];
+
+        if (gnomeScale > 1.0 && nativeWidth > 0) {
+            int toolkitWidth = java.awt.Toolkit.getDefaultToolkit()
+                    .getScreenSize().width;
+            // Classic XWayland: toolkitWidth ≈ nativeWidth/gnomeScale → uiScale ≈ 1
+            // Native scaling:   toolkitWidth ≈ ceil(gnomeScale) × nativeWidth/gnomeScale
+            //                   → uiScale ≈ ceil(gnomeScale)
+            int uiScale = (int) Math.round(
+                    toolkitWidth * gnomeScale / nativeWidth);
+            if (uiScale > 1) {
+                System.setProperty("flatlaf.uiScale", String.valueOf(uiScale));
+            }
+        }
+
+        return (config.length > 2) ? (config[2] == 1.0) : null;
+    }
+
+    /**
+     * Detects whether the OS is configured for dark mode.
+     * Falls back to false (light) if detection fails.
+     */
+    private static boolean isSystemDarkMode() {
+        try {
+            if (com.formdev.flatlaf.util.SystemInfo.isMacOS) {
+                Process p = new ProcessBuilder("/usr/bin/defaults",
+                        "read", "-g", "AppleInterfaceStyle")
+                        .redirectErrorStream(true).start();
+                String output = new String(p.getInputStream().readAllBytes()).trim();
+                p.waitFor();
+                return "Dark".equalsIgnoreCase(output);
+            }
+            if (com.formdev.flatlaf.util.SystemInfo.isWindows) {
+                String systemRoot = System.getenv("SystemRoot");
+                if (systemRoot == null) {
+                    systemRoot = "C:\\Windows";
+                }
+                Process p = new ProcessBuilder(systemRoot + "\\System32\\reg.exe",
+                        "query",
+                        "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                        "/v", "AppsUseLightTheme")
+                        .redirectErrorStream(true).start();
+                String output = new String(p.getInputStream().readAllBytes()).trim();
+                p.waitFor();
+                // Value is 0x0 for dark, 0x1 for light
+                return output.contains("0x0");
+            }
+            if (com.formdev.flatlaf.util.SystemInfo.isLinux) {
+                // XDG Desktop Portal Settings works across GNOME, KDE,
+                // and other freedesktop-compliant desktops via D-Bus.
+                return org.openpnp.util.GnomeDisplayConfig.isDesktopDarkMode();
+            }
+        } catch (Exception e) {
+            // Detection failed — fall through to default
+        }
+        return false;
     }
 }
