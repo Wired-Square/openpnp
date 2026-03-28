@@ -22,7 +22,6 @@ package org.openpnp.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,6 +38,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.io.FileUtils;
 import org.openpnp.Main;
+
 import org.openpnp.gui.components.MarkupTextPane;
 
 @SuppressWarnings("serial")
@@ -91,14 +91,14 @@ public class AboutDialog extends JDialog {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         JLabel lblOpenpnp = new JLabel("OpenPnP");
         lblOpenpnp.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblOpenpnp.setFont(new Font("Lucida Grande", Font.BOLD, 32));
+        lblOpenpnp.putClientProperty("FlatLaf.styleClass", "appTitle");
         contentPanel.add(lblOpenpnp);
         JLabel lblCopyright = new JLabel("Copyright © Jason von Nieda and OpenPnP Contributors");
-        lblCopyright.setFont(new Font("Lucida Grande", Font.PLAIN, 10));
+        lblCopyright.putClientProperty("FlatLaf.styleClass", "small");
         lblCopyright.setAlignmentX(Component.CENTER_ALIGNMENT);
         contentPanel.add(lblCopyright);
         JLabel lblVersion = new JLabel("Version: " + Main.getVersion());
-        lblVersion.setFont(new Font("Lucida Grande", Font.PLAIN, 10));
+        lblVersion.putClientProperty("FlatLaf.styleClass", "small");
         lblVersion.setAlignmentX(Component.CENTER_ALIGNMENT);
         contentPanel.add(lblVersion);
 

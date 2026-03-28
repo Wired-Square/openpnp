@@ -3,7 +3,6 @@ package org.openpnp.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -33,6 +32,7 @@ import javax.swing.border.SoftBevelBorder;
 
 import org.apache.commons.io.FileUtils;
 import org.openpnp.Main;
+
 import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.imgur.Imgur;
 import org.openpnp.imgur.Imgur.Album;
@@ -122,7 +122,7 @@ public class SubmitDiagnosticsDialog extends JDialog {
         contentPanel.setLayout(fl_contentPanel);
         {
             lblSubmitAHelp = new JLabel("Submit Diagnostics");
-            lblSubmitAHelp.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
+            lblSubmitAHelp.putClientProperty("FlatLaf.styleClass", "h1");
             contentPanel.add(lblSubmitAHelp, "2, 2, 3, 1");
         }
         {
@@ -143,7 +143,7 @@ public class SubmitDiagnosticsDialog extends JDialog {
         }
         {
             JLabel lblComments = new JLabel("Please Describe The Issue");
-            lblComments.setFont(new Font("Lucida Grande", Font.BOLD, 14));
+            lblComments.putClientProperty("FlatLaf.styleClass", "h4");
             contentPanel.add(lblComments, "2, 12");
         }
         {
@@ -155,7 +155,7 @@ public class SubmitDiagnosticsDialog extends JDialog {
         }
         {
             JLabel lblInclude = new JLabel("Include");
-            lblInclude.setFont(new Font("Lucida Grande", Font.BOLD, 14));
+            lblInclude.putClientProperty("FlatLaf.styleClass", "h4");
             contentPanel.add(lblInclude, "2, 18");
         }
         {

@@ -71,6 +71,7 @@ import org.openpnp.CameraListener;
 import org.openpnp.gui.MainFrame;
 import org.openpnp.gui.components.reticle.Reticle;
 import org.openpnp.gui.support.LengthConverter;
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.machine.reference.camera.AbstractBroadcastingCamera;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Length;
@@ -109,6 +110,10 @@ public class CameraView extends JComponent implements CameraListener {
     private static final double DEFAULT_ZOOM_INCREMENT = zoomIncrements.get(ZoomSensitivity.Medium);
 
     private final static int HANDLE_DIAMETER = 8;
+
+    private static final Insets OVERLAY_PADDING = new Insets(10, 10, 10, 10);
+    private static final int OVERLAY_LINE_SPACING = 4;
+    private static final int OVERLAY_CORNER_RADIUS = 8;
 
     private enum HandlePosition {
         NW,
@@ -227,14 +232,9 @@ public class CameraView extends JComponent implements CameraListener {
     private MouseEvent dragJoggingStart = null;
     private MouseEvent dragJoggingTarget = null;
     private int dragJogHandleSize = 50;
-    Color dragJogHandleInactiveColor = new Color(125, 125, 125);
-    Color dragJogHandleActiveColor = Color.white;
 
+    private static final int overlayInset = 10;
     private int lightToggleSize = 40;
-    Color lightToggleInactiveBgColor = new Color(255, 255, 255, 100);
-    Color lightToggleActiveBgColor = new Color(0, 0, 0, 100);
-    Color lightToggleInactiveColor = new Color(0, 0, 0, 200);
-    Color lightToggleActiveColor = new Color(255, 255, 125, 200);
 
     long lastFrameReceivedTime = 0;
     MovingAverage fpsAverage = new MovingAverage(24);
@@ -349,6 +349,7 @@ public class CameraView extends JComponent implements CameraListener {
     public boolean isShowName() {
         return this.showName;
     }
+
 
     public void setDefaultReticle(Reticle reticle) {
         setReticle(DEFAULT_RETICLE_KEY, reticle);
@@ -681,16 +682,16 @@ public class CameraView extends JComponent implements CameraListener {
             }
 
             if (text != null) {
-                drawTextOverlay(g2d, 10, 10, text);
+                drawTextOverlay(g2d, overlayInset, overlayInset, text);
             }
 
             if (showName) {
                 Dimension dim = measureTextOverlay(g2d, camera.getName());
-                drawTextOverlay(g2d, 10, height - dim.height - 10, camera.getName());
+                drawTextOverlay(g2d, overlayInset, height - dim.height - overlayInset, camera.getName());
             }
 
             if (showImageInfo && text == null) {
-                drawImageInfo(g2d, 10, 10, image);
+                drawImageInfo(g2d, overlayInset, overlayInset, image);
             }
 
             if (selectionEnabled && selection != null) {
@@ -709,7 +710,7 @@ public class CameraView extends JComponent implements CameraListener {
                     LengthConverter lengthConverter = new LengthConverter();
                     String text = "Z: " + lengthConverter.convertForward(camera.getLocation().getLengthZ());
                     Dimension dim = measureTextOverlay(g2d, text);
-                    drawTextOverlay(g2d, width - dim.width - 10, height - dim.height - 10, text);
+                    drawTextOverlay(g2d, width - dim.width - overlayInset, height - dim.height - overlayInset, text);
                 }
             }
         }
@@ -785,10 +786,10 @@ public class CameraView extends JComponent implements CameraListener {
         Insets ins = getInsets();
         int width = getWidth() - ins.left - ins.right;
         int height = getHeight() - ins.top - ins.bottom;
-        // Center
-        int x0 = width - lightToggleSize/2;
-        int y0 = lightToggleSize/2;
-        
+        // Center, inset from edges to match name label padding
+        int x0 = width - lightToggleSize/2 - overlayInset;
+        int y0 = lightToggleSize/2 + overlayInset;
+
         double distance = Math.sqrt(Math.pow(x-x0, 2)+ Math.pow(y-y0, 2));
 
         return distance <= lightToggleSize/2;
@@ -820,12 +821,12 @@ public class CameraView extends JComponent implements CameraListener {
         double rotHandleY = rotHandleRadius * Math.sin(Math.toRadians(rotHandleAngle)) + (height / 2.);
 
         // Draw the circular handle at it's original position in the inactive color
-        g2d.setColor(dragJogHandleInactiveColor);
+        g2d.setColor(UIColors.cameraJogHandleInactive());
         drawCircle(g2d, (int) rotHandleX, (int) rotHandleY, dragJogHandleSize / 2);
 
         if (active) {
             // Draw the imaginary circle as a guideline for the rotation handle
-            g2d.setColor(dragJogHandleInactiveColor);
+            g2d.setColor(UIColors.cameraJogHandleInactive());
             drawCircle(g2d, width / 2, height / 2, (int) rotHandleRadius);
             
             int targetX = dragJoggingTarget.getX();
@@ -842,7 +843,7 @@ public class CameraView extends JComponent implements CameraListener {
 
             double rotTargetHandleX = rotHandleRadius * Math.cos(Math.toRadians(rotTargetHandleAngle)) + (width / 2.);
             double rotTargetHandleY = rotHandleRadius * Math.sin(Math.toRadians(rotTargetHandleAngle)) + (height / 2.);
-            g2d.setColor(dragJogHandleActiveColor);
+            g2d.setColor(UIColors.cameraJogHandleActive());
             drawCircle(g2d, (int) rotTargetHandleX, (int) rotTargetHandleY, dragJogHandleSize / 2);
             
             // And draw a rotated crosshair to help the user line things up
@@ -867,7 +868,7 @@ public class CameraView extends JComponent implements CameraListener {
         int xyHandleX0 = width / 2 - dragJogHandleSize / 2;
         int xyHandleY0 = height / 2 - dragJogHandleSize / 2;
 
-        g2d.setColor(dragJogHandleInactiveColor);
+        g2d.setColor(UIColors.cameraJogHandleInactive());
         g2d.drawRect(xyHandleX0, xyHandleY0, dragJogHandleSize, dragJogHandleSize);
 
         if (active) {
@@ -876,7 +877,7 @@ public class CameraView extends JComponent implements CameraListener {
             
             int xyTargetHandleX0 = targetX - dragJogHandleSize / 2;
             int xyTargetHandleY0 = targetY - dragJogHandleSize / 2;
-            g2d.setColor(dragJogHandleActiveColor);
+            g2d.setColor(UIColors.cameraJogHandleActive());
             g2d.drawRect(xyTargetHandleX0, xyTargetHandleY0, dragJogHandleSize, dragJogHandleSize);
             
             g2d.drawLine(xyTargetHandleX0 + dragJogHandleSize / 2, xyTargetHandleY0,
@@ -905,9 +906,9 @@ public class CameraView extends JComponent implements CameraListener {
         Insets ins = getInsets();
         int width = getWidth() - ins.left - ins.right;
         int height = getHeight() - ins.top - ins.bottom;
-        // Center
-        int x0 = width - lightToggleSize/2;
-        int y0 = lightToggleSize/2;
+        // Center, inset from edges to match name label padding
+        int x0 = width - lightToggleSize/2 - overlayInset;
+        int y0 = lightToggleSize/2 + overlayInset;
         if (isTogglingLight()) {
             x0++;
             y0++;
@@ -916,11 +917,11 @@ public class CameraView extends JComponent implements CameraListener {
         for (int pass = 0 ; pass < 2; pass++) {
             if (pass == 0) {
                 g2d.setStroke(new BasicStroke(active ? 4 : 4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2d.setColor(active ? lightToggleActiveBgColor : lightToggleInactiveBgColor);
+                g2d.setColor(active ? UIColors.cameraLightToggleActiveBg() : UIColors.cameraLightToggleInactiveBg());
             }
             else {
                 g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2d.setColor(active ? lightToggleActiveColor : lightToggleInactiveColor);
+                g2d.setColor(active ? UIColors.cameraLightToggleActive() : UIColors.cameraLightToggleInactive());
             }
             drawCircle(g2d, x0, y0, (int)(lightToggleSize*0.27));
             double r0 = lightToggleSize*0.36;
@@ -991,7 +992,7 @@ public class CameraView extends JComponent implements CameraListener {
      */
     private static void drawHandle(Graphics2D g2d, int x, int y) {
         g2d.setStroke(new BasicStroke(1f));
-        g2d.setColor(new Color(153, 153, 187));
+        g2d.setColor(UIColors.cameraSelectionHandle());
         g2d.fillArc(x - HANDLE_DIAMETER / 2, y - HANDLE_DIAMETER / 2, HANDLE_DIAMETER,
                 HANDLE_DIAMETER, 0, 360);
         g2d.setColor(Color.white);
@@ -1103,52 +1104,50 @@ public class CameraView extends JComponent implements CameraListener {
      * @param text
      */
     private static void drawTextOverlay(Graphics2D g2d, int topLeftX, int topLeftY, String text) {
-        Insets insets = new Insets(10, 10, 10, 10);
-        int interLineSpacing = 4;
-        int cornerRadius = 8;
+        Insets insets = OVERLAY_PADDING;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(1.0f));
-        g2d.setFont(g2d.getFont().deriveFont(12.0f));
+
         String[] lines = text.split("\n");
         List<TextLayout> textLayouts = new ArrayList<>();
         int textWidth = 0, textHeight = 0;
         for (String line : lines) {
             TextLayout textLayout = new TextLayout(line, g2d.getFont(), g2d.getFontRenderContext());
-            textWidth = (int) Math.max(textWidth, textLayout.getBounds().getWidth());
-            textHeight += (int) textLayout.getBounds().getHeight() + interLineSpacing;
+            textWidth = Math.max(textWidth, (int) Math.ceil(textLayout.getBounds().getWidth()));
+            textHeight += (int) Math.ceil(textLayout.getBounds().getHeight()) + OVERLAY_LINE_SPACING;
             textLayouts.add(textLayout);
         }
-        textHeight -= interLineSpacing;
-        g2d.setColor(new Color(0, 0, 0, 0.75f));
-        g2d.fillRoundRect(topLeftX, topLeftY, textWidth + insets.left + insets.right,
-                textHeight + insets.top + insets.bottom, cornerRadius, cornerRadius);
+        textHeight -= OVERLAY_LINE_SPACING;
+        int bubbleWidth = textWidth + insets.left + insets.right;
+        g2d.setColor(UIColors.cameraOverlayBg());
+        g2d.fillRoundRect(topLeftX, topLeftY, bubbleWidth,
+                textHeight + insets.top + insets.bottom, OVERLAY_CORNER_RADIUS, OVERLAY_CORNER_RADIUS);
         g2d.setColor(Color.white);
-        g2d.drawRoundRect(topLeftX, topLeftY, textWidth + insets.left + insets.right,
-                textHeight + insets.top + insets.bottom, cornerRadius, cornerRadius);
+        g2d.drawRoundRect(topLeftX, topLeftY, bubbleWidth,
+                textHeight + insets.top + insets.bottom, OVERLAY_CORNER_RADIUS, OVERLAY_CORNER_RADIUS);
         int yPen = topLeftY + insets.top;
         for (TextLayout textLayout : textLayouts) {
             yPen += textLayout.getBounds().getHeight();
             textLayout.draw(g2d, topLeftX + insets.left, yPen);
-            yPen += interLineSpacing;
+            yPen += OVERLAY_LINE_SPACING;
         }
     }
 
     private static Dimension measureTextOverlay(Graphics2D g2d, String text) {
-        Insets insets = new Insets(10, 10, 10, 10);
-        int interLineSpacing = 4;
+        Insets insets = OVERLAY_PADDING;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(1.0f));
-        g2d.setFont(g2d.getFont().deriveFont(12.0f));
+
         String[] lines = text.split("\n");
         List<TextLayout> textLayouts = new ArrayList<>();
         int textWidth = 0, textHeight = 0;
         for (String line : lines) {
             TextLayout textLayout = new TextLayout(line, g2d.getFont(), g2d.getFontRenderContext());
-            textWidth = (int) Math.max(textWidth, textLayout.getBounds().getWidth());
-            textHeight += (int) textLayout.getBounds().getHeight() + interLineSpacing;
+            textWidth = Math.max(textWidth, (int) Math.ceil(textLayout.getBounds().getWidth()));
+            textHeight += (int) Math.ceil(textLayout.getBounds().getHeight()) + OVERLAY_LINE_SPACING;
             textLayouts.add(textLayout);
         }
-        textHeight -= interLineSpacing;
+        textHeight -= OVERLAY_LINE_SPACING;
         return new Dimension(textWidth + insets.left + insets.right,
                 textHeight + insets.top + insets.bottom);
     }
@@ -1163,22 +1162,20 @@ public class CameraView extends JComponent implements CameraListener {
                 image.getHeight(), 
                 (int) (zoom * 100),
                 fps);
-        Insets insets = new Insets(10, 10, 10, 10);
-        int interLineSpacing = 4;
-        int cornerRadius = 8;
+        Insets insets = OVERLAY_PADDING;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(1.0f));
-        g2d.setFont(g2d.getFont().deriveFont(12.0f));
+
         String[] lines = text.split("\n");
         List<TextLayout> textLayouts = new ArrayList<>();
         int textWidth = 0, textHeight = 0;
         for (String line : lines) {
             TextLayout textLayout = new TextLayout(line, g2d.getFont(), g2d.getFontRenderContext());
             textWidth = (int) Math.max(textWidth, textLayout.getBounds().getWidth());
-            textHeight += (int) textLayout.getBounds().getHeight() + interLineSpacing;
+            textHeight += (int) textLayout.getBounds().getHeight() + OVERLAY_LINE_SPACING;
             textLayouts.add(textLayout);
         }
-        textHeight -= interLineSpacing;
+        textHeight -= OVERLAY_LINE_SPACING;
 
         int histogramHeight = 50 + 2;
         int histogramWidth = 255 + 2;
@@ -1186,20 +1183,20 @@ public class CameraView extends JComponent implements CameraListener {
         int width = Math.max(textWidth, histogramWidth);
         int height = textHeight + histogramHeight;
 
-        g2d.setColor(new Color(0, 0, 0, 0.75f));
+        g2d.setColor(UIColors.cameraOverlayBg());
         g2d.fillRoundRect(topLeftX, topLeftY, width + insets.left + insets.right,
-                height + insets.top + insets.bottom, cornerRadius, cornerRadius);
+                height + insets.top + insets.bottom, OVERLAY_CORNER_RADIUS, OVERLAY_CORNER_RADIUS);
         g2d.setColor(Color.white);
         g2d.drawRoundRect(topLeftX, topLeftY, width + insets.left + insets.right,
-                height + insets.top + insets.bottom, cornerRadius, cornerRadius);
+                height + insets.top + insets.bottom, OVERLAY_CORNER_RADIUS, OVERLAY_CORNER_RADIUS);
         int yPen = topLeftY + insets.top;
         for (TextLayout textLayout : textLayouts) {
             yPen += textLayout.getBounds().getHeight();
             textLayout.draw(g2d, topLeftX + insets.left, yPen);
-            yPen += interLineSpacing;
+            yPen += OVERLAY_LINE_SPACING;
         }
 
-        g2d.setColor(new Color(1, 1, 1, 0.20f));
+        g2d.setColor(UIColors.cameraHistogramBg());
         g2d.fillRect(topLeftX + insets.left, yPen, histogramWidth, histogramHeight);
 
         // Calculate the histogram

@@ -19,7 +19,7 @@
 
 package org.openpnp.gui.wizards;
 
-import java.awt.Font;
+
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -41,6 +41,7 @@ import javax.swing.border.TitledBorder;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.MainFrame;
+import javax.swing.UIManager;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.components.SimpleGraphView;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
@@ -113,7 +114,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
 
         lblSettleMethod = new JLabel(Translations.getString(
                 "CameraVisionConfigurationWizard.VisionPanel.SettleMethodLabel.text")); //$NON-NLS-1$
-        panelVision.add(lblSettleMethod, "2, 2, 1, 3, right, default");
+        panelVision.add(lblSettleMethod, "2, 2, right, default");
 
         settleMethod = new JComboBox(AbstractSettlingCamera.SettleMethod.values());
         settleMethod.addItemListener(new ItemListener() {
@@ -121,7 +122,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
                 adaptDialog();
             }
         });
-        panelVision.add(settleMethod, "4, 2, 1, 3, fill, default");
+        panelVision.add(settleMethod, "4, 2, fill, default");
 
         lblSettleTimeMs = new JLabel(Translations.getString(
                 "CameraVisionConfigurationWizard.VisionPanel.SettleTimeLabel.text")); //$NON-NLS-1$
@@ -269,7 +270,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
                 }
             }
         });
-        settleGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        settleGraph.setFont(UIManager.getFont("small.font"));
         panelVision.add(settleGraph, "4, 14, 11, 1, default, fill");
     }
 

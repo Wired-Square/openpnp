@@ -171,7 +171,6 @@ public class JBindings {
     }
 
     private static class JComponentBackgroundUpdater extends AbstractBindingListener {
-        private static Color errorColor = new Color(0xff, 0xdd, 0xdd);
         private JComponent component;
         private Color oldBackground;
 
@@ -182,7 +181,7 @@ public class JBindings {
 
         @Override
         public void syncFailed(Binding binding, SyncFailure failure) {
-            component.setBackground(errorColor);
+            component.setBackground(UIColors.validationError());
         }
 
         @Override

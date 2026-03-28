@@ -51,6 +51,7 @@ import org.openpnp.gui.support.ActuatorsComboBoxModel;
 import org.openpnp.gui.support.Icons;
 import org.openpnp.gui.support.MultisortTableHeaderCellRenderer;
 import org.openpnp.gui.support.NamedConverter;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.machine.reference.ReferenceActuator;
 import org.openpnp.machine.reference.ReferenceActuatorProfiles;
 import org.openpnp.machine.reference.ReferenceActuatorProfiles.Profile;
@@ -237,7 +238,7 @@ public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard
                 return super.getToolTipText();
             }
         };
-        tableSorter = new TableRowSorter<>(actuatorProfiles);
+        tableSorter = new TriStateTableRowSorter<>(actuatorProfiles);
         table.setRowSorter(tableSorter);
         table.getTableHeader().setDefaultRenderer(new MultisortTableHeaderCellRenderer());
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

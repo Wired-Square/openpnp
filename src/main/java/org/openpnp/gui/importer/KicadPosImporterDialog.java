@@ -23,6 +23,7 @@ import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import org.openpnp.Translations;
@@ -54,6 +55,7 @@ class KicadPosImporterDialog extends JDialog {
         super(parent, KicadPosImporter.DESCRIPTION, true);
         importer = kicadPosImporter;
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        ((JPanel) getContentPane()).setBorder(new EmptyBorder(5, 5, 5, 5));
 
         JPanel panel = new JPanel();
         panel.setBorder(new TitledBorder(null, Translations.getString("KicadPosImporterDialog.FilesPanel.Border.title"), TitledBorder.LEADING, TitledBorder.TOP, //$NON-NLS-1$

@@ -63,6 +63,7 @@ import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.MonospacedFontTableCellRenderer;
 import org.openpnp.gui.support.MultisortTableHeaderCellRenderer;
 import org.openpnp.gui.support.TableUtils;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.support.Icons;
 import org.openpnp.gui.support.LengthCellValue;
 import org.openpnp.gui.support.MessageBoxes;
@@ -131,13 +132,11 @@ public class PanelsPanel extends JPanel {
             }
         };
 
-        TableRowSorter<PlacementsHolderTableModel> panelsTableSorter = new TableRowSorter<>(panelsTableModel);
+        TableRowSorter<PlacementsHolderTableModel> panelsTableSorter = new TriStateTableRowSorter<>(panelsTableModel);
         panelsTable.setRowSorter(panelsTableSorter);
         panelsTable.getTableHeader().setDefaultRenderer(new MultisortTableHeaderCellRenderer());
         panelsTable.setDefaultRenderer(LengthCellValue.class, new MonospacedFontTableCellRenderer());
         panelsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        panelsTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        
         TableUtils.setColumnAlignment(panelsTableModel, panelsTable);
         
         TableUtils.installColumnWidthSavers(panelsTable, prefs, "PanelsPanel.panelsTable.columnWidth"); //$NON-NLS-1$

@@ -21,7 +21,6 @@
 
 package org.openpnp.machine.reference.camera.wizards;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
@@ -61,7 +60,7 @@ public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConf
         panelColorBalance = new JPanel();
         panelColorBalance.setBorder(new TitledBorder(null, Translations.getString(
                 "ReferenceCameraWhiteBalanceConfigurationWizard.ColorBalancePanel.Border.title"), //$NON-NLS-1$
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         contentPanel.add(panelColorBalance);
         panelColorBalance.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,

@@ -40,8 +40,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.UIManager;
 
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.model.Footprint;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
@@ -180,7 +180,7 @@ public class VisionCompositingPreview extends JComponent implements MouseMotionL
         else {
             Font font = getFont();
             FontMetrics dfm = g2d.getFontMetrics(font);
-            Color gridColor = getDefaultGridColor();
+            Color gridColor = UIColors.gridColor();
             g2d.setFont(font);
             g2d.setColor(gridColor);
             String text = "no data";
@@ -312,13 +312,4 @@ public class VisionCompositingPreview extends JComponent implements MouseMotionL
         repaint();
     }
 
-    public static Color getDefaultGridColor() {
-        Color gridColor = UIManager.getColor ( "PasswordField.capsLockIconColor" );
-        if (gridColor == null) {
-            gridColor = new Color(0, 0, 0, 64);
-        } else {
-            gridColor = new Color(gridColor.getRed(), gridColor.getGreen(), gridColor.getBlue(), 64);
-        }
-        return gridColor;
-    }
 }

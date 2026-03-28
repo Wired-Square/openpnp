@@ -44,7 +44,7 @@ public class MonospacedFontTableCellRenderer extends DefaultTableCellRenderer
             setForeground(table.getForeground());
             setBackground(row%2==0 ? table.getBackground() : alternateRowColor);
         }
-        setFont(new Font( "Monospaced", Font.BOLD, super.getFont().getSize()));
+        setFont(UIManager.getFont("monospaced.font").deriveFont(Font.BOLD));
         return this;
     }
 }

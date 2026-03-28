@@ -1,6 +1,5 @@
 package org.openpnp.machine.reference.vision.wizards;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
@@ -257,9 +255,9 @@ public class FiducialVisionSettingsConfigurationWizard extends AbstractConfigura
 
         JPanel panelAlign = new JPanel();
         contentPanel.add(panelAlign);
-        panelAlign.setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229)), 
-                Translations.getString("FiducialVisionSettingsConfigurationWizard.FiducialLocatorPanel.Border.title"), //$NON-NLS-1$ 
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(51, 51, 51)));
+        panelAlign.setBorder(new TitledBorder(null,
+                Translations.getString("FiducialVisionSettingsConfigurationWizard.FiducialLocatorPanel.Border.title"), //$NON-NLS-1$
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelAlign.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
                 ColumnSpec.decode("right:max(70dlu;default)"),

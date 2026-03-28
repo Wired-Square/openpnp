@@ -50,6 +50,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+
 import org.openpnp.Translations;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.MainFrame;

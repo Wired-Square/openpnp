@@ -41,6 +41,7 @@ import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
 import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.gui.support.MultisortTableHeaderCellRenderer;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.gui.support.WizardContainer;
 import org.openpnp.gui.tablemodel.VisionSettingsTableModel;
@@ -77,7 +78,7 @@ public class VisionSettingsPanel extends JPanel implements WizardContainer {
         createAndAddToolbar();
 
         tableModel = new VisionSettingsTableModel();
-        tableSorter = new TableRowSorter<>(tableModel);
+        tableSorter = new TriStateTableRowSorter<>(tableModel);
 
         JSplitPane splitPane = new JSplitPane();
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);

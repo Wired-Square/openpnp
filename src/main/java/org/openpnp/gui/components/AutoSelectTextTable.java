@@ -1,26 +1,23 @@
 package org.openpnp.gui.components;
 
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.List;
 import java.util.Vector;
 
 import javax.swing.InputMap;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowSorter;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
@@ -41,7 +38,6 @@ public class AutoSelectTextTable extends JTable {
     private boolean isSelectAllForMouseEvent = true;
     private boolean isSelectAllForActionEvent = true;
     private boolean isSelectAllForKeyEvent = true;
-    private MouseAdapter sortColumnCycler = null;
 
     //
     // Constructors
@@ -89,13 +85,28 @@ public class AutoSelectTextTable extends JTable {
      */
     public AutoSelectTextTable(TableModel dm, TableColumnModel cm, ListSelectionModel sm) {
         super(dm, cm, sm);
-        
+
         //Add a keystroke to de-select all rows of the table (in Windows this would be Ctrl-Shift-A)
         InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         //Should use getMenuShortcutKeyMaskEx here but it is not supported in Java 8
         final int CMD_BTN = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.SHIFT_DOWN_MASK | CMD_BTN),
                 "clearSelection" );
+        updateRowHeightFromFont();
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        updateRowHeightFromFont();
+    }
+
+    private void updateRowHeightFromFont() {
+        int fontHeight = getFontMetrics(getFont()).getHeight();
+        int padded = fontHeight + getIntercellSpacing().height;
+        if (padded > getRowHeight()) {
+            setRowHeight(padded);
+        }
     }
 
     /**
@@ -255,55 +266,58 @@ public class AutoSelectTextTable extends JTable {
     // transferFocus();
     // }
 
+    /**
+     * Returns a custom header that blocks mouseClicked events in the column
+     * border resize zone.  This prevents BasicTableHeaderUI from firing an
+     * unwanted sort toggle when the user clicks (or double-clicks) near a
+     * column edge.  Double-click in the resize zone auto-sizes the column.
+     */
     @Override
-    public void setRowSorter(RowSorter<? extends TableModel> sorter) {
-        super.setRowSorter(sorter);
-        // Change the sorting order clicking to work with three states, ASCENDING>DESCENDING>UNSORTED instead of two.
-        if (sortColumnCycler == null) {
-            sortColumnCycler = new MouseAdapter() {
-
-                private List<SortKey> lastSortKeys = new ArrayList<>();
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        int column = convertColumnIndexToModel(getTableHeader().columnAtPoint(e.getPoint()));
-                        SortOrder sortOrder = SortOrder.ASCENDING;
-                        for (RowSorter.SortKey sortKey : lastSortKeys) {
-                            if (column == sortKey.getColumn()) {
-                                switch (sortKey.getSortOrder()) {
-                                    case UNSORTED:
-                                        sortOrder = SortOrder.ASCENDING;
-                                        break;
-                                    case ASCENDING:
-                                        sortOrder = SortOrder.DESCENDING;
-                                        break;
-                                    case DESCENDING:
-                                        sortOrder = SortOrder.UNSORTED;
-                                        break;
-                                }
-                                break;
-                            }
+    protected JTableHeader createDefaultTableHeader() {
+        return new JTableHeader(columnModel) {
+            @Override
+            protected void processMouseEvent(MouseEvent e) {
+                if (e.getID() == MouseEvent.MOUSE_CLICKED
+                        && e.getButton() == MouseEvent.BUTTON1
+                        && isInResizeZone(e.getPoint())) {
+                    if (e.getClickCount() == 2) {
+                        int viewCol = resizeColumnAt(e.getPoint());
+                        if (viewCol >= 0) {
+                            org.openpnp.gui.support.TableUtils.autoSizeColumn(
+                                    AutoSelectTextTable.this, viewCol);
                         }
-                        // Create the new sort keys list starting with the newly clicked one.
-                        List<SortKey> sortKeys = new ArrayList<>();
-                        RowSorter.SortKey sortKeyClicked = new RowSorter.SortKey(column, sortOrder);
-                        sortKeys.add(sortKeyClicked);
-                        // Add the rest.
-                        for (RowSorter.SortKey sortKey : lastSortKeys) {
-                            if (column != sortKey.getColumn()) {
-                                sortKeys.add(sortKey);
-                            }
-                        }
-                        RowSorter<?> sorter = getRowSorter();
-                        sorter.setSortKeys(sortKeys);
-                        this.lastSortKeys = sortKeys;
                     }
+                    return; // block event — no sort in the resize zone
                 }
-            };
-        }
-        getTableHeader().removeMouseListener(sortColumnCycler);
-        getTableHeader().addMouseListener(sortColumnCycler);
+                super.processMouseEvent(e);
+            }
+
+            /** True if the point is within 3 px of a column border. */
+            private boolean isInResizeZone(Point p) {
+                int col = columnAtPoint(p);
+                if (col == -1) {
+                    return false;
+                }
+                Rectangle r = getHeaderRect(col);
+                return (p.x - r.x) <= 3 || (r.x + r.width - p.x) <= 3;
+            }
+
+            /** Returns the view-column whose right edge is nearest the point. */
+            private int resizeColumnAt(Point p) {
+                int col = columnAtPoint(p);
+                if (col == -1) {
+                    return -1;
+                }
+                Rectangle r = getHeaderRect(col);
+                if (p.x - r.x <= 3 && col > 0) {
+                    return col - 1;
+                }
+                if (r.x + r.width - p.x <= 3) {
+                    return col;
+                }
+                return -1;
+            }
+        };
     }
 
     //

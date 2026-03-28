@@ -22,7 +22,6 @@
 package org.openpnp.machine.reference.driver.wizards;
 
 
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,6 +33,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 
 import org.openpnp.gui.MainFrame;
+import javax.swing.UIManager;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.components.SimpleGraphView;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
@@ -179,7 +179,7 @@ public class ReferenceAdvancedMotionPlannerDiagnosticsWizard extends AbstractCon
                 }
             }
         });
-        motionGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        motionGraph.setFont(UIManager.getFont("small.font"));
     }
 
     @Override

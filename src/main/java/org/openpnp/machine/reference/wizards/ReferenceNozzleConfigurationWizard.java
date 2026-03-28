@@ -208,35 +208,40 @@ public class ReferenceNozzleConfigurationWizard extends AbstractConfigurationWiz
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         contentPanel.add(panelSafeZ);
         panelSafeZ.setLayout(new FormLayout(new ColumnSpec[] {
+                FormSpecs.RELATED_GAP_COLSPEC,
                 ColumnSpec.decode("max(70dlu;default)"),
                 FormSpecs.RELATED_GAP_COLSPEC,
-                ColumnSpec.decode("114px"),
+                FormSpecs.DEFAULT_COLSPEC,
                 FormSpecs.RELATED_GAP_COLSPEC,
                 FormSpecs.DEFAULT_COLSPEC,},
             new RowSpec[] {
-                RowSpec.decode("24px"),
-                RowSpec.decode("19px"),}));
-        
+                FormSpecs.RELATED_GAP_ROWSPEC,
+                FormSpecs.DEFAULT_ROWSPEC,
+                FormSpecs.LINE_GAP_ROWSPEC,
+                FormSpecs.DEFAULT_ROWSPEC,}));
+
                 JLabel lblSafeZ = new JLabel(Translations.getString(
                         "ReferenceNozzleConfigurationWizard.SafeZPanel.SafeZLabel.text")); //$NON-NLS-1$
-                panelSafeZ.add(lblSafeZ, "1, 1, right, center");
-        
+                panelSafeZ.add(lblSafeZ, "2, 2, right, center");
+
                 textFieldSafeZ = new JTextField();
                 textFieldSafeZ.setEditable(false);
-                panelSafeZ.add(textFieldSafeZ, "3, 1, fill, top");
+                panelSafeZ.add(textFieldSafeZ, "4, 2, left, default");
                 textFieldSafeZ.setColumns(10);
-                
+
                 lblDynamicSafeZ = new JLabel(Translations.getString(
                         "ReferenceNozzleConfigurationWizard.SafeZPanel.DynamicSafeZLabel.text")); //$NON-NLS-1$
                 lblDynamicSafeZ.setToolTipText(Translations.getString(
                         "ReferenceNozzleConfigurationWizard.SafeZPanel.DynamicSafeZLabel.toolTipText")); //$NON-NLS-1$"
                 lblDynamicSafeZ.setHorizontalAlignment(SwingConstants.TRAILING);
-                panelSafeZ.add(lblDynamicSafeZ, "1, 2");
-                
+                panelSafeZ.add(lblDynamicSafeZ, "2, 4, right, default");
+
                 chckbxDynamicsafez = new JCheckBox("");
+                chckbxDynamicsafez.setMargin(new java.awt.Insets(0, 0, 0, 0));
+                chckbxDynamicsafez.setBorder(javax.swing.BorderFactory.createEmptyBorder());
                 chckbxDynamicsafez.setToolTipText(Translations.getString(
                         "ReferenceNozzleConfigurationWizard.SafeZPanel.DynamicSafeZChkbox.toolTipText")); //$NON-NLS-1$
-                panelSafeZ.add(chckbxDynamicsafez, "3, 2");
+                panelSafeZ.add(chckbxDynamicsafez, "4, 4, left, default");
 
 
         panelChanger = new JPanel();

@@ -1,6 +1,5 @@
 package org.openpnp.machine.photon.sheets.gui;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -99,7 +98,7 @@ public class FeederConfigurationWizard extends AbstractConfigurationWizard {
 		infoPanel.add(findButton, "6, 4"); //$NON-NLS-1$
 		
 		JPanel partPanel = new JPanel();
-		partPanel.setBorder(new TitledBorder(null, Translations.getString("FeederConfigurationWizard.PartPanel.Border.title"), TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0))); //$NON-NLS-1$
+		partPanel.setBorder(new TitledBorder(null, Translations.getString("FeederConfigurationWizard.PartPanel.Border.title"), TitledBorder.LEADING, TitledBorder.TOP, null, null)); //$NON-NLS-1$
 		contentPanel.add(partPanel);
 		partPanel.setLayout(new FormLayout(new ColumnSpec[] {
 				FormSpecs.RELATED_GAP_COLSPEC,

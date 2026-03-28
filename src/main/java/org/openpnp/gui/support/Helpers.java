@@ -72,7 +72,7 @@ public class Helpers {
             int index = table.getModel().getRowCount() - 1;
             index = table.convertRowIndexToView(index);
             table.setRowSelectionInterval(index, index);
-            Rectangle cellRect = table.getCellRect(index, index, true);
+            Rectangle cellRect = table.getCellRect(index, 0, true);
             table.scrollRectToVisible(cellRect);
         });
     }
@@ -93,7 +93,7 @@ public class Helpers {
                     int viewIndex = table.getRowSorter().convertRowIndexToView(index);
                     if (viewIndex >= 0 && viewIndex < table.getRowCount()) {
                         table.addRowSelectionInterval(viewIndex, viewIndex);
-                        Rectangle cellRect = table.getCellRect(viewIndex, viewIndex, true);
+                        Rectangle cellRect = table.getCellRect(viewIndex, 0, true);
                         table.scrollRectToVisible(cellRect);
                     }
                 }
@@ -128,7 +128,7 @@ public class Helpers {
         }
          
         table.addRowSelectionInterval(index, index);   
-        Rectangle cellRect = table.getCellRect(index, index, true);
+        Rectangle cellRect = table.getCellRect(index, 0, true);
         table.scrollRectToVisible(cellRect);
     }
     
@@ -137,7 +137,7 @@ public class Helpers {
         int index = 0;
         index = table.convertRowIndexToView(index);
         table.addRowSelectionInterval(index, index);
-        Rectangle cellRect = table.getCellRect(index, index, true);
+        Rectangle cellRect = table.getCellRect(index, 0, true);
         table.scrollRectToVisible(cellRect);
     }
 

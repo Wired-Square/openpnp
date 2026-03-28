@@ -21,7 +21,7 @@ package org.openpnp.machine.reference.feeder.wizards;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -33,6 +33,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import org.openpnp.gui.MainFrame;
+
 import org.openpnp.machine.reference.feeder.AdvancedLoosePartFeeder;
 import org.openpnp.model.Configuration;
 import org.openpnp.util.UiUtils;
@@ -97,7 +98,7 @@ public class AdvancedLoosePartFeederConfigurationWizard
         contentPanel.add(warningPanel, 0);
         
         JLabel lblWarningThisFeeder = new JLabel("Warning: This feeder is incomplete and experimental. Use at your own risk.");
-        lblWarningThisFeeder.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+        lblWarningThisFeeder.putClientProperty("FlatLaf.styleClass", "large");
         lblWarningThisFeeder.setForeground(Color.RED);
         lblWarningThisFeeder.setHorizontalAlignment(SwingConstants.LEFT);
         warningPanel.add(lblWarningThisFeeder);

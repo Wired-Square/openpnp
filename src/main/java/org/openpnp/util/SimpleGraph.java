@@ -30,8 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.swing.UIManager;
-
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.vision.pipeline.stages.convert.ColorConverter;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
@@ -475,12 +474,6 @@ public class SimpleGraph {
     }
 
     public static Color getDefaultGridColor() {
-        Color gridColor = UIManager.getColor ( "PasswordField.capsLockIconColor" );
-        if (gridColor == null) {
-            gridColor = new Color(0, 0, 0, 64);
-        } else {
-            gridColor = new Color(gridColor.getRed(), gridColor.getGreen(), gridColor.getBlue(), 64);
-        }
-        return gridColor;
+        return UIColors.gridColor();
     }
 }

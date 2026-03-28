@@ -19,7 +19,6 @@
 
 package org.openpnp.machine.reference.camera.wizards;
 
-import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -217,7 +216,7 @@ public class ImageCameraConfigurationWizard extends AbstractConfigurationWizard 
         contentPanel.add(panelExtra);
         panelExtra.setBorder(new TitledBorder(null, Translations.getString(
                 "ImageCameraConfigurationWizard.GeneralPanel.ExtraPanel.Border.title"), //$NON-NLS-1$
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelExtra.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
                 ColumnSpec.decode("max(70dlu;default)"),

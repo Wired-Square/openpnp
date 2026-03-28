@@ -2,7 +2,7 @@ package org.openpnp.machine.reference.driver.wizards;
 
 import java.awt.Cursor;
 import java.awt.FileDialog;
-import java.awt.Font;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -33,6 +33,7 @@ import javax.swing.border.TitledBorder;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.MainFrame;
+
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.Icons;
@@ -271,7 +272,7 @@ public class GcodeDriverSettings extends AbstractConfigurationWizard {
         firmwareConfiguration.setWrapStyleWord(true);
         firmwareConfiguration.setLineWrap(true);
         firmwareConfiguration.setEditable(false);
-        firmwareConfiguration.setFont(new Font("Dialog", Font.PLAIN, 11));
+        firmwareConfiguration.putClientProperty("FlatLaf.styleClass", "monospaced");
         settingsPanel.add(firmwareConfiguration, "4, 26, 7, 3, fill, fill");
         
         JLabel label = new JLabel(" ");

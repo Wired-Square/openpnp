@@ -21,12 +21,11 @@ package org.openpnp.gui;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
+
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
@@ -75,6 +74,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -118,11 +118,8 @@ public class MainFrame extends JFrame {
     private static final String PREF_WINDOW_Y = "MainFrame.windowY"; //$NON-NLS-1$
     private static final int PREF_WINDOW_Y_DEF = 0;
     private static final String PREF_WINDOW_WIDTH = "MainFrame.windowWidth"; //$NON-NLS-1$
-    private static final int PREF_WINDOW_WIDTH_DEF = 1024;
     private static final String PREF_WINDOW_HEIGHT = "MainFrame.windowHeight"; //$NON-NLS-1$
-    private static final int PREF_WINDOW_HEIGHT_DEF = 768;
     private static final String PREF_DIVIDER_POSITION = "MainFrame.dividerPosition"; //$NON-NLS-1$
-    private static final int PREF_DIVIDER_POSITION_DEF = -1;
     private static final String PREF_WINDOW_STYLE_MULTIPLE = "MainFrame.windowStyleMultiple"; //$NON-NLS-1$
     private static final boolean PREF_WINDOW_STYLE_MULTIPLE_DEF = false;
 
@@ -144,6 +141,12 @@ public class MainFrame extends JFrame {
     private static final String PREF_MACHINECONTROLS_WINDOW_HEIGHT = "MachineControlsFrame.windowHeight"; //$NON-NLS-1$
     private static final int PREF_MACHINECONTROLS_WINDOW_HEIGHT_DEF = 340;
     private static final int MINIMUM_WINDOW_SIZE = 50;
+
+    private static Dimension getDefaultWindowSize() {
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Math.max(1024, screen.width * 3 / 4),
+                             Math.max(768, screen.height * 3 / 4));
+    }
 
     private final Configuration configuration;
 
@@ -310,34 +313,35 @@ public class MainFrame extends JFrame {
             }
         });
 
+        Dimension defaultSize = getDefaultWindowSize();
+
         if (prefs.getInt(PREF_WINDOW_WIDTH, MINIMUM_WINDOW_SIZE) < MINIMUM_WINDOW_SIZE) {
-            prefs.putInt(PREF_WINDOW_WIDTH, PREF_WINDOW_WIDTH_DEF);
+            prefs.putInt(PREF_WINDOW_WIDTH, defaultSize.width);
         }
 
         if (prefs.getInt(PREF_WINDOW_HEIGHT, MINIMUM_WINDOW_SIZE) < MINIMUM_WINDOW_SIZE) {
-            prefs.putInt(PREF_WINDOW_HEIGHT, PREF_WINDOW_HEIGHT_DEF);
+            prefs.putInt(PREF_WINDOW_HEIGHT, defaultSize.height);
         }
 
         windowStyleMultiple = prefs.getBoolean(PREF_WINDOW_STYLE_MULTIPLE, PREF_WINDOW_STYLE_MULTIPLE_DEF);
 
         setBounds(prefs.getInt(PREF_WINDOW_X, PREF_WINDOW_X_DEF),
                 prefs.getInt(PREF_WINDOW_Y, PREF_WINDOW_Y_DEF),
-                prefs.getInt(PREF_WINDOW_WIDTH, PREF_WINDOW_WIDTH_DEF),
-                prefs.getInt(PREF_WINDOW_HEIGHT, PREF_WINDOW_HEIGHT_DEF));
+                prefs.getInt(PREF_WINDOW_WIDTH, defaultSize.width),
+                prefs.getInt(PREF_WINDOW_HEIGHT, defaultSize.height));
 
         // Ensure the window is within the bounds of a screen.
         Rectangle windowBounds = getBounds();
         boolean isWithinScreen = false;
         for (GraphicsDevice gd : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-            Rectangle screenBounds = gd.getDefaultConfiguration().getBounds();
-            if (windowBounds.intersects(screenBounds)) {
+            if (gd.getDefaultConfiguration().getBounds().intersects(windowBounds)) {
                 isWithinScreen = true;
                 break;
             }
         }
         if (!isWithinScreen) {
         	// If the window is not within any screen, reset it to the default position.
-            setBounds(PREF_WINDOW_X_DEF, PREF_WINDOW_Y_DEF, PREF_WINDOW_WIDTH_DEF, PREF_WINDOW_HEIGHT_DEF);
+            setBounds(PREF_WINDOW_X_DEF, PREF_WINDOW_Y_DEF, defaultSize.width, defaultSize.height);
         }
         jobPanel = new JobPanel(configuration, this);
         panelsPanel = new PanelsPanel(configuration, this);
@@ -717,10 +721,12 @@ public class MainFrame extends JFrame {
             });
 
         tabs = new JTabbedPane(JTabbedPane.TOP);
+        tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         splitPaneMachineAndTabs.setRightComponent(tabs);
 
+        int defaultDivider = prefs.getInt(PREF_WINDOW_WIDTH, getDefaultWindowSize().width) / 3;
         splitPaneMachineAndTabs
-                .setDividerLocation(prefs.getInt(PREF_DIVIDER_POSITION, PREF_DIVIDER_POSITION_DEF));
+                .setDividerLocation(prefs.getInt(PREF_DIVIDER_POSITION, defaultDivider));
         splitPaneMachineAndTabs.addPropertyChangeListener("dividerLocation", //$NON-NLS-1$
                 new PropertyChangeListener() {
                     @Override
@@ -767,37 +773,42 @@ public class MainFrame extends JFrame {
                         FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC, 
                         FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC,
                         FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC,},
-                new RowSpec[] {RowSpec.decode("20px"),})); //$NON-NLS-1$
+                new RowSpec[] {RowSpec.decode("pref"),})); //$NON-NLS-1$
 
         
         // Status Information
         lblStatus = new JLabel(" "); //$NON-NLS-1$
-        lblStatus.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+        lblStatus.setBorder(new CompoundBorder(
+                new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
+                new EmptyBorder(0, 4, 0, 4)));
         panelStatusAndDros.add(lblStatus, "1, 1"); //$NON-NLS-1$
-        
-        
+
+
         // Placement Information
         lblPlacements = new JLabel(Translations.getString("MainFrame.StatusPanel.PlacementsLabel.initial.text")); //$NON-NLS-1$
-        lblPlacements.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+        lblPlacements.setBorder(new CompoundBorder(
+                new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
+                new EmptyBorder(0, 4, 0, 4)));
         panelStatusAndDros.add(lblPlacements, "4, 1"); //$NON-NLS-1$
-        
-        
+
+
         // Placements Progress Bar
         prgbrPlacements = new JProgressBar();
         prgbrPlacements.setMinimum(0);
         prgbrPlacements.setMaximum(100);
         prgbrPlacements.setStringPainted(true);
-        prgbrPlacements.setPreferredSize(new Dimension(200, 16));
+        prgbrPlacements.setPreferredSize(new Dimension(200, prgbrPlacements.getPreferredSize().height));
         prgbrPlacements.setValue(0);
         panelStatusAndDros.add(prgbrPlacements, "6, 1"); //$NON-NLS-1$
 
-        
-        // DRO 
+
+        // DRO — background and foreground are set dynamically by MachineControlsPanel
         droLbl = new JLabel("X 0000.0000, Y 0000.0000, Z 0000.0000, R 0000.0000"); //$NON-NLS-1$
         droLbl.setOpaque(true);
-        droLbl.setForeground(new Color(0,0,0));
-        droLbl.setFont(new Font("Monospaced", Font.PLAIN, 13)); //$NON-NLS-1$
-        droLbl.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+        droLbl.putClientProperty("FlatLaf.styleClass", "monospaced");
+        droLbl.setBorder(new CompoundBorder(
+                new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
+                new EmptyBorder(0, 4, 0, 4)));
         panelStatusAndDros.add(droLbl, "8, 1"); //$NON-NLS-1$
 
         cameraPanel.setBorder(new TitledBorder(null,
@@ -905,9 +916,9 @@ public class MainFrame extends JFrame {
         else {
             panelMachine.add(panelCameraAndInstructions, BorderLayout.CENTER);
             // A value of 0 indicates 'multiple window style' was used before.
-            if (0 == prefs.getInt(PREF_DIVIDER_POSITION, PREF_DIVIDER_POSITION_DEF)) {
-                // Reset the Divider position back to the default value.
-                splitPaneMachineAndTabs.setDividerLocation(PREF_DIVIDER_POSITION_DEF);
+            if (0 == prefs.getInt(PREF_DIVIDER_POSITION, -1)) {
+                // Reset the Divider position back to a reasonable default.
+                splitPaneMachineAndTabs.setDividerLocation(splitPaneMachineAndTabs.getWidth() / 3);
             }
         }
     }

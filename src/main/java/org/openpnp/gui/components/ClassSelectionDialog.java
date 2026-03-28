@@ -46,6 +46,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
+
+
 import javax.swing.event.ListSelectionListener;
 
 @SuppressWarnings("serial")
@@ -58,7 +60,7 @@ public class ClassSelectionDialog<T> extends JDialog {
         super(parent, title, true);
 
         JPanel panel = new JPanel();
-        panel.setBorder(new EmptyBorder(8, 8, 4, 8));
+        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(panel, BorderLayout.CENTER);
         panel.setLayout(new BorderLayout(0, 0));
 
@@ -74,7 +76,7 @@ public class ClassSelectionDialog<T> extends JDialog {
 
         JLabel lblDescription =
                 new JLabel("Please select an implemention class from the list.");
-        lblDescription.setBorder(new EmptyBorder(4, 4, 8, 4));
+        lblDescription.setBorder(new EmptyBorder(5, 5, 5, 5));
         panel.add(lblDescription, BorderLayout.NORTH);
         lblDescription.setHorizontalAlignment(SwingConstants.LEFT);
 

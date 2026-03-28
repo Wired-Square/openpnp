@@ -59,7 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
+import javax.swing.UIManager;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -71,6 +71,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.JScrollPane;
 
@@ -736,7 +737,7 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
             offScr.setColor(this.getBackground());
             offScr.fillRect(0, 0, VERTICAL_SCALE_WIDTH, HORIZONTAL_SCALE_HEIGHT);
             offScr.setColor(foreGround);
-            Font font = offScr.getFont().deriveFont(14);
+            Font font = offScr.getFont();
             FontRenderContext frc = offScr.getFontRenderContext();
             TextLayout textTl = new TextLayout(displayUnit, font, frc);
             Rectangle2D b = textTl.getBounds();
@@ -1298,7 +1299,7 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
         
         //Major horizontal lines
         double y = yMin;
-        Font f = offScr.getFont().deriveFont(10);
+        Font f = UIManager.getFont("small.font");
         FontRenderContext frc = offScr.getFontRenderContext();
         while (y <= yMax) {
             Point2D tick = new Point2D.Double(xMin, y);
@@ -1346,7 +1347,7 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
         //Major vertical lines
         double x = xMin;
         FontRenderContext frc = offScr.getFontRenderContext();
-        Font f = offScr.getFont().deriveFont(10);
+        Font f = UIManager.getFont("small.font");
         while (x <= xMax) {
             Point2D tick = new Point2D.Double(x, yMax);
             

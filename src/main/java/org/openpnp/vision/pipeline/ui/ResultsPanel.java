@@ -3,7 +3,6 @@ package org.openpnp.vision.pipeline.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
@@ -43,20 +42,11 @@ public class ResultsPanel extends JPanel {
     private CvStage selectedStage;
     private CvStage pinnedStage;
 
-    private Robot robot;
-    
     private boolean displayTrueColors = true;
-    
-    
+
+
     public ResultsPanel(CvPipelineEditor editor) {
         this.editor = editor;
-        
-        try {
-            robot = new Robot();
-        }
-        catch (Exception e) {
-            
-        }
 
         JSplitPane splitPane = new JSplitPane();
         splitPane.setContinuousLayout(true);
@@ -131,9 +121,15 @@ public class ResultsPanel extends JPanel {
         matView.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                Color color = robot.getPixelColor(e.getXOnScreen(), e.getYOnScreen());
-                float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
                 Point p = matView.scalePoint(e.getPoint());
+                BufferedImage image = matView.getImage();
+                if (image == null) {
+                    return;
+                }
+                int px = Math.min(p.x, image.getWidth() - 1);
+                int py = Math.min(p.y, image.getHeight() - 1);
+                Color color = new Color(image.getRGB(px, py));
+                float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
                 Object model = getModelAtPoint(p);
                 if (model != null) {
                     matStatusLabel.setText(model.toString());
@@ -142,17 +138,14 @@ public class ResultsPanel extends JPanel {
                     LengthUnit lengthUnit = selectedStage != null ? selectedStage.getLengthUnit() : null;
                     String auxCoords = "";
                     if (lengthUnit != null) {
-                        // the stage defines its proper LengthUnit 
-                        BufferedImage image = matView.getImage();
-                        if (image != null) {
-                            Camera camera = (Camera) editor.getPipeline().getProperty("camera");
-                            if (camera != null) {
-                                // convert camera (pixels) to stage units 
-                                Location unitsPerPixel = camera.getUnitsPerPixelAtZ()
-                                        .convertToUnits(lengthUnit);
-                                Location mouseLocation = unitsPerPixel.multiply(p.x-image.getWidth()/2, -p.y+image.getHeight()/2, 0, 0);
-                                auxCoords = String.format(" (%f, %f %s)", mouseLocation.getX(), mouseLocation.getY(), lengthUnit.getShortName()); 
-                            }
+                        // the stage defines its proper LengthUnit
+                        Camera camera = (Camera) editor.getPipeline().getProperty("camera");
+                        if (camera != null) {
+                            // convert camera (pixels) to stage units
+                            Location unitsPerPixel = camera.getUnitsPerPixelAtZ()
+                                    .convertToUnits(lengthUnit);
+                            Location mouseLocation = unitsPerPixel.multiply(p.x-image.getWidth()/2, -p.y+image.getHeight()/2, 0, 0);
+                            auxCoords = String.format(" (%f, %f %s)", mouseLocation.getX(), mouseLocation.getY(), lengthUnit.getShortName());
                         }
                     }
                     

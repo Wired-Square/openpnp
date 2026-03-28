@@ -67,6 +67,8 @@ import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
+import org.openpnp.gui.support.TableUtils;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.support.IdentifiableListCellRenderer;
 import org.openpnp.gui.support.IdentifiableTableCellRenderer;
 import org.openpnp.gui.support.MessageBoxes;
@@ -126,7 +128,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
 
         setLayout(new BorderLayout(0, 0));
         tableModel = new PartsTableModel();
-        tableSorter = new TableRowSorter<>(tableModel);
+        tableSorter = new TriStateTableRowSorter<>(tableModel);
 
         JPanel toolbarAndSearch = new JPanel();
         add(toolbarAndSearch, BorderLayout.NORTH);
@@ -215,6 +217,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
 
         table.setRowSorter(tableSorter);
         table.getTableHeader().setDefaultRenderer(new MultisortTableHeaderCellRenderer());
+        TableUtils.installColumnWidthSavers(table, prefs, "PartsPanel.table.columnWidth"); //$NON-NLS-1$
         splitPane.setLeftComponent(new JScrollPane(table));
         splitPane.setRightComponent(tabbedPane);
         

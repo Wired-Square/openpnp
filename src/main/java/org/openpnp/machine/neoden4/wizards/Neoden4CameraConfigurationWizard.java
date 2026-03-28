@@ -19,7 +19,6 @@
 
 package org.openpnp.machine.neoden4.wizards;
 
-import java.awt.Color;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -52,7 +51,7 @@ public class Neoden4CameraConfigurationWizard extends AbstractConfigurationWizar
         panelGeneral = new JPanel();
         contentPanel.add(panelGeneral);
         panelGeneral.setBorder(new TitledBorder(null,
-                "General", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                "General", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelGeneral.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
                 FormSpecs.DEFAULT_COLSPEC,
@@ -88,7 +87,7 @@ public class Neoden4CameraConfigurationWizard extends AbstractConfigurationWizar
         panelImage = new JPanel();
         contentPanel.add(panelImage);
         panelImage.setBorder(new TitledBorder(null, 
-        		"Image settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+        		"Image settings", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelImage.setLayout(new FormLayout(new ColumnSpec[] {
         		FormSpecs.RELATED_GAP_COLSPEC,
         		FormSpecs.DEFAULT_COLSPEC,

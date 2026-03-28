@@ -19,7 +19,7 @@
 
 package org.openpnp.machine.reference.wizards;
 
-import java.awt.Color;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -104,9 +104,9 @@ public class ReferenceNozzleTipConfigurationWizard extends AbstractConfiguration
         nameTf.setColumns(10);
         
         panelPickAndPlace = new JPanel();
-        panelPickAndPlace.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+        panelPickAndPlace.setBorder(new TitledBorder(null,
                 Translations.getString("ReferenceNozzleTipConfigurationWizard.PickAndPlacePanel.Border.title"), //$NON-NLS-1$
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         contentPanel.add(panelPickAndPlace);
         panelPickAndPlace.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
@@ -163,7 +163,7 @@ public class ReferenceNozzleTipConfigurationWizard extends AbstractConfiguration
         placeBlowOffLevel.setColumns(10);
 
         panelPushAndDrag = new JPanel();
-        panelPushAndDrag.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+        panelPushAndDrag.setBorder(new TitledBorder(null,
                 Translations.getString("ReferenceNozzleTipConfigurationWizard.PushAndDragPanel.Border.title"), //$NON-NLS-1$
                 TitledBorder.LEADING, TitledBorder.TOP, null));
         contentPanel.add(panelPushAndDrag);
@@ -208,7 +208,7 @@ public class ReferenceNozzleTipConfigurationWizard extends AbstractConfiguration
         panelPushAndDrag.add(chckbxPushAndDragAllowed, "4, 2");
 
         panelPartDimensions= new JPanel();
-        panelPartDimensions.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+        panelPartDimensions.setBorder(new TitledBorder(null,
                 Translations.getString(
                         "ReferenceNozzleTipConfigurationWizard.PartDimensionsPanel.Border.title"), //$NON-NLS-1$
                 TitledBorder.LEADING, TitledBorder.TOP, null));

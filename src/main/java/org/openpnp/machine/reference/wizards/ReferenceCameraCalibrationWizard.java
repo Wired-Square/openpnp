@@ -20,7 +20,7 @@
 package org.openpnp.machine.reference.wizards;
 
 import java.awt.Color;
-import java.awt.Font;
+
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -48,6 +48,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.openpnp.Translations;
 import org.openpnp.gui.MainFrame;
+import javax.swing.UIManager;
 import org.openpnp.gui.components.CameraView;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.components.SimpleGraphView;
@@ -362,7 +363,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         
         lblNewLabel_31 = new JLabel(Translations.getString(
                 "ReferenceCameraCalibrationWizard.CameraCalibrationPanel.GeneralSettingsLabel.text")); //$NON-NLS-1$
-        lblNewLabel_31.setFont(new Font("Tahoma", Font.BOLD, 14));
+        lblNewLabel_31.putClientProperty("FlatLaf.styleClass", "h4");
         lblNewLabel_31.setHorizontalAlignment(SwingConstants.CENTER);
         panelCameraCalibration.add(lblNewLabel_31, "2, 8, 7, 1");
         
@@ -409,7 +410,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         
         lblNewLabel_32 = new JLabel(Translations.getString(
                 "ReferenceCameraCalibrationWizard.CameraCalibrationPanel.CalibrationSetupLabel.text")); //$NON-NLS-1$
-        lblNewLabel_32.setFont(new Font("Tahoma", Font.BOLD, 14));
+        lblNewLabel_32.putClientProperty("FlatLaf.styleClass", "h4");
         lblNewLabel_32.setHorizontalAlignment(SwingConstants.CENTER);
         panelCameraCalibration.add(lblNewLabel_32, "2, 20, 7, 1");
         
@@ -540,7 +541,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         lblNewLabel_33 = new JLabel(Translations.getString(
                 "ReferenceCameraCalibrationWizard.CameraCalibrationPanel.CalibrationResults.text")); //$NON-NLS-1$
         lblNewLabel_33.setHorizontalAlignment(SwingConstants.CENTER);
-        lblNewLabel_33.setFont(new Font("Tahoma", Font.BOLD, 14));
+        lblNewLabel_33.putClientProperty("FlatLaf.styleClass", "h4");
         panelCameraCalibration.add(lblNewLabel_33, "2, 42, 7, 1");
         
         lblNewLabel_25 = new JLabel("X");
@@ -717,7 +718,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         lblNewLabel_14 = new JLabel(Translations.getString(
                 "ReferenceCameraCalibrationWizard.CameraCalibrationPanel.ResidualErrorsInCollectionOrderLabel.text" //$NON-NLS-1$
         ));
-        lblNewLabel_14.setFont(new Font("Tahoma", Font.BOLD, 13));
+        lblNewLabel_14.putClientProperty("FlatLaf.styleClass", "h4");
         lblNewLabel_14.setHorizontalAlignment(SwingConstants.CENTER);
         panelCameraCalibration.add(lblNewLabel_14, "4, 64, 3, 1");
 
@@ -729,7 +730,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         panelCameraCalibration.add(lblNewLabel_9, "2, 66");
         
         modelErrorsTimeSequenceView = new SimpleGraphView();
-        modelErrorsTimeSequenceView.setFont(new Font("Dialog", Font.PLAIN, 11));
+        modelErrorsTimeSequenceView.setFont(UIManager.getFont("small.font"));
         panelCameraCalibration.add(modelErrorsTimeSequenceView, "4, 66, 3, 1, fill, fill");
 
         String legend = Translations.getString(
@@ -748,7 +749,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
 
         lblNewLabel_15 = new JLabel(Translations.getString(
                 "ReferenceCameraCalibrationWizard.CameraCalibrationPanel.ResidualErrorXYScatterPlotLabel.text")); //$NON-NLS-1$
-        lblNewLabel_15.setFont(new Font("Tahoma", Font.BOLD, 13));
+        lblNewLabel_15.putClientProperty("FlatLaf.styleClass", "h4");
         lblNewLabel_15.setHorizontalAlignment(SwingConstants.CENTER);
         panelCameraCalibration.add(lblNewLabel_15, "4, 70, 3, 1");
 
@@ -760,7 +761,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         panelCameraCalibration.add(lblNewLabel_11, "2, 72");
 
         modelErrorsScatterPlotView = new SimpleGraphView();
-        modelErrorsScatterPlotView.setFont(new Font("Dialog", Font.PLAIN, 11));
+        modelErrorsScatterPlotView.setFont(UIManager.getFont("small.font"));
         panelCameraCalibration.add(modelErrorsScatterPlotView, "4, 72, 3, 1, fill, fill");
         
         lblNewLabel_18 = new JLabel(Translations.getString(
@@ -776,7 +777,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
 
         lblNewLabel_16 = new JLabel(Translations.getString(
                 "ReferenceCameraCalibrationWizard.CameraCalibrationPanel.ResidualErrorMapLabel.text")); //$NON-NLS-1$
-        lblNewLabel_16.setFont(new Font("Tahoma", Font.BOLD, 13));
+        lblNewLabel_16.putClientProperty("FlatLaf.styleClass", "h4");
         lblNewLabel_16.setHorizontalAlignment(SwingConstants.CENTER);
         panelCameraCalibration.add(lblNewLabel_16, "4, 76, 3, 1");
 

@@ -70,6 +70,7 @@ import org.openpnp.gui.components.AutoSelectTextTable;
 import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.CustomBooleanRenderer;
 import org.openpnp.gui.support.MonospacedFontTableCellRenderer;
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.gui.support.MultisortTableHeaderCellRenderer;
 import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
@@ -80,6 +81,7 @@ import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.gui.support.PartsComboBoxModel;
 import org.openpnp.gui.support.RotationCellValue;
 import org.openpnp.gui.support.TableUtils;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.tablemodel.PlacementsHolderPlacementsTableModel;
 import org.openpnp.gui.tablemodel.PlacementsHolderPlacementsTableModel.Status;
 import org.openpnp.model.Abstract2DLocatable.Side;
@@ -120,14 +122,6 @@ public class JobPlacementsPanel extends JPanel {
     private Preferences prefs = Preferences.userNodeForPackage(JobPlacementsPanel.class);
     private Configuration configuration;
     private boolean editDefinition;
-
-
-    private static Color typeColorFiducial = new Color(157, 188, 255);
-    private static Color typeColorPlacement = new Color(255, 255, 255);
-    private static Color statusColorWarning = new Color(252, 255, 157);
-    private static Color statusColorReady = new Color(157, 255, 168);
-    private static Color statusColorError = new Color(255, 157, 157);
-    private static Color statusColorDisabled = new Color(180, 180, 180);
 
     public JobPlacementsPanel(JobPanel jobPanel) {
     	this.jobPanel = jobPanel;
@@ -189,7 +183,7 @@ public class JobPlacementsPanel extends JPanel {
                                 (columnIndex == 0 || columnIndex == 8 || columnIndex == 10)));
             }
         };
-        tableSorter = new TableRowSorter<>(tableModel);
+        tableSorter = new TriStateTableRowSorter<>(tableModel);
         
         table = new AutoSelectTextTable(tableModel) {
             @Override
@@ -212,8 +206,6 @@ public class JobPlacementsPanel extends JPanel {
         table.setDefaultRenderer(Boolean.class, new CustomBooleanRenderer());
         table.setDefaultRenderer(LengthCellValue.class, new MonospacedFontTableCellRenderer());
         table.setDefaultRenderer(RotationCellValue.class, new MonospacedFontTableCellRenderer());
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        
         TableUtils.setColumnAlignment(tableModel, table);
         
         TableUtils.installColumnWidthSavers(table, prefs, "JobPanel.jobPlacementsTable.columnWidth"); //$NON-NLS-1$
@@ -1001,7 +993,7 @@ public class JobPlacementsPanel extends JPanel {
             Color alternateRowColor = UIManager.getColor("Table.alternateRowColor"); //$NON-NLS-1$
             if (value == Type.Fiducial) {
                 c.setForeground(Color.black);
-                c.setBackground(typeColorFiducial);
+                c.setBackground(UIColors.typeFiducial());
             } else if (isSelected) {
                 c.setForeground(table.getSelectionForeground());
                 c.setBackground(table.getSelectionBackground());
@@ -1023,37 +1015,37 @@ public class JobPlacementsPanel extends JPanel {
             if (status == Status.Ready) {
                 setBorder(new LineBorder(getBackground()));
                 setForeground(Color.black);
-                setBackground(statusColorReady);
+                setBackground(UIColors.statusReady());
                 setText(Translations.getString("JobPlacementsPanel.StatusRenderer.StatusReady")); //$NON-NLS-1$
             }
             else if (status == Status.MissingFeeder) {
                 setBorder(new LineBorder(getBackground()));
                 setForeground(Color.black);
-                setBackground(statusColorError);
+                setBackground(UIColors.statusError());
                 setText(Translations.getString("JobPlacementsPanel.StatusRenderer.StatusMissingFeeder")); //$NON-NLS-1$
             }
             else if (status == Status.ZeroPartHeight) {
                 setBorder(new LineBorder(getBackground()));
                 setForeground(Color.black);
-                setBackground(statusColorWarning);
+                setBackground(UIColors.statusWarning());
                 setText(Translations.getString("JobPlacementsPanel.StatusRenderer.StatusPartHeight")); //$NON-NLS-1$
             }
             else if (status == Status.MissingPart) {
                 setBorder(new LineBorder(getBackground()));
                 setForeground(Color.black);
-                setBackground(statusColorError);
+                setBackground(UIColors.statusError());
                 setText(Translations.getString("JobPlacementsPanel.StatusRenderer.StatusMissingPart")); //$NON-NLS-1$
             }
             else if (status == Status.Disabled) {
                 setBorder(new LineBorder(getBackground()));
                 setForeground(Color.black);
-                setBackground(statusColorDisabled);
+                setBackground(UIColors.statusDisabled());
                 setText(Translations.getString("JobPlacementsPanel.StatusRenderer.StatusDisabled")); //$NON-NLS-1$
             }
             else {
                 setBorder(new LineBorder(getBackground()));
                 setForeground(Color.black);
-                setBackground(statusColorError);
+                setBackground(UIColors.statusError());
                 setText(status.toString());
             }
         }

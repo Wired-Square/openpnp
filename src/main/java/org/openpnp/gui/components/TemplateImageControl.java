@@ -34,9 +34,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
-import javax.swing.UIManager;
 
 import org.openpnp.gui.MainFrame;
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.model.Location;
 import org.openpnp.spi.Camera;
 import org.openpnp.vision.TemplateImage;
@@ -103,12 +103,7 @@ public class TemplateImageControl extends JComponent implements MouseMotionListe
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        Color gridColor = UIManager.getColor ( "PasswordField.capsLockIconColor" );
-        if (gridColor == null) {
-            gridColor = new Color(0, 0, 0, 64);
-        } else {
-            gridColor = new Color(gridColor.getRed(), gridColor.getGreen(), gridColor.getBlue(), 64);
-        }
+        Color gridColor = UIColors.gridColor();
         Font font = getFont();
         FontMetrics dfm = g2d.getFontMetrics(font);
         g2d.setFont(font);

@@ -9,7 +9,9 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 import org.openpnp.gui.support.ActuatorProfilesComboBoxModel;
 import org.openpnp.spi.Actuator;
@@ -72,6 +74,7 @@ public class ActuatorControlDialog extends JDialog {
                         FormSpecs.LABEL_COMPONENT_GAP_ROWSPEC,}));
 
         setModalityType(JDialog.ModalityType.MODELESS);
+        ((JPanel) getContentPane()).setBorder(new EmptyBorder(5, 5, 5, 5));
 
         lblBoolean = new JLabel("Set Boolean Value");
         getContentPane().add(lblBoolean, "2, 2");

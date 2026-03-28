@@ -35,7 +35,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
@@ -512,10 +511,10 @@ public class ReferenceNozzleTipToolChangerWizard extends AbstractConfigurationWi
         visionTemplateImageOccupied.setBackground(Color.DARK_GRAY);
 
         panelClone = new JPanel();
-        panelClone.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+        panelClone.setBorder(new TitledBorder(null,
                 Translations.getString(
                         "ReferenceNozzleTipToolChangerWizard.CloningSettingsPanel.Border.title"), //$NON-NLS-1$
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         contentPanel.add(panelClone);
         
         panelClone.setLayout(new FormLayout(new ColumnSpec[] {
@@ -557,7 +556,7 @@ public class ReferenceNozzleTipToolChangerWizard extends AbstractConfigurationWi
         panelClone.add(templateNozzleTip, "4, 2");
 
         panel = new JPanel();
-        panel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+        panel.setBorder(new TitledBorder(null, "", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelClone.add(panel, "8, 2, 1, 5, fill, fill");
         panel.setLayout(new FormLayout(new ColumnSpec[]{
                 FormSpecs.LABEL_COMPONENT_GAP_COLSPEC,

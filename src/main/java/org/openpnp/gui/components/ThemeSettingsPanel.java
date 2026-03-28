@@ -3,7 +3,6 @@ package org.openpnp.gui.components;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -43,37 +42,42 @@ import com.formdev.flatlaf.FlatPropertiesLaf;
 import com.formdev.flatlaf.IntelliJTheme;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.util.StringUtils;
+import com.formdev.flatlaf.util.UIScale;
 
 public class ThemeSettingsPanel extends JPanel {
+    /**
+     * Zoom levels for the font size slider, expressed as scale factors relative
+     * to FlatLaf's auto-detected default. Kept as a serializable enum for
+     * backward compatibility with saved preferences.
+     */
     public enum FontSize {
-        SMALLEST(10, 0),
-        BELOW_SMALLER(11, 05),
-        SMALLER(12, 10),
-        BELOW_SMALL(13, 15),
-        SMALL(14, 20),
-        BELOW_DEFAULT(15, 25),
-        DEFAULT(16, 30),
-        BELOW_LARGE(17, 35),
-        LARGE(18, 40),
-        BELOW_LARGER(19, 45),
-        LARGER(20, 50),
-        BELOW_HUGE(22, 55),
-        HUGE(24, 60),
-        BELOW_LARGEST(26, 65),
-        LARGEST(28, 70);
+        SMALLEST(0.625f, 0),
+        BELOW_SMALLER(0.6875f, 5),
+        SMALLER(0.75f, 10),
+        BELOW_SMALL(0.8125f, 15),
+        SMALL(0.875f, 20),
+        BELOW_DEFAULT(0.9375f, 25),
+        DEFAULT(1.0f, 30),
+        BELOW_LARGE(1.0625f, 35),
+        LARGE(1.125f, 40),
+        BELOW_LARGER(1.1875f, 45),
+        LARGER(1.25f, 50),
+        BELOW_HUGE(1.375f, 55),
+        HUGE(1.5f, 60),
+        BELOW_LARGEST(1.625f, 65),
+        LARGEST(1.75f, 70);
 
-        private final int size;
+        private final float scale;
         private final int percent;
         private static final Map<Integer, FontSize> percentToSize = new HashMap<>();
-        private static final Map<Integer, FontSize> fontSizeToSize = new HashMap<>();
 
-        FontSize(int size, int percent) {
-            this.size = size;
+        FontSize(float scale, int percent) {
+            this.scale = scale;
             this.percent = percent;
         }
 
-        public int getSize() {
-            return size;
+        public float getScale() {
+            return scale;
         }
 
         public int getPercent() {
@@ -83,20 +87,11 @@ public class ThemeSettingsPanel extends JPanel {
         static {
             for (FontSize fSize : FontSize.values()) {
                 percentToSize.put(fSize.getPercent(), fSize);
-                fontSizeToSize.put(fSize.getSize(), fSize);
             }
         }
 
         public static FontSize fromPercent(int percent) {
             FontSize fSize = percentToSize.get(percent);
-            if (fSize == null) {
-                return DEFAULT;
-            }
-            return fSize;
-        }
-
-        public static FontSize fromSize(int size) {
-            FontSize fSize = fontSizeToSize.get(size);
             if (fSize == null) {
                 return DEFAULT;
             }
@@ -110,6 +105,7 @@ public class ThemeSettingsPanel extends JPanel {
 
     private JList<ThemeInfo> themesList;
     private JSlider fontSizeSlider;
+    private FontSize currentFontSize;
 
     private JCheckBox chckbxAlternatingRows;
 
@@ -177,19 +173,18 @@ public class ThemeSettingsPanel extends JPanel {
 
         chckbxAlternatingRows = new JCheckBox(Translations.getString("ThemeSettingsPanel.chckbxAlternatingRows.text")); //$NON-NLS-1$
         add(chckbxAlternatingRows);
-        chckbxAlternatingRows.setSelected(UIManager.getColor("Table.alternateRowColor") != null); 
+        chckbxAlternatingRows.setSelected(UIManager.getColor("Table.alternateRowColor") != null);
 
         add(fontLabel);
         createFontSlider();
     }
 
     private void createFontSlider() {
-        Font defaultFont = UIManager.getLookAndFeelDefaults().getFont("defaultFont");
-        Font currentFont = UIManager.getFont("defaultFont");
         if (fontSizeSlider != null) {
             remove(fontSizeSlider);
         }
-        if (defaultFont == null || currentFont == null) {
+        boolean isFlatLaf = UIManager.getLookAndFeel() instanceof FlatLaf;
+        if (!isFlatLaf) {
             fontSizeSlider = new JSlider();
             fontSizeSlider.setEnabled(false);
             fontSizeSlider.setMinimum(-1);
@@ -201,8 +196,11 @@ public class ThemeSettingsPanel extends JPanel {
             add(fontSizeSlider);
             return;
         }
-        int defaultPercent = FontSize.fromSize(defaultFont.getSize()).getPercent();
-        int currentPercent = FontSize.fromSize(currentFont.getSize()).getPercent();
+        int defaultPercent = FontSize.DEFAULT.getPercent();
+        int currentPercent = (currentFontSize != null)
+                ? currentFontSize.getPercent()
+                : FontSize.DEFAULT.getPercent();
+
         fontSizeSlider = new JSlider() {
             @Override
             public String getToolTipText(final MouseEvent event) {
@@ -215,7 +213,6 @@ public class ThemeSettingsPanel extends JPanel {
         fontSizeSlider.setMinimum(FontSize.SMALLEST.getPercent());
         fontSizeSlider.setMaximum(FontSize.LARGEST.getPercent());
         int tickSpacing = 5;
-        @SuppressWarnings("unchecked")
         Dictionary<Integer, JComponent> dict = fontSizeSlider.createStandardLabels(tickSpacing);
 
         JLabel mid = ((JLabel) dict.get(defaultPercent));
@@ -324,6 +321,12 @@ public class ThemeSettingsPanel extends JPanel {
         if (themeInfo == null) {
             return;
         }
+        // Set the zoom factor BEFORE installing the L&F so that FlatLaf
+        // picks it up during initialization and computes correct font sizes.
+        if (fontSize != null) {
+            currentFontSize = fontSize;
+            UIScale.setZoomFactor(fontSize.getScale());
+        }
         // change look and feel
         if (themeInfo.lafClassName != null) {
             FlatAnimatedLafChange.showSnapshot();
@@ -340,22 +343,15 @@ public class ThemeSettingsPanel extends JPanel {
             FlatAnimatedLafChange.showSnapshot();
             try {
                 if (themeInfo.themeFile.getName().endsWith(".properties")) {
-                    FlatLaf.install(new FlatPropertiesLaf(themeInfo.name, themeInfo.themeFile));
+                    FlatLaf.setup(new FlatPropertiesLaf(themeInfo.name, themeInfo.themeFile));
                 } else {
-                    FlatLaf.install(IntelliJTheme.createLaf(new FileInputStream(themeInfo.themeFile)));
+                    FlatLaf.setup(IntelliJTheme.createLaf(new FileInputStream(themeInfo.themeFile)));
                 }
             } catch (Exception ignore) {
             }
         } else if (themeInfo.resourceName != null) {
             FlatAnimatedLafChange.showSnapshot();
-            IntelliJTheme.install(ThemeSettingsPanel.class.getResourceAsStream(THEMES_PACKAGE + themeInfo.resourceName));
-        }
-        if (fontSize != null) {
-            Font font = UIManager.getDefaults().getFont("defaultFont");
-            if (font != null) {
-                Font newFont = font.deriveFont((float) fontSize.getSize());
-                UIManager.put("defaultFont", newFont);
-            }
+            IntelliJTheme.setup(ThemeSettingsPanel.class.getResourceAsStream(THEMES_PACKAGE + themeInfo.resourceName));
         }
         FlexibleColor defaultRowColor = new FlexibleColor(UIManager.getColor("Table.background").getRGB());
         if (alternateRow == null || alternateRow) {

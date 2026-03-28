@@ -19,6 +19,7 @@
 
 package org.openpnp.gui.support;
 
+import java.awt.Component;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
@@ -27,7 +28,12 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
+import com.formdev.flatlaf.util.UIScale;
 
 import org.openpnp.gui.tablemodel.ColumnWidthSaveable;
 import org.openpnp.gui.tablemodel.ColumnAlignable;
@@ -35,6 +41,7 @@ import org.openpnp.gui.tablemodel.ColumnAlignable;
 public class TableUtils {
 
     public static final int MIN_COLUMN_WIDTH = 10;
+    private static final int RESIZE_DEBOUNCE_MS = 200;
     
     /**
      * Sets the horizontal alignment of each of the columns of the specified table..
@@ -52,9 +59,44 @@ public class TableUtils {
 
         }
     }
-    
+
     /**
-     * Installs listeners on each column of the table as well as the table itself that save and 
+     * Auto-sizes a single column of a table based on header text and content.
+     * Uses interactive-resize style layout so the column gets its exact
+     * computed width and subsequent columns absorb the difference, rather than
+     * JTable scaling all columns proportionally.
+     */
+    public static void autoSizeColumn(JTable table, int viewCol) {
+        int width = computePreferredColumnWidth(table, viewCol, table.getRowCount());
+        TableColumn col = table.getColumnModel().getColumn(viewCol);
+        col.setPreferredWidth(width);
+
+        // Simulate interactive resize: set resizingColumn so doLayout uses
+        // accommodateDelta (adjusts subsequent columns) instead of
+        // setWidthsFromPreferredWidths (proportional scaling of all columns).
+        javax.swing.table.JTableHeader header = table.getTableHeader();
+        if (header != null) {
+            header.setResizingColumn(col);
+        }
+        col.setWidth(width);
+        table.doLayout();
+        if (header != null) {
+            header.setResizingColumn(null);
+        }
+
+        // Sync all columns' preferred widths to their actual widths so that
+        // any deferred proportional relayout is a no-op (scale factor = 1.0).
+        TableColumnModel cm = table.getColumnModel();
+        for (int i = 0; i < cm.getColumnCount(); i++) {
+            TableColumn tc = cm.getColumn(i);
+            if (tc.getPreferredWidth() != tc.getWidth()) {
+                tc.setPreferredWidth(tc.getWidth());
+            }
+        }
+    }
+
+    /**
+     * Installs listeners on each column of the table as well as the table itself that save and
      * restore the table's column widths. If the table's TableModel implements ColumnWidthSaveable,
      * the restored column widths will be a combination of fixed and proportionally allocated to the
      * table's total width based upon the values returned by the model's getColumnWidthTypes() 
@@ -74,23 +116,60 @@ public class TableUtils {
                         prefs.putInt(key, (int) evt.getNewValue());
                     }
                 }
-            });               
+            });
         }
 
+        Timer resizeTimer = new Timer(RESIZE_DEBOUNCE_MS, e -> restoreColumnWidths(table, prefs, prefKey));
+        resizeTimer.setRepeats(false);
         table.addComponentListener(new ComponentAdapter() {
 
             @Override
             public void componentResized(ComponentEvent e) {
-                restoreColumnWidths(table, prefs, prefKey);
+                resizeTimer.restart();
             }
 
         });
+
+        // When no saved prefs exist and the table is initially empty, re-restore
+        // column widths once data arrives so content-based sizing can take effect.
+        if (table.getRowCount() == 0 && !hasAnyPref(table, prefs, prefKey)) {
+            table.getModel().addTableModelListener(new javax.swing.event.TableModelListener() {
+                @Override
+                public void tableChanged(javax.swing.event.TableModelEvent e) {
+                    if (table.getRowCount() > 0) {
+                        table.getModel().removeTableModelListener(this);
+                        SwingUtilities.invokeLater(() -> restoreColumnWidths(table, prefs, prefKey));
+                    }
+                }
+            });
+        }
+    }
+
+    private static boolean hasAnyPref(JTable table, Preferences prefs, String prefKey) {
+        for (int iCol = 0; iCol < table.getColumnCount(); iCol++) {
+            int iModelCol = table.getColumnModel().getColumn(iCol).getModelIndex();
+            if (prefs.getInt(prefKey + iModelCol, -1) >= MIN_COLUMN_WIDTH) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static void restoreColumnWidths(JTable table, Preferences prefs, String prefKey) {
         int nCols = table.getColumnCount();
         int nModelCols = table.getModel().getColumnCount();
         int totalWidth = table.getColumnModel().getTotalColumnWidth();
+
+        // Detect DPI/scale changes by comparing a saved reference to the
+        // current UIScale.  UIScale.scale() captures both system DPI and
+        // FlatLaf user zoom, so this handles monitor changes and font size
+        // slider changes.
+        String scaleKey = prefKey + ".uiScale";
+        int currentScaleRef = UIScale.scale(100);
+        int savedScaleRef = prefs.getInt(scaleKey, currentScaleRef);
+        float dpiRatio = (savedScaleRef > 0)
+                ? (float) currentScaleRef / savedScaleRef : 1.0f;
+
         int[] widthTypes;
         try {
             widthTypes = ((ColumnWidthSaveable) table.getModel()).getColumnWidthTypes();
@@ -107,14 +186,16 @@ public class TableUtils {
         int totalProportional = 0;
         int numberProportional = 0;
         //Get the column width saved in the Preferences and compute the sum of the fixed
-        //width columns and the sum of the proportional columns 
+        //width columns and the sum of the proportional columns
         for (int iCol=0; iCol<nCols; iCol++) {
             int iModelCol = table.getColumnModel().getColumn(iCol).getModelIndex();
             prefWidths[iCol] = prefs.getInt(prefKey + iModelCol, -1);
             if (prefWidths[iCol] < MIN_COLUMN_WIDTH) {
-                prefWidths[iCol] = Math.max(MIN_COLUMN_WIDTH,
-                        table.getColumnModel().getColumn(iCol).getWidth());
-                prefs.putInt(prefKey + iModelCol, prefWidths[iCol]);
+                prefWidths[iCol] = computePreferredColumnWidth(table, iCol, 20);
+            }
+            else if (dpiRatio != 1.0f) {
+                // Scale saved pixel widths to match the current DPI
+                prefWidths[iCol] = Math.round(prefWidths[iCol] * dpiRatio);
             }
             if (widthTypes[iModelCol] == ColumnWidthSaveable.FIXED) {
                 totalFixed += prefWidths[iCol];
@@ -168,6 +249,34 @@ public class TableUtils {
             for (int iCol=0; iCol<nCols; iCol++) {
                 table.getColumnModel().getColumn(iCol).setPreferredWidth(newWidths[iCol]);
             }
+            // Save the current scale so future DPI changes are detected
+            prefs.putInt(scaleKey, currentScaleRef);
         });
+    }
+
+    private static int computePreferredColumnWidth(JTable table, int viewCol, int maxRows) {
+        int padding = 10;
+        // Use the table's current default column width (typically 75px) as a floor
+        int minWidth = table.getColumnModel().getColumn(viewCol).getPreferredWidth();
+
+        TableColumn column = table.getColumnModel().getColumn(viewCol);
+        TableCellRenderer headerRenderer = column.getHeaderRenderer();
+        if (headerRenderer == null && table.getTableHeader() != null) {
+            headerRenderer = table.getTableHeader().getDefaultRenderer();
+        }
+        int width = minWidth;
+        if (headerRenderer != null) {
+            Component comp = headerRenderer.getTableCellRendererComponent(
+                    table, column.getHeaderValue(), false, false, -1, viewCol);
+            width = Math.max(width, comp.getPreferredSize().width + padding);
+        }
+
+        int rows = Math.min(table.getRowCount(), maxRows);
+        for (int row = 0; row < rows; row++) {
+            TableCellRenderer renderer = table.getCellRenderer(row, viewCol);
+            Component comp = table.prepareRenderer(renderer, row, viewCol);
+            width = Math.max(width, comp.getPreferredSize().width + padding);
+        }
+        return Math.max(width, MIN_COLUMN_WIDTH);
     }
 }

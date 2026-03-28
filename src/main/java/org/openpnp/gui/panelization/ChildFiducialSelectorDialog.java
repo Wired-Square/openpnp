@@ -48,6 +48,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
@@ -159,6 +160,7 @@ public class ChildFiducialSelectorDialog extends JDialog {
         });
         
         getContentPane().setLayout(new BorderLayout());
+        ((JPanel) getContentPane()).setBorder(new EmptyBorder(5, 5, 5, 5));
         {
             JPanel panel = new JPanel();
             panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -291,8 +293,6 @@ public class ChildFiducialSelectorDialog extends JDialog {
                     new IdentifiableTableCellRenderer<Part>());
             childFiducialsTable.setDefaultRenderer(LengthCellValue.class, new MonospacedFontTableCellRenderer());
             childFiducialsTable.setDefaultRenderer(RotationCellValue.class, new MonospacedFontTableCellRenderer());
-            childFiducialsTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-            
             TableUtils.setColumnAlignment(tableModel, childFiducialsTable);
             
             TableUtils.installColumnWidthSavers(childFiducialsTable, prefs, PREF_COLUMN_WIDTHS);

@@ -21,9 +21,7 @@
 
 package org.openpnp.machine.reference.axis.wizards;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -35,11 +33,11 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.MainFrame;
+import javax.swing.UIManager;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.components.SimpleGraphView;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
@@ -133,10 +131,10 @@ public class BacklashCompensationConfigurationWizard extends AbstractConfigurati
     public BacklashCompensationConfigurationWizard(ReferenceControllerAxis axis) {
         this.axis = axis;
         panelBacklashDiagnostics = new JPanel();
-        panelBacklashDiagnostics.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+        panelBacklashDiagnostics.setBorder(new TitledBorder(null,
                 Translations.getString(
                         "BacklashCompensationConfigurationWizard.BacklashDiagnosticsPanel.Border.title"), //$NON-NLS-1$
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         contentPanel.add(panelBacklashDiagnostics);
         panelBacklashDiagnostics.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
@@ -221,7 +219,7 @@ public class BacklashCompensationConfigurationWizard extends AbstractConfigurati
 
         stepTestGraph = new SimpleGraphView();
         stepTestGraph.setPreferredSize(new Dimension(300, 100));
-        stepTestGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        stepTestGraph.setFont(UIManager.getFont("small.font"));
         panelBacklashDiagnostics.add(stepTestGraph, "4, 8, 7, 1, fill, fill");
 
         lblBacklashDistanceTest = new JLabel(Translations.getString(
@@ -230,7 +228,7 @@ public class BacklashCompensationConfigurationWizard extends AbstractConfigurati
 
         backlashDistanceTestGraph = new SimpleGraphView();
         backlashDistanceTestGraph.setPreferredSize(new Dimension(300, 200));
-        backlashDistanceTestGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        backlashDistanceTestGraph.setFont(UIManager.getFont("small.font"));
         panelBacklashDiagnostics.add(backlashDistanceTestGraph, "4, 10, 7, 1, fill, fill");
 
         lblBacklashSpeedTest = new JLabel(Translations.getString(
@@ -239,7 +237,7 @@ public class BacklashCompensationConfigurationWizard extends AbstractConfigurati
 
         backlashSpeedTestGraph = new SimpleGraphView();
         backlashSpeedTestGraph.setPreferredSize(new Dimension(300, 100));
-        backlashSpeedTestGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        backlashSpeedTestGraph.setFont(UIManager.getFont("small.font"));
         panelBacklashDiagnostics.add(backlashSpeedTestGraph, "4, 12, 7, 1, fill, fill");
     }
 

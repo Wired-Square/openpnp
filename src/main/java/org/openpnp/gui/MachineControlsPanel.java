@@ -38,10 +38,13 @@ import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+import org.openpnp.gui.support.UIColors;
 import javax.swing.border.TitledBorder;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenuItem;
@@ -100,8 +103,10 @@ public class MachineControlsPanel extends JPanel {
 
     private Location markLocation = null;
 
-    private Color droNormalColor = new Color(0xBDFFBE);
-    private Color droSavedColor = new Color(0x90cce0);
+    private static void setDroBackground(JLabel dro, Color bg) {
+        dro.setBackground(bg);
+        dro.setForeground(UIColors.droForeground());
+    }
     
     /**
      * Create the panel.
@@ -572,7 +577,7 @@ public class MachineControlsPanel extends JPanel {
         @Override
         public void configurationComplete(Configuration configuration) {
             SwingUtilities.invokeLater(() -> {
-                MainFrame.get().getDroLabel().setBackground(droNormalColor);
+                setDroBackground(MainFrame.get().getDroLabel(), UIColors.droNormal());
             });
             MainFrame.get().getDroLabel().addMouseListener(new MouseAdapter() {
                 @Override
@@ -585,11 +590,11 @@ public class MachineControlsPanel extends JPanel {
                         SwingUtilities.invokeLater(() -> {
                             if (markLocation == null) {
                                 markLocation = getCurrentLocation();
-                                MainFrame.get().getDroLabel().setBackground(droSavedColor);
+                                setDroBackground(MainFrame.get().getDroLabel(), UIColors.droSaved());
                             }
                             else {
                                 markLocation = null;
-                                MainFrame.get().getDroLabel().setBackground(droNormalColor);
+                                setDroBackground(MainFrame.get().getDroLabel(), UIColors.droNormal());
                             }
                             updateDros();
                         });

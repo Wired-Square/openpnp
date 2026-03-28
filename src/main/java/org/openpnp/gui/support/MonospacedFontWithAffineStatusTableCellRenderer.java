@@ -41,11 +41,11 @@ public class MonospacedFontWithAffineStatusTableCellRenderer extends DefaultTabl
                                                    boolean isSelected, boolean hasFocus, int row, int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         Color rowColor = table.getBackground();
-        Color globalColor = new Color(157, 255, 168);
-        Color localColor = new Color(157, 188, 255);
+        Color globalColor = UIColors.affineGloballySet();
+        Color localColor = UIColors.affineLocallySet();
         Color alternateRowColor = UIManager.getColor("Table.alternateRowColor");
-        Color alternateGlobalColor = new Color(141, 230, 151);
-        Color alternateLocalColor = new Color(141, 169, 230);
+        Color alternateGlobalColor = UIColors.affineGloballySetAlt();
+        Color alternateLocalColor = UIColors.affineLocallySetAlt();
         if (alternateRowColor == null) {
             alternateRowColor = rowColor;
             alternateGlobalColor = globalColor;
@@ -77,7 +77,7 @@ public class MonospacedFontWithAffineStatusTableCellRenderer extends DefaultTabl
         }
         setForeground(foreground);
         setBackground(background);
-        setFont(new Font( "Monospaced", Font.BOLD, super.getFont().getSize()));
+        setFont(UIManager.getFont("monospaced.font").deriveFont(Font.BOLD));
         return this;
     }
 }

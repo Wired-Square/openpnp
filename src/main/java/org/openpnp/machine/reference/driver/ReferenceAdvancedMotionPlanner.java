@@ -27,9 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.UIManager;
-
 import org.openpnp.gui.support.PropertySheetWizardAdapter;
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.machine.reference.driver.wizards.ReferenceAdvancedMotionPlannerConfigurationWizard;
 import org.openpnp.machine.reference.driver.wizards.ReferenceAdvancedMotionPlannerDiagnosticsWizard;
@@ -382,12 +381,7 @@ public class ReferenceAdvancedMotionPlanner extends AbstractMotionPlanner {
     }
 
     protected void startNewMotionGraph() {
-        Color gridColor = UIManager.getColor ( "PasswordField.capsLockIconColor" );
-        if (gridColor == null) {
-            gridColor = new Color(0, 0, 0, 64);
-        } else {
-            gridColor = new Color(gridColor.getRed(), gridColor.getGreen(), gridColor.getBlue(), 64);
-        }
+        Color gridColor = UIColors.gridColor();
         // start a new graph
         SimpleGraph motionGraph = new SimpleGraph();
         motionGraph.setRelativePaddingLeft(0.05);

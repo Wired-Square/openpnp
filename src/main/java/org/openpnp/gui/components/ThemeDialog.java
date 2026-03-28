@@ -4,18 +4,20 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
 
 import org.openpnp.Translations;
+
 import org.openpnp.model.Configuration;
 
 @SuppressWarnings("unused")
@@ -69,7 +71,7 @@ public class ThemeDialog {
         contentPane.add(themePanel, BorderLayout.CENTER);
         contentPane.add(createButtonPanel(), BorderLayout.SOUTH);
         dialog.setContentPane(contentPane);
-        contentPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         dialog.setMinimumSize(new Dimension(400, 500));
         dialog.pack();
@@ -118,8 +120,12 @@ public class ThemeDialog {
         JButton apply = new JButton(Translations.getString("Theme.Apply")); //$NON-NLS-1$
         apply.addActionListener(e -> {
             themePanel.setTheme();
-            dialog.pack();
-            dialog.doLayout();
+            // setTheme() defers the actual theme change via invokeLater,
+            // so pack must also be deferred to run after the theme is applied
+            EventQueue.invokeLater(() -> {
+                dialog.pack();
+                dialog.doLayout();
+            });
         });
 
         Box box = Box.createHorizontalBox();

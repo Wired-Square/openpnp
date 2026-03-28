@@ -20,6 +20,7 @@
 package org.openpnp.gui.support;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -27,10 +28,15 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
@@ -60,7 +66,25 @@ public abstract class AbstractConfigurationWizard extends JPanel implements Wiza
     public AbstractConfigurationWizard() {
         setLayout(new BorderLayout());
 
-        contentPanel = new JPanel();
+        contentPanel = new JPanel() {
+            @Override
+            protected void addImpl(Component comp, Object constraints, int index) {
+                // Add a small vertical gap between panels
+                if (getComponentCount() > 0) {
+                    super.addImpl(Box.createVerticalStrut(4), null, -1);
+                }
+                // Add bottom padding inside TitledBorder panels so content
+                // doesn't press against the border
+                if (comp instanceof JComponent) {
+                    JComponent jc = (JComponent) comp;
+                    if (jc.getBorder() instanceof TitledBorder) {
+                        jc.setBorder(new CompoundBorder(jc.getBorder(),
+                                new EmptyBorder(0, 0, 4, 0)));
+                    }
+                }
+                super.addImpl(comp, constraints, index);
+            }
+        };
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
         scrollPane = new JScrollPane(contentPanel);

@@ -74,6 +74,7 @@ import org.openpnp.gui.importer.SolderPasteGerberImporter;
 import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.CustomBooleanRenderer;
 import org.openpnp.gui.support.MonospacedFontTableCellRenderer;
+import org.openpnp.gui.support.UIColors;
 import org.openpnp.gui.support.MultisortTableHeaderCellRenderer;
 import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
@@ -84,6 +85,7 @@ import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.gui.support.PartsComboBoxModel;
 import org.openpnp.gui.support.RotationCellValue;
 import org.openpnp.gui.support.TableUtils;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.tablemodel.PlacementsHolderPlacementsTableModel;
 import org.openpnp.gui.tablemodel.PlacementsHolderPlacementsTableModel.Status;
 import org.openpnp.gui.viewers.PlacementsHolderLocationViewerDialog;
@@ -122,10 +124,7 @@ public class BoardPlacementsPanel extends JPanel {
     private JButton btnImport;
     private List<BoardImporter> boardImporters;
     private Configuration configuration;
-    
-    private static Color typeColorFiducial = new Color(157, 188, 255);
-    private static Color typeColorPlacement = new Color(255, 255, 255);
-    
+
     public BoardPlacementsPanel(BoardsPanel boardsPanel) {
     	this.boardsPanel = boardsPanel;
     	boardImporters = scanForBoardImporters();
@@ -192,7 +191,7 @@ public class BoardPlacementsPanel extends JPanel {
         
         setLayout(new BorderLayout(0, 0));
         tableModel = new PlacementsHolderPlacementsTableModel(this);
-        tableSorter = new TableRowSorter<>(tableModel);
+        tableSorter = new TriStateTableRowSorter<>(tableModel);
         
         table = new AutoSelectTextTable(tableModel) {
             @Override
@@ -220,8 +219,6 @@ public class BoardPlacementsPanel extends JPanel {
         table.setDefaultRenderer(Boolean.class, new CustomBooleanRenderer());
         table.setDefaultRenderer(LengthCellValue.class, new MonospacedFontTableCellRenderer());
         table.setDefaultRenderer(RotationCellValue.class, new MonospacedFontTableCellRenderer());
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        
         TableUtils.setColumnAlignment(tableModel, table);
         
         TableUtils.installColumnWidthSavers(table, prefs, "BoardPlacementsPanel.placementsTable.columnWidth"); //$NON-NLS-1$
@@ -869,7 +866,7 @@ public class BoardPlacementsPanel extends JPanel {
             Color alternateRowColor = UIManager.getColor("Table.alternateRowColor"); //$NON-NLS-1$
             if (value == Type.Fiducial) {
                 c.setForeground(Color.black);
-                c.setBackground(typeColorFiducial);
+                c.setBackground(UIColors.typeFiducial());
             } else if (isSelected) {
                 c.setForeground(table.getSelectionForeground());
                 c.setBackground(table.getSelectionBackground());

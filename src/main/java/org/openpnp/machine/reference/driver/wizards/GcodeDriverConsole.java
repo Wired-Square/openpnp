@@ -1,6 +1,6 @@
 package org.openpnp.machine.reference.driver.wizards;
 
-import java.awt.Font;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -19,6 +19,7 @@ import javax.swing.border.TitledBorder;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
+
 import org.openpnp.gui.support.DoubleConverter;
 import org.openpnp.gui.support.IntegerConverter;
 import org.openpnp.machine.reference.driver.GcodeDriver;
@@ -67,7 +68,7 @@ public class GcodeDriverConsole extends AbstractConfigurationWizard {
         gcodeConsole.add(scrollPane, "2, 2, 5, 1, fill, fill");
 
         textAreaConsole = new JTextArea();
-        textAreaConsole.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        textAreaConsole.putClientProperty("FlatLaf.styleClass", "monospaced");
         textAreaConsole.setEditable(false);
         textAreaConsole.setLineWrap(true);
         textAreaConsole.setRows(5);

@@ -15,4 +15,5 @@ hs_err*
 
 .vscode/
 /src/main/resources/org/openpnp/translations.properties.bak
+/src/main/resources/org/openpnp/translations.properties-normalised
 .DS_Store

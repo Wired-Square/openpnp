@@ -19,7 +19,6 @@
 
 package org.openpnp.machine.reference.camera.wizards;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -70,7 +69,7 @@ public class AutoFocusProviderConfigurationWizard extends AbstractConfigurationW
 
         panelGeneral = new JPanel();
         contentPanel.add(panelGeneral);
-        panelGeneral.setBorder(new TitledBorder(null, "Auto Focus Settings", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+        panelGeneral.setBorder(new TitledBorder(null, "Auto Focus Settings", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         panelGeneral.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
                 ColumnSpec.decode("max(70dlu;default)"),

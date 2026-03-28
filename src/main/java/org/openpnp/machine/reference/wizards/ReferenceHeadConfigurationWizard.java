@@ -19,7 +19,6 @@
 
 package org.openpnp.machine.reference.wizards;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -30,7 +29,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
@@ -162,7 +160,6 @@ public class ReferenceHeadConfigurationWizard extends AbstractConfigurationWizar
 
         JLabel lblWarningChangingThese = new JLabel(Translations.getString(
                 "ReferenceHeadConfigurationWizard.LocationsPanel.WarningChangingLabel.text")); //$NON-NLS-1$
-        lblWarningChangingThese.setForeground(Color.BLACK);
         panel.add(lblWarningChangingThese, "4, 8, 7, 1");
 
         JLabel lblParkLocation = new JLabel(Translations.getString(
@@ -182,10 +179,10 @@ public class ReferenceHeadConfigurationWizard extends AbstractConfigurationWizar
         panel.add(parkLocation, "10, 10, left, fill");
         
         JPanel panelCalibration = new JPanel();
-        panelCalibration.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"),
+        panelCalibration.setBorder(new TitledBorder(null,
                 Translations.getString("ReferenceHeadConfigurationWizard.CalibrationRigPanel.Border.title"), //$NON-NLS-1$
                 TitledBorder.LEADING, TitledBorder.TOP,
-                null, new Color(0, 0, 0)));
+                null, null));
         contentPanel.add(panelCalibration);
         panelCalibration.setLayout(new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,

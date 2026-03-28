@@ -19,7 +19,7 @@
 
 package org.openpnp.machine.reference.wizards;
 
-import java.awt.Font;
+
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashSet;
@@ -35,6 +35,7 @@ import javax.swing.border.TitledBorder;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.components.ComponentDecorators;
+
 import org.openpnp.gui.components.SimpleGraphView;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.DoubleConverter;
@@ -191,7 +192,7 @@ public class ReferenceNozzleTipPartDetectionWizard extends AbstractConfiguration
         panelPartOnVacuumSensing.add(lblLegendPartOn, "2, 16, right, default");
         
         vacuumPartOnGraph = new SimpleGraphView();
-        vacuumPartOnGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        vacuumPartOnGraph.setFont(UIManager.getFont("small.font"));
         panelPartOnVacuumSensing.add(vacuumPartOnGraph, "4, 16, 9, 1, default, fill");
         
         panelPartOffVacuumSensing = new JPanel();
@@ -338,7 +339,7 @@ public class ReferenceNozzleTipPartDetectionWizard extends AbstractConfiguration
         panelPartOffVacuumSensing.add(lblLegendPartOff, "2, 18, right, default");
         
         vacuumPartOffGraph = new SimpleGraphView();
-        vacuumPartOffGraph.setFont(new Font("Dialog", Font.PLAIN, 11));
+        vacuumPartOffGraph.setFont(UIManager.getFont("small.font"));
         panelPartOffVacuumSensing.add(vacuumPartOffGraph, "4, 18, 9, 1, default, fill");
     }
     

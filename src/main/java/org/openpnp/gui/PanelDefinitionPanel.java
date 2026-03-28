@@ -20,7 +20,6 @@
 package org.openpnp.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -81,6 +80,7 @@ import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.gui.support.PartsComboBoxModel;
 import org.openpnp.gui.support.RotationCellValue;
 import org.openpnp.gui.support.TableUtils;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.tablemodel.PlacementsHolderLocationsTableModel;
 import org.openpnp.gui.tablemodel.PlacementsHolderPlacementsTableModel;
 import org.openpnp.gui.viewers.PlacementsHolderLocationViewerDialog;
@@ -100,7 +100,6 @@ import org.openpnp.model.PlacementsHolder;
 
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.border.EtchedBorder;
 import java.awt.FileDialog;
 import java.awt.Frame;
 
@@ -242,7 +241,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
             }
         };
         childrenTableModel.setRootPanelLocation(rootPanelLocation);
-        childrenTableSorter = new TableRowSorter<>(childrenTableModel);
+        childrenTableSorter = new TriStateTableRowSorter<>(childrenTableModel);
         
         childrenTable = new AutoSelectTextTable(childrenTableModel);
         TableColumnModel tcm = childrenTable.getColumnModel();
@@ -255,8 +254,6 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         childrenTable.setDefaultRenderer(Boolean.class, new CustomBooleanRenderer());
         childrenTable.setDefaultRenderer(LengthCellValue.class, new MonospacedFontTableCellRenderer());
         childrenTable.setDefaultRenderer(RotationCellValue.class, new MonospacedFontTableCellRenderer());
-        childrenTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        
         TableUtils.setColumnAlignment(childrenTableModel, childrenTable);
         
         TableUtils.installColumnWidthSavers(childrenTable, prefs, "PanelDefinitionPanel.childrenTable.columnWidth"); //$NON-NLS-1$
@@ -377,10 +374,9 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         
         
         JPanel pnlFiducials = new JPanel();
-        pnlFiducials.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, 
-                new Color(255, 255, 255), new Color(160, 160, 160)), 
+        pnlFiducials.setBorder(new TitledBorder(null,
                 Translations.getString("PanelDefinition.PanelAlignment.Title"), //$NON-NLS-1$
-                TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
         splitPane.setRightComponent(pnlFiducials);
         pnlFiducials.setLayout(new BorderLayout(0, 0));
         
@@ -416,7 +412,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
                 return true;
             }
         };
-        fiducialTableSorter = new TableRowSorter<>(fiducialTableModel);
+        fiducialTableSorter = new TriStateTableRowSorter<>(fiducialTableModel);
         
         fiducialTable = new AutoSelectTextTable(fiducialTableModel);
         tcm = fiducialTable.getColumnModel();
@@ -436,8 +432,6 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         fiducialTable.setDefaultRenderer(Boolean.class, new CustomBooleanRenderer());
         fiducialTable.setDefaultRenderer(LengthCellValue.class, new MonospacedFontTableCellRenderer());
         fiducialTable.setDefaultRenderer(RotationCellValue.class, new MonospacedFontTableCellRenderer());
-        fiducialTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        
         TableUtils.setColumnAlignment(fiducialTableModel, fiducialTable);
         
         TableUtils.installColumnWidthSavers(fiducialTable, prefs, "PanelDefinitionPanel.fiducialTable.columnWidth"); //$NON-NLS-1$

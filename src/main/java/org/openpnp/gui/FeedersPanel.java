@@ -67,6 +67,8 @@ import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.CustomBooleanRenderer;
 import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
+import org.openpnp.gui.support.TableUtils;
+import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.gui.support.WizardContainer;
@@ -227,7 +229,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         table.setDefaultEditor(ReferenceFeeder.FeedOptions.class, new DefaultCellEditor(feedOptionsComboBox));
         table.setDefaultEditor(ReferenceFeeder.Priority.class, new DefaultCellEditor(priorityComboBox));
 
-        tableSorter = new TableRowSorter<>(tableModel);
+        tableSorter = new TriStateTableRowSorter<>(tableModel);
         table.getColumnModel().moveColumn(1,  2);
 
         final JSplitPane splitPane = new JSplitPane();
@@ -246,6 +248,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         splitPane.setLeftComponent(new JScrollPane(table));
         table.setRowSorter(tableSorter);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        TableUtils.installColumnWidthSavers(table, prefs, "FeedersPanel.table.columnWidth"); //$NON-NLS-1$
 
         configurationPanel = new JTabbedPane(JTabbedPane.TOP);
         splitPane.setRightComponent(configurationPanel);
@@ -549,7 +552,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
     }
     
     public void updateView() {
-    	tableModel.fireTableChanged(null);
+    	tableModel.fireTableDataChanged();
     }
 
     protected Location preliminaryPickLocation(Feeder feeder, Nozzle nozzle) throws Exception {

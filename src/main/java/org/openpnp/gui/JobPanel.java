@@ -251,8 +251,6 @@ public class JobPanel extends JPanel {
         jobTable.setDefaultRenderer(RotationCellValue.class, new MonospacedFontWithAffineStatusTableCellRenderer());
         jobTable.getColumnModel().getColumn(2).setCellRenderer(new MonospacedFontTableCellRenderer());
         jobTable.getColumnModel().getColumn(3).setCellRenderer(new MonospacedFontTableCellRenderer());
-        jobTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
-        
         TableUtils.setColumnAlignment(jobTableModel, jobTable);
         
         TableUtils.installColumnWidthSavers(jobTable, prefs, "JobPanel.jobTable.columnWidth");  //$NON-NLS-1$
