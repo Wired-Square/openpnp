@@ -2610,6 +2610,11 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
                         if (e.isInterrupting()) {
                             throw e;
                         }
+                        // If a part was picked but a later step failed (e.g. alignment),
+                        // discard it so the nozzle is clear for the next cycle.
+                        if (plannedPlacement.nozzle.getPart() != null) {
+                            discard(plannedPlacement.nozzle);
+                        }
                         ReferenceFeeder feeder = getFeederFromException(e);
                         if (feeder!=null) {
                             feeder.recordJobFault(getFeederFaultLimit(),getFeederFaultWindowSize(),e);
