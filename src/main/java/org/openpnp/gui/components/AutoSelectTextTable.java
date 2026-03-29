@@ -165,6 +165,23 @@ public class AutoSelectTextTable extends JTable {
     //
     // Overridden methods
     //
+
+    /**
+     * Selects the row under the cursor before a context menu is shown.
+     * If the right-clicked row is already part of a multi-selection, the
+     * selection is preserved so the action can apply to all selected rows.
+     */
+    @Override
+    public Point getPopupLocation(MouseEvent e) {
+        if (e != null) {
+            int row = rowAtPoint(e.getPoint());
+            if (row >= 0 && !isRowSelected(row)) {
+                setRowSelectionInterval(row, row);
+            }
+        }
+        return super.getPopupLocation(e);
+    }
+
     /*
      * Override to provide Select All editing functionality
      */
