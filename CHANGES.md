@@ -10,7 +10,7 @@ a complete change list, only those that may directly interest or affect users.
 ## Bug Fixes
 
 
-# Version 2.5
+# Version 2.6
 
 ## New Features
 
@@ -49,7 +49,7 @@ a complete change list, only those that may directly interest or affect users.
 * Fix bugs handling tray feeders configured with fewer than 1 row or column. [PR1926](https://github.com/openpnp/openpnp/pull/1926)
 * On launch, check if the window is off screen and, if it is, move it to the system default position. [PR1931](https://github.com/openpnp/openpnp/pull/1931)
 
-# Version 2.3
+# Version 2.4
 
 ## New Features
 
