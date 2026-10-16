@@ -27,11 +27,13 @@ import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import com.formdev.flatlaf.util.UIScale;
 
@@ -278,5 +280,34 @@ public class TableUtils {
             width = Math.max(width, comp.getPreferredSize().width + padding);
         }
         return Math.max(width, MIN_COLUMN_WIDTH);
+    }
+
+    /**
+     * Creates a case-insensitive {@link RowFilter} that matches the given search text against only
+     * the columns currently shown in the specified table.
+     *
+     * @param table the table whose visible columns should be searched
+     * @param searchText the user's raw search text
+     * @return a filter over the visible columns
+     * @throws java.util.regex.PatternSyntaxException if the search text is not a valid regex
+     */
+    public static <M extends TableModel> RowFilter<M, Integer> createVisibleColumnsSearchFilter(
+            JTable table, String searchText) {
+        TableColumnModel columnModel = table.getColumnModel();
+        if (columnModel.getColumnCount() == 0) {
+            // regexFilter treats an empty index list as "every model column", which would read
+            // the hidden cells this filter exists to avoid.
+            return new RowFilter<M, Integer>() {
+                @Override
+                public boolean include(Entry<? extends M, ? extends Integer> entry) {
+                    return false;
+                }
+            };
+        }
+        int[] modelColumnIndices = new int[columnModel.getColumnCount()];
+        for (int i = 0; i < modelColumnIndices.length; i++) {
+            modelColumnIndices[i] = columnModel.getColumn(i).getModelIndex();
+        }
+        return RowFilter.regexFilter("(?i)" + searchText.trim(), modelColumnIndices); //$NON-NLS-1$
     }
 }
