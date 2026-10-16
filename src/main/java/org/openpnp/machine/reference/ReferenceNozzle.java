@@ -123,6 +123,19 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
 
     protected ReferenceNozzleTip nozzleTip;
 
+    private static final class CalibrationOverride {
+        final ReferenceNozzleTip nozzleTip;
+
+        CalibrationOverride(ReferenceNozzleTip nozzleTip) {
+            this.nozzleTip = nozzleTip;
+        }
+    }
+
+    // Set on the machine thread during changer unload moves so runout compensation uses the
+    // "unloaded" stand-in (null tip: no compensation), mirroring how ContactProbeNozzle handles Z.
+    // Volatile because the DRO and camera view read getLocation() from the EDT.
+    private volatile CalibrationOverride calibrationOverride = null;
+
     public ReferenceNozzle() {
         super();
     }
@@ -448,6 +461,10 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
     }
     
     public ReferenceNozzleTip getCalibrationNozzleTip() {
+        CalibrationOverride override = calibrationOverride;
+        if (override != null) {
+            return override.nozzleTip;
+        }
         if (nozzleTip != null) {
             // normally we have the loaded nozzle tip as the calibration nozzle tip
             ReferenceNozzleTip calibrationNozzleTip = null;
@@ -769,52 +786,64 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
 
                     ensureZCalibrated(false);
 
-
+                    // Resolve every changer location first: slot vision calibration asks
+                    // getNozzleWhereLoaded(), which must still see this tip as loaded.
                     Location endLocation = nt.getChangerEndLocationCalibrated(true);
-                    if (endLocation.isInitialized()) {
-                        Logger.debug("{}.unloadNozzleTip(): moveTo End Location", getName());
-                        MovableUtils.moveToLocationAtSafeZ(this, endLocation, speed);
-                    }
-
-                    Actuator tcPostThreeActuator = getMachine().getActuatorByName(nt.getChangerActuatorPostStepThree());
-                    if (tcPostThreeActuator !=null) {
-                        tcPostThreeActuator.actuate(false);
-                    }
-
                     Location midLocation2 = nt.getChangerMidLocation2Calibrated(false);
-                    if (midLocation2.isInitialized()) {
-                        Logger.debug("{}.unloadNozzleTip(): moveTo Mid Location 2", getName());
-                        moveTo(midLocation2, nt.getChangerMid2ToEndSpeed() * speed);
-                    }
-
-                    Actuator tcPostTwoActuator = getMachine().getActuatorByName(nt.getChangerActuatorPostStepTwo());
-                    if (tcPostTwoActuator !=null) {
-                        tcPostTwoActuator.actuate(false);
-                    }
-
                     Location midLocation = nt.getChangerMidLocationCalibrated(false);
-                    if (midLocation.isInitialized()) {
-                        Logger.debug("{}.unloadNozzleTip(): moveTo Mid Location", getName());
-                        moveTo(midLocation, nt.getChangerMidToMid2Speed() * speed);
-                    }
-
-                    Actuator tcPostOneActuator = getMachine().getActuatorByName(nt.getChangerActuatorPostStepOne());
-                    if (tcPostOneActuator != null) {
-                        tcPostOneActuator.actuate(false);
-                    }
-
                     Location startLocation = nt.getChangerStartLocationCalibrated(false);
-                    if (startLocation.isInitialized()) {
-                        Logger.debug("{}.unloadNozzleTip(): moveTo Start Location", getName());
-                        moveTo(startLocation, nt.getChangerStartToMidSpeed() * speed);
+
+                    try {
+                        calibrationOverride = new CalibrationOverride(getUnloadedNozzleTipStandin());
+
+                        if (endLocation.isInitialized()) {
+                            Logger.debug("{}.unloadNozzleTip(): moveTo End Location", getName());
+                            MovableUtils.moveToLocationAtSafeZ(this, endLocation, speed);
+                        }
+
+                        Actuator tcPostThreeActuator = getMachine().getActuatorByName(nt.getChangerActuatorPostStepThree());
+                        if (tcPostThreeActuator !=null) {
+                            tcPostThreeActuator.actuate(false);
+                        }
+
+                        if (midLocation2.isInitialized()) {
+                            Logger.debug("{}.unloadNozzleTip(): moveTo Mid Location 2", getName());
+                            moveTo(midLocation2, nt.getChangerMid2ToEndSpeed() * speed);
+                        }
+
+                        Actuator tcPostTwoActuator = getMachine().getActuatorByName(nt.getChangerActuatorPostStepTwo());
+                        if (tcPostTwoActuator !=null) {
+                            tcPostTwoActuator.actuate(false);
+                        }
+
+                        if (midLocation.isInitialized()) {
+                            Logger.debug("{}.unloadNozzleTip(): moveTo Mid Location", getName());
+                            moveTo(midLocation, nt.getChangerMidToMid2Speed() * speed);
+                        }
+
+                        Actuator tcPostOneActuator = getMachine().getActuatorByName(nt.getChangerActuatorPostStepOne());
+                        if (tcPostOneActuator != null) {
+                            tcPostOneActuator.actuate(false);
+                        }
+
+                        if (startLocation.isInitialized()) {
+                            Logger.debug("{}.unloadNozzleTip(): moveTo Start Location", getName());
+                            moveTo(startLocation, nt.getChangerStartToMidSpeed() * speed);
+                        }
+                        moveToSafeZ(getHead().getMachine().getSpeed());
+
+                        Logger.debug("{}.unloadNozzleTip(): Finished", getName());
+
+                        Configuration.get()
+                        .getScripting()
+                        .on("NozzleTip.Unloaded", globals);
+
+                        // Unload the tip before dropping the override, so the calibration frame
+                        // goes straight from the override to the (identical) natural stand-in.
+                        setNozzleTip(null);
+                    } finally {
+                        calibrationOverride = null;
                     }
-                    moveToSafeZ(getHead().getMachine().getSpeed());
-
-                    Logger.debug("{}.unloadNozzleTip(): Finished", getName());
-
-                    Configuration.get()
-                    .getScripting()
-                    .on("NozzleTip.Unloaded", globals);
                 }
                 else {
                     Logger.debug("{}.unloadNozzleTip({}): moveTo manual Location",
@@ -824,7 +853,9 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
                 }
             }
 
-            setNozzleTip(null);
+            if (nozzleTip != null) {
+                setNozzleTip(null);
+            }
 
             if (!changerEnabled) {
                 waitForCompletion(CompletionType.WaitForStillstand);
