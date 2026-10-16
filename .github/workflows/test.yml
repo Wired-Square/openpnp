@@ -3,6 +3,9 @@ name: Test
 on:
   pull_request:
     branches: [main]
+  # Gives the default-branch README badge a result; main only moves by release fast-forwards.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
