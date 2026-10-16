@@ -14,11 +14,12 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup JDK ${{ matrix.java }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v5
         with:
+          distribution: temurin
           java-version: ${{ matrix.java }}
 
       - name: Build with Maven
@@ -31,11 +32,12 @@ jobs:
     if: github.repository == 'openpnp/openpnp' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test')
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup JDK for Deployment
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v5
         with:
+          distribution: temurin
           java-version: 11
 
       - name: Build with Maven
@@ -55,9 +57,13 @@ jobs:
           mkdir -p installers/$BRANCH_NAME/$VERSION
           cp installers/OpenPnP* installers/$BRANCH_NAME/$VERSION
 
-      # - name: Archive Test Results
-      #   if: always()
-      #   run: cat /Users/runner/work/openpnp/openpnp/installers/OpenPnP-macos-test.dmg.notarization.log
+      - name: Archive notarization logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-notarization-logs
+          path: installers/*.notarization.log
+          if-no-files-found: warn
           
       - name: Upload Installers to S3
         uses: shallwefootball/upload-s3-action@v1.1.3
