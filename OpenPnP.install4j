@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.9" transformSequenceNumber="10">
   <directoryPresets config="./.github/OpenPnP-Developer-ID-Application.p12" />
-  <application name="OpenPnP" applicationId="9204-4030-0867-1434" mediaDir="./installers" mediaFilePattern="${compiler:sys.fullName}-${compiler:sys.platform}-${compiler:mediaFileVersion}" shortName="openpnp" publisher="OpenPnP" publisherWeb="http://openpnp.org" version="develop" allPathsRelative="true" macVolumeId="2f75d25b539292d5" javaMinVersion="11">
+  <application name="OpenPnP" applicationId="9204-4030-0867-1434" mediaDir="./installers" mediaFilePattern="${compiler:sys.fullName}-${compiler:sys.platform}-${compiler:mediaFileVersion}" shortName="openpnp" publisher="OpenPnP" publisherWeb="http://openpnp.org" version="develop" allPathsRelative="true" macVolumeId="2f75d25b539292d5" javaMinVersion="25">
     <variables>
       <variable name="native_path" />
       <variable name="mediaFileVersion" value="${compiler:sys.version}" />
@@ -20,7 +20,7 @@
         <entry>flatlaf-*</entry>
       </macSearchedJars>
     </codeSigning>
-    <jreBundles jdkProviderId="AdoptOpenJDK" release="23/latest" />
+    <jreBundles jdkProviderId="AdoptOpenJDK" release="25/latest" />
   </application>
   <files>
     <roots>
@@ -74,7 +74,7 @@
     <launcher name="OpenPnP" id="23" icnsFile="./src/main/resources/icons/OpenPnP-logo.icns" addMacEntitlements="true" macEntitlementsFile="./.github/entitlements.plist">
       <executable name="OpenPnP" iconSet="true" executableMode="gui" singleInstance="true" dpiAware="false" />
       <splashScreen bitmapFile="./logo/OpenPnP-logo.iconset/icon_128x128.png" />
-      <java mainClass="org.openpnp.Main" vmParameters="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.color=ALL-UNNAMED">
+      <java mainClass="org.openpnp.Main" vmParameters="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.color=ALL-UNNAMED --enable-native-access=ALL-UNNAMED">
         <classPath>
           <archive location="openpnp-gui-0.0.1-alpha-SNAPSHOT.jar" failOnError="false" />
           <scanDirectory location="lib" failOnError="false" />
