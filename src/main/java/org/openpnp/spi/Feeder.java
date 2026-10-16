@@ -154,4 +154,14 @@ public interface Feeder extends Identifiable, Named, WizardConfigurable, Propert
             super(s);
         }
     }
+
+    /**
+     * deferredBottomVisionResult maybe called with bottom vision results
+     * sometime after the feeder has fed a part.
+     *
+     * @param pickError the part's measured X/Y offset from the nozzle centre, in the nozzle frame
+     *        with no rotation applied; rotate by the pick rotation to get machine coordinates.
+     */
+    public default void deferredBottomVisionResult(Location pickError) {
+    }
 }

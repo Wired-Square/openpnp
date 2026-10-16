@@ -1,6 +1,15 @@
 package org.openpnp.machine.photon;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.Action;
+
 import org.openpnp.ConfigurationListener;
+import org.openpnp.gui.support.PickOffsetCorrectionPropertySheet;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.machine.photon.exceptions.FeedFailureException;
 import org.openpnp.machine.photon.exceptions.FeederHasNoLocationOffsetException;
@@ -9,7 +18,13 @@ import org.openpnp.machine.photon.exceptions.UnconfiguredSlotException;
 import org.openpnp.machine.photon.protocol.ErrorTypes;
 import org.openpnp.machine.photon.protocol.PhotonBus;
 import org.openpnp.machine.photon.protocol.PhotonBusInterface;
-import org.openpnp.machine.photon.protocol.commands.*;
+import org.openpnp.machine.photon.protocol.commands.GetFeederAddress;
+import org.openpnp.machine.photon.protocol.commands.GetFeederId;
+import org.openpnp.machine.photon.protocol.commands.IdentifyFeeder;
+import org.openpnp.machine.photon.protocol.commands.InitializeFeeder;
+import org.openpnp.machine.photon.protocol.commands.MoveFeedForward;
+import org.openpnp.machine.photon.protocol.commands.MoveFeedStatus;
+import org.openpnp.machine.photon.protocol.commands.VendorOptions;
 import org.openpnp.machine.photon.sheets.FeederPropertySheet;
 import org.openpnp.machine.photon.sheets.GlobalConfigPropertySheet;
 import org.openpnp.machine.reference.ReferenceActuator;
@@ -17,25 +32,26 @@ import org.openpnp.machine.reference.ReferenceFeeder;
 import org.openpnp.machine.reference.driver.GcodeDriver;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.LengthUnit;
+import org.openpnp.model.Length;
 import org.openpnp.model.Location;
 import org.openpnp.model.Package;
 import org.openpnp.model.Part;
+import org.openpnp.model.PickOffsetCorrection;
 import org.openpnp.model.Solutions;
-import org.openpnp.spi.*;
+import org.openpnp.spi.Actuator;
+import org.openpnp.spi.Driver;
+import org.openpnp.spi.Feeder;
+import org.openpnp.spi.Machine;
+import org.openpnp.spi.MachineListener;
+import org.openpnp.spi.Nozzle;
+import org.openpnp.spi.PickOffsetCorrectableFeeder;
+import org.openpnp.spi.PropertySheetHolder;
 import org.openpnp.util.MovableUtils;
 import org.pmw.tinylog.Logger;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 
-import javax.swing.*;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-public class PhotonFeeder extends ReferenceFeeder {
+public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectableFeeder {
     public static final String ACTUATOR_DATA_NAME = "PhotonFeederData";
     PhotonProperties photonProperties;
 
@@ -54,9 +70,27 @@ public class PhotonFeeder extends ReferenceFeeder {
     @Element(required = false)
     private Location offset;
 
+    private static final int FEED_TICKS_PER_MM = 10;
+    private static final Length FEED_TICK = new Length(1.0 / FEED_TICKS_PER_MM, LengthUnit.Millimeters);
+    // MoveFeedForward sends the distance as a single unsigned byte.
+    private static final int MIN_FEED_TICKS = 1;
+    private static final int MAX_FEED_TICKS = 255;
+    private static final double MAX_NUDGE_FRACTION_OF_PITCH = 0.25;
+    // LumenPnP: the rear rail starts after this slot and feeds in the opposite machine direction.
+    private static final int LAST_FRONT_RAIL_SLOT_ADDRESS = 25;
+
+    @Element(required = false)
+    private PickOffsetCorrection.Nudging pickOffsetCorrection = new PickOffsetCorrection.Nudging();
+
+    // Operator override of the feed direction, in the slot frame so it follows the feeder to any
+    // slot. Null means use the rail default.
+    @Element(required = false)
+    private Location feedDirectionInSlotFrame = null;
+
     private static PhotonBusInterface photonBus;
 
-    private static boolean autoScanListenerRegistered = false;
+    // Configuration reloads create a new Machine, so track which one has the listener.
+    private static Machine listenerMachine = null;
 
     @Attribute(required = false)
     protected boolean moveWhileFeeding = true;
@@ -70,18 +104,19 @@ public class PhotonFeeder extends ReferenceFeeder {
                 // Ensure actuators are added to the machine when it has PhotonFeeders
                 getDataActuator();
                 populatePhotonBus();
-                registerAutoScanListener(configuration);
+                registerMachineListener(configuration);
             }
         });
     }
 
-    private static synchronized void registerAutoScanListener(Configuration configuration) {
-        if (autoScanListenerRegistered) {
+    private static synchronized void registerMachineListener(Configuration configuration) {
+        Machine machine = configuration.getMachine();
+        if (machine == listenerMachine) {
             return;
         }
-        autoScanListenerRegistered = true;
+        listenerMachine = machine;
 
-        configuration.getMachine().addListener(new MachineListener.Adapter() {
+        machine.addListener(new MachineListener.Adapter() {
             @Override
             public void machineEnabled(Machine machine) {
                 PhotonProperties props = new PhotonProperties(machine);
@@ -93,6 +128,11 @@ public class PhotonFeeder extends ReferenceFeeder {
             @Override
             public void machineHomed(Machine machine, boolean isHomed) {
                 if (!isHomed) {
+                    for (Feeder feeder : machine.getFeeders()) {
+                        if (feeder instanceof PhotonFeeder) {
+                            ((PhotonFeeder) feeder).pickOffsetCorrection.reset();
+                        }
+                    }
                     return;
                 }
                 PhotonProperties props = new PhotonProperties(machine);
@@ -144,11 +184,15 @@ public class PhotonFeeder extends ReferenceFeeder {
         photonBus = new PhotonBus(0, getDataActuator());
     }
 
-    @Override
-    public Location getPickLocation() throws Exception {
+    private Location getPickLocationWithoutCorrection() throws Exception {
         verifyFeederLocationIsFullyConfigured();
 
         return offset.offsetWithRotationFrom(getSlot().getLocation());
+    }
+
+    @Override
+    public Location getPickLocation() throws Exception {
+        return getPickLocationWithoutCorrection().add(pickOffsetCorrection.getOffset());
     }
 
     private void verifyFeederLocationIsFullyConfigured() throws NoSlotAddressException,
@@ -175,11 +219,62 @@ public class PhotonFeeder extends ReferenceFeeder {
     public void setOffset(Location offsets) {
         Object oldValue = this.offset;
         this.offset = offsets;
-        firePropertyChange("offsets", oldValue, offsets);
+        pickOffsetCorrection.reset();
+        firePropertyChange("offset", oldValue, offsets);
     }
 
     public Location getOffset() {
         return offset;
+    }
+
+    @Override
+    public PickOffsetCorrection getPickOffsetCorrection() {
+        return pickOffsetCorrection;
+    }
+
+    @Override
+    public void bakePickOffsetCorrectionIntoPosition() throws Exception {
+        Location correctionOffset = pickOffsetCorrection.getOffset();
+        Location slotLocation;
+
+        verifyFeederLocationIsFullyConfigured();
+        slotLocation = getSlot().getLocation();
+
+        // pickOffsetCorrection tracks machine space coordinates for the nozzle.
+        // Convert that to feeder coordinates.
+        Location foldedIn = correctionOffset.convertToUnits(offset.getUnits())
+                .rotateXy(-slotLocation.getRotation());
+
+        setOffset(offset.add(foldedIn));
+        pickOffsetCorrection.reset();
+    }
+
+    @Override
+    public Location getFeedDirection() {
+        Integer address = slotAddress;
+        if (address == null) {
+            return null;
+        }
+        PhotonFeederSlots.Slot slot = photonProperties.getFeederSlots().getSlot(address);
+        if (slot == null || slot.getLocation() == null) {
+            return null;
+        }
+        if (feedDirectionInSlotFrame == null) {
+            return new Location(LengthUnit.Millimeters, 0,
+                    address > LAST_FRONT_RAIL_SLOT_ADDRESS ? -1 : 1, 0, 0);
+        }
+        return feedDirectionInSlotFrame.rotateXy(slot.getLocation().getRotation());
+    }
+
+    @Override
+    public void setFeedDirection(Location machineFrameDirection) {
+        PhotonFeederSlots.Slot slot = getSlot();
+        if (slot == null || slot.getLocation() == null) {
+            throw new IllegalStateException("The feed direction needs a configured slot.");
+        }
+        Location oldValue = getFeedDirection();
+        feedDirectionInSlotFrame = machineFrameDirection.rotateXy(-slot.getLocation().getRotation());
+        firePropertyChange("feedDirection", oldValue, getFeedDirection());
     }
 
     public boolean getMoveWhileFeeding() {
@@ -409,7 +504,7 @@ public class PhotonFeeder extends ReferenceFeeder {
         return actuator;
     }
 
-    private void feed(Nozzle nozzle, int distance_mm) throws Exception {
+    private void feed(Nozzle nozzle, int distanceTicks) throws Exception {
         for (int i = 0; i <= photonProperties.getFeederCommunicationMaxRetry(); i++) {
             findSlotAddressIfNeeded();
             initializeIfNeeded();
@@ -420,7 +515,7 @@ public class PhotonFeeder extends ReferenceFeeder {
 
             verifyFeederLocationIsFullyConfigured();
 
-            MoveFeedForward moveFeedForward = new MoveFeedForward(slotAddress, distance_mm * 10);
+            MoveFeedForward moveFeedForward = new MoveFeedForward(slotAddress, distanceTicks);
             MoveFeedForward.Response moveFeedForwardResponse = moveFeedForward.send(photonBus);
 
             if (moveFeedForwardResponse == null) {
@@ -467,6 +562,10 @@ public class PhotonFeeder extends ReferenceFeeder {
 
     @Override
     public void feed(Nozzle nozzle) throws Exception {
+        // Settle even when this feed is skipped: a part put back in its pocket is re-picked
+        // straight away and should use what its first pick taught.
+        pickOffsetCorrection.settle();
+
         switch (getFeedOptions()) {
         case Normal:
             break;
@@ -477,11 +576,39 @@ public class PhotonFeeder extends ReferenceFeeder {
             return;
         }
 
-        feed(nozzle, partPitch);
+        int pitchTicks = getPartPitch() * FEED_TICKS_PER_MM;
+        if (pitchTicks < MIN_FEED_TICKS || pitchTicks > MAX_FEED_TICKS) {
+            throw new FeedFailureException(String.format(
+                    "Part pitch %d mm is outside the %d to %d mm a Photon feeder can feed.",
+                    getPartPitch(), (MIN_FEED_TICKS + FEED_TICKS_PER_MM - 1) / FEED_TICKS_PER_MM,
+                    MAX_FEED_TICKS / FEED_TICKS_PER_MM));
+        }
+
+        Location feedDirection = getFeedDirection();
+        if (feedDirection == null && pickOffsetCorrection.isNudgingEnabled()) {
+            Logger.debug("{}: Feed direction unknown until the slot is found, not nudging this feed",
+                    getSlotAddress());
+        }
+
+        int maxNudgeTicks = (int) (pitchTicks * MAX_NUDGE_FRACTION_OF_PITCH);
+        int partPitchNudgeTicks = pickOffsetCorrection.nudge(FEED_TICK, feedDirection,
+                Math.max(-maxNudgeTicks, MIN_FEED_TICKS - pitchTicks),
+                Math.min(maxNudgeTicks, MAX_FEED_TICKS - pitchTicks));
+        if (partPitchNudgeTicks != 0) {
+            Logger.debug("{}: Nudging tape by {} ticks", getSlotAddress(), partPitchNudgeTicks);
+        }
+
+        try {
+            feed(nozzle, pitchTicks + partPitchNudgeTicks);
+        } catch (Exception e) {
+            pickOffsetCorrection.revertNudge();
+            throw e;
+        }
     }
 
     public void feedOneMm() throws Exception {
-        feed(null, 1);
+        feed(null, FEED_TICKS_PER_MM);
+        pickOffsetCorrection.reset();
     }
 
     @Override
@@ -500,6 +627,7 @@ public class PhotonFeeder extends ReferenceFeeder {
 
         if (hardwareId != null) {
             sheets.add(new FeederPropertySheet(this));
+            sheets.add(new PickOffsetCorrectionPropertySheet(this));
         }
 
         sheets.add(new GlobalConfigPropertySheet());
@@ -567,11 +695,13 @@ public class PhotonFeeder extends ReferenceFeeder {
     }
 
     public PhotonFeederSlots.Slot getSlot() {
-        if (slotAddress == null) {
+        // The machine thread can clear slotAddress while the EDT reads it.
+        Integer address = slotAddress;
+        if (address == null) {
             return null;
         }
 
-        return photonProperties.getFeederSlots().getSlot(slotAddress);
+        return photonProperties.getFeederSlots().getSlot(address);
     }
 
     public void setSlotAddress(Integer slotAddress) {
@@ -589,6 +719,8 @@ public class PhotonFeeder extends ReferenceFeeder {
         }
 
         this.slotAddress = slotAddress;
+
+        pickOffsetCorrection.reset();
 
         firePropertyChange("slotAddress", oldValue, slotAddress);
         firePropertyChange("slot", oldSlot, getSlot());
@@ -648,6 +780,8 @@ public class PhotonFeeder extends ReferenceFeeder {
             name = hardwareId;
         }
 
+        pickOffsetCorrection.reset();
+
         firePropertyChange("hardwareId", oldValue, hardwareId);
     }
 
@@ -667,6 +801,7 @@ public class PhotonFeeder extends ReferenceFeeder {
 
     public void setPartPitch(int partPitch) {
         this.partPitch = partPitch;
+        pickOffsetCorrection.reset();
     }
 
     public int getPartPitch() {
@@ -791,5 +926,19 @@ public class PhotonFeeder extends ReferenceFeeder {
     @Override
     public boolean supportsFeedOptions() {
         return true;
+    }
+
+    @Override
+    public void deferredBottomVisionResult(Location pickError) {
+        Location pickLocation;
+        try {
+            pickLocation = getPickLocationWithoutCorrection();
+        } catch (Exception e) {
+            Logger.error("{}: Could not get pick location without error for bottom vision callback: {}", getSlotAddress(), e);
+            return;
+        }
+
+        // Rotate so the integrated offset is stored independently of how the slot happens to be oriented.
+        pickOffsetCorrection.recordVision(pickError.rotateXy(pickLocation.getRotation()));
     }
 }

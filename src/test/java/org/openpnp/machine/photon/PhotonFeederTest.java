@@ -13,12 +13,14 @@ import org.openpnp.machine.photon.protocol.helpers.TestBus;
 import org.openpnp.machine.photon.protocol.helpers.TestBus.ContinuedVerification;
 import org.openpnp.machine.photon.sheets.FeederPropertySheet;
 import org.openpnp.machine.photon.sheets.GlobalConfigPropertySheet;
+import org.openpnp.gui.support.PickOffsetCorrectionPropertySheet;
 import org.openpnp.machine.reference.ReferenceActuator;
 import org.openpnp.model.*;
 import org.openpnp.spi.Actuator;
 import org.openpnp.spi.Machine;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.PropertySheetHolder;
+import org.openpnp.spi.base.AbstractMachine;
 import org.pmw.tinylog.Logger;
 
 import java.io.File;
@@ -613,6 +615,144 @@ public class PhotonFeederTest {
         feeder.feed(mockedNozzle);
 
         bus.verifyInMockedOrder();
+    }
+
+    private PickOffsetCorrection.Nudging configureNudgingFeeder(int partPitch, Location correction) {
+        feeder.setHardwareId(hardwareId);
+        feeder.setPartPitch(partPitch);
+        feeder.setOffset(feederOffset);
+        feeder.setSlotAddress(feederAddress);
+        feeder.setMoveWhileFeeding(false);
+        setSlotLocation(feederAddress, baseLocation);
+
+        PickOffsetCorrection.Nudging correctionModel =
+                (PickOffsetCorrection.Nudging) feeder.getPickOffsetCorrection();
+        correctionModel.setEnabled(true);
+        correctionModel.setNudgingEnabled(true);
+        correctionModel.addOffset(correction);
+        return correctionModel;
+    }
+
+    private void expectFeed(int distanceTicks) throws Exception {
+        bus.when(new InitializeFeeder(feederAddress, hardwareId))
+                .reply(responses.initializeFeeder.ok(feederAddress, hardwareId));
+        bus.when(new MoveFeedForward(feederAddress, distanceTicks))
+                .reply(responses.moveFeedForward.ok(feederAddress, 0));
+        bus.when(new MoveFeedStatus(feederAddress))
+                .reply(responses.moveFeedStatus.ok(feederAddress));
+    }
+
+    @Test
+    public void nudgeIsLimitedToAQuarterOfThePitch() throws Exception {
+        // 10 mm along +Y (the front-rail feed direction) would be -100 ticks unclamped, which
+        // used to wrap through the single-byte feed distance.
+        PickOffsetCorrection.Nudging correction =
+                configureNudgingFeeder(2, new Location(LengthUnit.Millimeters, 0, 10, 0, 0));
+        expectFeed(15);
+
+        feeder.feed(mockedNozzle);
+
+        bus.verifyInMockedOrder();
+        assertEquals(9.5, correction.getOffset().convertToUnits(LengthUnit.Millimeters).getY(), 1e-9);
+    }
+
+    @Test
+    public void nudgeNeverPushesTheFeedPastTheProtocolMaximum() throws Exception {
+        configureNudgingFeeder(25, new Location(LengthUnit.Millimeters, 0, -10, 0, 0));
+        expectFeed(255);
+
+        feeder.feed(mockedNozzle);
+
+        bus.verifyInMockedOrder();
+    }
+
+    @Test
+    public void pitchTheProtocolCannotEncodeFailsTheFeed() throws Exception {
+        configureNudgingFeeder(26, new Location(LengthUnit.Millimeters));
+
+        assertThrows(FeedFailureException.class, () -> feeder.feed(mockedNozzle));
+    }
+
+    @Test
+    public void defaultFeedDirectionFollowsTheRail() {
+        int rearRailAddress = 30;
+        setSlotLocation(feederAddress, baseLocation);
+        setSlotLocation(rearRailAddress, baseLocation);
+
+        feeder.setSlotAddress(feederAddress);
+        assertEquals(1, feeder.getFeedDirection().getY(), 1e-9);
+
+        feeder.setSlotAddress(rearRailAddress);
+        assertEquals(-1, feeder.getFeedDirection().getY(), 1e-9);
+    }
+
+    @Test
+    public void feedDirectionOverrideFollowsTheFeederToAnotherSlot() {
+        int oppositeSlotAddress = 6;
+        setSlotLocation(feederAddress, baseLocation.derive(null, null, null, 0.0));
+        setSlotLocation(oppositeSlotAddress, baseLocation.derive(null, null, null, 180.0));
+        feeder.setSlotAddress(feederAddress);
+
+        feeder.setFeedDirection(new Location(LengthUnit.Millimeters, 1, 0, 0, 0));
+        assertEquals(1, feeder.getFeedDirection().getX(), 1e-9);
+
+        feeder.setSlotAddress(oppositeSlotAddress);
+        Location moved = feeder.getFeedDirection();
+        assertEquals(-1, moved.getX(), 1e-9);
+        assertEquals(0, moved.getY(), 1e-9);
+    }
+
+    @Test
+    public void feedDirectionIsUnknownWithoutASlot() {
+        assertNull(feeder.getFeedDirection());
+    }
+
+    @Test
+    public void getPickLocationDoesNotConsumePendingVisionSamples() throws Exception {
+        feeder.setHardwareId(hardwareId);
+        feeder.setOffset(feederOffset);
+        feeder.setSlotAddress(feederAddress);
+        setSlotLocation(feederAddress, baseLocation);
+        PickOffsetCorrection correction = feeder.getPickOffsetCorrection();
+        correction.setEnabled(true);
+        correction.recordVision(new Location(LengthUnit.Millimeters, 1, 0, 0, 0));
+
+        feeder.getPickLocation();
+
+        assertEquals(1, correction.getVisionsSinceLastFeed());
+    }
+
+    @Test
+    public void skippedFeedStillSettlesPendingVisionSamples() throws Exception {
+        feeder.setHardwareId(hardwareId);
+        feeder.setOffset(feederOffset);
+        feeder.setSlotAddress(feederAddress);
+        setSlotLocation(feederAddress, baseLocation);
+        PickOffsetCorrection correction = feeder.getPickOffsetCorrection();
+        correction.setEnabled(true);
+        correction.recordVision(new Location(LengthUnit.Millimeters, 1, 0, 0, 0));
+        feeder.setFeedOptions(org.openpnp.machine.reference.ReferenceFeeder.FeedOptions.SkipNext);
+
+        feeder.feed(mockedNozzle);
+
+        assertEquals(0, correction.getVisionsSinceLastFeed());
+        assertTrue(correction.getOffset().getLinearDistanceTo(0, 0) > 0);
+    }
+
+    @Test
+    public void bakeNotifiesOffsetListeners() throws Exception {
+        feeder.setHardwareId(hardwareId);
+        feeder.setOffset(feederOffset);
+        feeder.setSlotAddress(feederAddress);
+        setSlotLocation(feederAddress, baseLocation);
+        feeder.getPickOffsetCorrection().setEnabled(true);
+        feeder.getPickOffsetCorrection().addOffset(new Location(LengthUnit.Millimeters, 0.5, 0, 0, 0));
+        List<Object> notified = new ArrayList<>();
+        feeder.addPropertyChangeListener("offset", e -> notified.add(e.getNewValue()));
+
+        feeder.bakePickOffsetCorrectionIntoPosition();
+
+        assertEquals(1, notified.size());
     }
 
     @Test
@@ -1252,9 +1392,25 @@ public class PhotonFeederTest {
 
         PropertySheetHolder.PropertySheet[] sheets = feeder.getPropertySheets();
 
-        assertEquals(2, sheets.length);
+        assertEquals(3, sheets.length);
         assertTrue(sheets[0] instanceof FeederPropertySheet);
-        assertTrue(sheets[1] instanceof GlobalConfigPropertySheet);
+        assertTrue(sheets[1] instanceof PickOffsetCorrectionPropertySheet);
+        assertTrue(sheets[2] instanceof GlobalConfigPropertySheet);
+    }
+
+    @Test
+    public void unhomedMachineResetsPickCorrection() throws Exception {
+        feeder.getPickOffsetCorrection().setEnabled(true);
+        feeder.getPickOffsetCorrection().addOffset(new Location(LengthUnit.Millimeters, 1, 2, 0, 0));
+        assertTrue(feeder.getPickOffsetCorrection().getOffset()
+                .getLinearDistanceTo(0, 0) > 0.0001);
+
+        // The machine going unhomed should drop the learned correction, matching openpnp's
+        // convention that homing clears transient state. home() fires this with false then true.
+        ((AbstractMachine) machine).fireMachineHomed(false);
+
+        assertEquals(0, feeder.getPickOffsetCorrection().getOffset()
+                .getLinearDistanceTo(0, 0), 0.0001);
     }
 
     @Test
