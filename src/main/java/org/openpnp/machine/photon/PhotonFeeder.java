@@ -3,7 +3,6 @@ package org.openpnp.machine.photon;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Action;
@@ -52,6 +51,12 @@ import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 
 public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectableFeeder {
+    // Fixed width so names sort in slot order whatever the configured maximum address; the bus
+    // addresses 1-254. The "Slot: " decoration is deliberately not translated: setName strips it.
+    private static final String SLOT_ADDRESS_FORMAT = "%03d";
+    private static final Pattern NAME_SLOT_PREFIX = Pattern.compile("^Slot: \\w+; ");
+    private static final Pattern LEGACY_NAME_SLOT_SUFFIX = Pattern.compile(" \\(Slot: \\w+\\)$");
+
     public static final String ACTUATOR_DATA_NAME = "PhotonFeederData";
     PhotonProperties photonProperties;
 
@@ -657,30 +662,32 @@ public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectab
         }
 
         StringBuilder result = new StringBuilder();
-        result.append(name);
-        result.append(" (Slot: ");
+        result.append("Slot: ");
 
         if (slotAddress == null) {
             result.append("None");
         } else {
-            result.append(slotAddress);
+            result.append(formatSlot(slotAddress));
         }
 
-        result.append(")");
+        result.append("; ");
+
+        result.append(name);
 
         return result.toString();
     }
 
+    private static String formatSlot(int slot) {
+        return String.format(SLOT_ADDRESS_FORMAT, slot);
+    }
+
     @Override
     public void setName(String name) {
-        Matcher matcher = Pattern.compile("(\\(Slot: [\\w+]+\\))").matcher(name);
-        while (matcher.find()) {
-            name = name.replace(matcher.group(), "");
-        }
-
-        name = name.trim();
-
-        super.setName(name);
+        // Strip both the current prefix and the pre-slot-ordering suffix, so names from older
+        // configurations, or with both, settle on the bare name.
+        String bareName = NAME_SLOT_PREFIX.matcher(name).replaceFirst("");
+        bareName = LEGACY_NAME_SLOT_SUFFIX.matcher(bareName).replaceFirst("");
+        super.setName(bareName.trim());
     }
 
     /**
