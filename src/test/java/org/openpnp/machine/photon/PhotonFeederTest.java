@@ -745,6 +745,43 @@ public class PhotonFeederTest {
     }
 
     @Test
+    public void clearingTheFeedDirectionOverrideReturnsToTheRailDefault() {
+        int rearRailAddress = 30;
+        setSlotLocation(rearRailAddress, baseLocation);
+        feeder.setSlotAddress(rearRailAddress);
+        assertFalse(feeder.isFeedDirectionOverridden());
+
+        feeder.setFeedDirection(new Location(LengthUnit.Millimeters, 1, 0, 0, 0));
+        assertTrue(feeder.isFeedDirectionOverridden());
+
+        feeder.setFeedDirection(null);
+        assertFalse(feeder.isFeedDirectionOverridden());
+        assertEquals(0, feeder.getFeedDirection().getX(), 1e-9);
+        assertEquals(-1, feeder.getFeedDirection().getY(), 1e-9);
+    }
+
+    @Test
+    public void clearingAnOverrideThatMatchesTheDefaultStillNotifies() {
+        setSlotLocation(feederAddress, baseLocation);
+        feeder.setSlotAddress(feederAddress);
+        List<Object> overriddenEvents = new ArrayList<>();
+        feeder.addPropertyChangeListener("feedDirectionOverridden",
+                e -> overriddenEvents.add(e.getNewValue()));
+
+        feeder.setFeedDirection(feeder.getFeedDirection());
+        feeder.setFeedDirection(null);
+
+        assertEquals(List.of(true, false), overriddenEvents);
+    }
+
+    @Test
+    public void clearingTheFeedDirectionOverrideNeedsNoSlot() {
+        feeder.setFeedDirection(null);
+
+        assertFalse(feeder.isFeedDirectionOverridden());
+    }
+
+    @Test
     public void getPickLocationDoesNotConsumePendingVisionSamples() throws Exception {
         feeder.setHardwareId(hardwareId);
         feeder.setOffset(feederOffset);
