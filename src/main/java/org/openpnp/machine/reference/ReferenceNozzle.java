@@ -1418,25 +1418,29 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
     }
 
     @Deprecated
-    public void migrateSafeZ() {
+    public void migrateSafeZ() throws Exception {
         if (safeZ == null) {
             safeZ = new Length(0, LengthUnit.Millimeters);
         }
         CoordinateAxis coordAxis = getCoordinateAxisZ();
         if (coordAxis instanceof ReferenceControllerAxis) {
             ReferenceControllerAxis rawAxis = (ReferenceControllerAxis) coordAxis; 
+            Length rawZ;
             try {
-                Length rawZ = headMountableToRawZ(rawAxis, safeZ);
-                rawAxis.setSafeZoneLow(rawZ);
-                rawAxis.setSafeZoneLowEnabled(true);
-                rawAxis.setSafeZoneHigh(rawZ);
-                rawAxis.setSafeZoneHighEnabled(true);
-                // Get rid of the old setting.
-                safeZ = null;
+                rawZ = headMountableToRawZ(rawAxis, safeZ);
             }
             catch (Exception e) {
-                Logger.error(e);
+                // The legacy driver is dropped once migrated, so a nozzle left unmapped here
+                // would stay without Safe Z after the next save.
+                throw new Exception("Cannot migrate Safe Z of nozzle " + getName() + " to axis "
+                        + rawAxis.getName() + ": " + e.getMessage(), e);
             }
+            rawAxis.setSafeZoneLow(rawZ);
+            rawAxis.setSafeZoneLowEnabled(true);
+            rawAxis.setSafeZoneHigh(rawZ);
+            rawAxis.setSafeZoneHighEnabled(true);
+            // Get rid of the old setting.
+            safeZ = null;
         }
         else if (coordAxis != null) {
             coordAxis.setHomeCoordinate(safeZ);

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.swing.Icon;
 
@@ -59,7 +60,13 @@ public abstract class AbstractNozzle extends AbstractHeadMountable implements No
     @ElementList(required = false)
     protected List<String> compatibleNozzleTipIds = new ArrayList<>();
 
-    protected Set<NozzleTip> compatibleNozzleTips; 
+    /**
+     * An immutable snapshot that is replaced, never mutated, so any thread can iterate it. Camera
+     * and machine threads read it while configuration load or the GUI changes it.
+     */
+    private volatile Set<NozzleTip> compatibleNozzleTips;
+
+    private final Object compatibleNozzleTipsLock = new Object();
 
     protected Head head;
 
@@ -268,16 +275,23 @@ public abstract class AbstractNozzle extends AbstractHeadMountable implements No
 
     @Override
     public Set<NozzleTip> getCompatibleNozzleTips() {
-        if (compatibleNozzleTips == null) {
-            compatibleNozzleTips = new HashSet<>();
-            for (String nozzleTipId : compatibleNozzleTipIds) {
-                NozzleTip nt = Configuration.get().getMachine().getNozzleTip(nozzleTipId);
-                if (nt != null) {
-                    compatibleNozzleTips.add(nt);
-                }
-            }
+        Set<NozzleTip> tips = compatibleNozzleTips;
+        if (tips != null) {
+            return tips;
         }
-        return Collections.unmodifiableSet(compatibleNozzleTips);
+        synchronized (compatibleNozzleTipsLock) {
+            if (compatibleNozzleTips == null) {
+                Set<NozzleTip> resolved = new HashSet<>();
+                for (String nozzleTipId : compatibleNozzleTipIds) {
+                    NozzleTip nt = Configuration.get().getMachine().getNozzleTip(nozzleTipId);
+                    if (nt != null) {
+                        resolved.add(nt);
+                    }
+                }
+                compatibleNozzleTips = Collections.unmodifiableSet(resolved);
+            }
+            return compatibleNozzleTips;
+        }
     }
 
     @Override
@@ -299,19 +313,23 @@ public abstract class AbstractNozzle extends AbstractHeadMountable implements No
 
     @Override
     public void addCompatibleNozzleTip(NozzleTip nt) {
-        // Makes sure the structure has been initialized.
-        getCompatibleNozzleTips();
-        compatibleNozzleTips.add(nt);
-        syncCompatibleNozzleTipIds();
-        firePropertyChange("compatibleNozzleTips", null, getCompatibleNozzleTips());
+        replaceCompatibleNozzleTips(tips -> tips.add(nt));
     }
 
     @Override
     public void removeCompatibleNozzleTip(NozzleTip nt) {
-        // Makes sure the structure has been initialized.
-        getCompatibleNozzleTips();
-        compatibleNozzleTips.remove(nt);
-        syncCompatibleNozzleTipIds();
-        firePropertyChange("compatibleNozzleTips", null, getCompatibleNozzleTips());
+        replaceCompatibleNozzleTips(tips -> tips.remove(nt));
+    }
+
+    private void replaceCompatibleNozzleTips(Consumer<Set<NozzleTip>> change) {
+        Set<NozzleTip> replaced;
+        synchronized (compatibleNozzleTipsLock) {
+            Set<NozzleTip> tips = new HashSet<>(getCompatibleNozzleTips());
+            change.accept(tips);
+            replaced = Collections.unmodifiableSet(tips);
+            compatibleNozzleTips = replaced;
+            syncCompatibleNozzleTipIds();
+        }
+        firePropertyChange("compatibleNozzleTips", null, replaced);
     }
 }

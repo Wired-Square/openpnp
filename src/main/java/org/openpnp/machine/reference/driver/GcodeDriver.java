@@ -2243,7 +2243,8 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
     }
 
     @Deprecated
-    protected void migrateAssignAxis(Axis legacyAxis, AbstractAxis axis, HeadMountable hm) {
+    protected void migrateAssignAxis(Axis legacyAxis, AbstractAxis axis, HeadMountable hm)
+            throws Exception {
         AbstractAxis assignAxis = axis; 
         if (legacyAxis.transform != null) { 
             if (legacyAxis.transform instanceof CamTransform) {
