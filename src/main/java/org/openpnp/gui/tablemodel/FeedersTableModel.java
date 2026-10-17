@@ -28,6 +28,7 @@ import org.openpnp.model.AbstractModelObject;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Part;
 import org.openpnp.spi.Feeder;
+import org.openpnp.spi.HardwareIdentifiable;
 import org.openpnp.util.BeanUtils;
 import org.openpnp.machine.reference.ReferenceFeeder;
 
@@ -41,8 +42,12 @@ public class FeedersTableModel extends AbstractObjectTableModel {
             Translations.getString("FeedersTableModel.ColumnName.Priority"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.Faults"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.Enabled"), //$NON-NLS-1$
-            Translations.getString("FeedersTableModel.ColumnName.FeedOptions") //$NON-NLS-1$
+            Translations.getString("FeedersTableModel.ColumnName.FeedOptions"), //$NON-NLS-1$
+            Translations.getString("FeedersTableModel.ColumnName.HardwareId") //$NON-NLS-1$
     };
+
+    public static final int NAME_COLUMN = 0;
+    public static final int HARDWARE_ID_COLUMN = 7;
 
     private List<Feeder> feeders;
 
@@ -187,6 +192,13 @@ public class FeedersTableModel extends AbstractObjectTableModel {
                 } else {
                     return null;
                 }
+            }
+            case HARDWARE_ID_COLUMN: {
+                Feeder feeder = feeders.get(row);
+                if (feeder instanceof HardwareIdentifiable) {
+                    return ((HardwareIdentifiable) feeder).getHardwareId();
+                }
+                return null;
             }
             default:
                 return null;

@@ -25,6 +25,7 @@ import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
+import java.util.stream.IntStream;
 
 import javax.swing.JTable;
 import javax.swing.RowFilter;
@@ -288,13 +289,19 @@ public class TableUtils {
      *
      * @param table the table whose visible columns should be searched
      * @param searchText the user's raw search text
+     * @param excludedModelColumns visible columns whose values are not shown as text, such as
+     *        icon-only columns, and so should not match
      * @return a filter over the visible columns
      * @throws java.util.regex.PatternSyntaxException if the search text is not a valid regex
      */
     public static <M extends TableModel> RowFilter<M, Integer> createVisibleColumnsSearchFilter(
-            JTable table, String searchText) {
+            JTable table, String searchText, int... excludedModelColumns) {
         TableColumnModel columnModel = table.getColumnModel();
-        if (columnModel.getColumnCount() == 0) {
+        int[] modelColumnIndices = IntStream.range(0, columnModel.getColumnCount())
+                .map(i -> columnModel.getColumn(i).getModelIndex())
+                .filter(index -> IntStream.of(excludedModelColumns).noneMatch(excluded -> excluded == index))
+                .toArray();
+        if (modelColumnIndices.length == 0) {
             // regexFilter treats an empty index list as "every model column", which would read
             // the hidden cells this filter exists to avoid.
             return new RowFilter<M, Integer>() {
@@ -303,10 +310,6 @@ public class TableUtils {
                     return false;
                 }
             };
-        }
-        int[] modelColumnIndices = new int[columnModel.getColumnCount()];
-        for (int i = 0; i < modelColumnIndices.length; i++) {
-            modelColumnIndices[i] = columnModel.getColumn(i).getModelIndex();
         }
         return RowFilter.regexFilter("(?i)" + searchText.trim(), modelColumnIndices); //$NON-NLS-1$
     }

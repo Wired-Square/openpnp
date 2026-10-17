@@ -20,6 +20,7 @@ import org.openpnp.Translations;
 import org.openpnp.gui.components.LocationButtonsPanel;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.DoubleConverter;
+import org.openpnp.gui.support.HardwareIdLabel;
 import org.openpnp.gui.support.IdentifiableListCellRenderer;
 import org.openpnp.gui.support.IntegerConverter;
 import org.openpnp.gui.support.LengthConverter;
@@ -39,7 +40,7 @@ import com.jgoodies.forms.layout.RowSpec;
 public class FeederConfigurationWizard extends AbstractConfigurationWizard {
 	private final PhotonFeeder feeder;
 	
-	private final JLabel hardwareIdValue;
+	private final HardwareIdLabel hardwareIdValue;
 	private final JLabel slotAddressValue;
 	private final JLabel firmwareVersionValue;
 	private final JComboBox partCb;
@@ -91,7 +92,7 @@ public class FeederConfigurationWizard extends AbstractConfigurationWizard {
 		JLabel hardwareIdLabel = new JLabel(Translations.getString("FeederConfigurationWizard.InfoPanel.hardwareIdLabel.text")); //$NON-NLS-1$
 		infoPanel.add(hardwareIdLabel, "2, 2, left, center"); //$NON-NLS-1$
 		
-		hardwareIdValue = new JLabel(""); //$NON-NLS-1$
+		hardwareIdValue = new HardwareIdLabel();
 		infoPanel.add(hardwareIdValue, "4, 2, 5, 1, left, center"); //$NON-NLS-1$
 		
 		JLabel slotAddressLabel = new JLabel(Translations.getString("FeederConfigurationWizard.InfoPanel.slotAddressLabel.text")); //$NON-NLS-1$
@@ -286,7 +287,7 @@ public class FeederConfigurationWizard extends AbstractConfigurationWizard {
 		binding.bind();
 //		bind(UpdateStrategy.READ, feeder, "slot", slotProxy, "slot");
 
-		addWrappedBinding(feeder, "hardwareId", hardwareIdValue, "text"); //$NON-NLS-1$ //$NON-NLS-2$
+		bind(UpdateStrategy.READ, feeder, "hardwareId", hardwareIdValue, "hardwareId"); //$NON-NLS-1$ //$NON-NLS-2$
 		bind(UpdateStrategy.READ, slotProxy, "slotAddress", slotAddressValue, "text"); //$NON-NLS-1$ //$NON-NLS-2$
 		bind(UpdateStrategy.READ, slotProxy, "enabled", identifyFeederAction, "enabled"); //$NON-NLS-1$ //$NON-NLS-2$
 
