@@ -132,6 +132,8 @@ public class Icons {
     public static Icon footprintToggle = getIcon("/icons/footprint-mark.svg");
     public static Icon kicad = getIcon("/icons/kicad-logo.svg");
 
+    public static Icon hardwareId = getIcon("/icons/fingerprint.svg", 16, 16);
+
     public static Icon getIcon(String resourceName, int width, int height) {
         if (resourceName.endsWith(".svg")) {
             return new FlatSVGIcon(resourceName.substring(1), width, height);

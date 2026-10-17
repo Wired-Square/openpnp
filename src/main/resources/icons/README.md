@@ -57,6 +57,14 @@ https://github.com/google/material-design-icons
 All icons are released under an Attribution 4.0 International license.
 http://creativecommons.org/licenses/by/4.0/
 
+Google Material Symbols
+-----------------------
+https://github.com/google/material-design-icons (symbols/web)
+
+fingerprint.svg and fingerprint_dark.svg are recoloured from Material Symbols Outlined,
+released under the Apache License 2.0.
+http://www.apache.org/licenses/LICENSE-2.0
+
 Freepik
 -------
 <div>Icon made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>

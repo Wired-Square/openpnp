@@ -17,10 +17,12 @@ import org.openpnp.gui.support.PickOffsetCorrectionPropertySheet;
 import org.openpnp.machine.reference.ReferenceActuator;
 import org.openpnp.model.*;
 import org.openpnp.spi.Actuator;
+import org.openpnp.spi.HardwareIdentifiable;
 import org.openpnp.spi.Machine;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.PropertySheetHolder;
 import org.openpnp.spi.base.AbstractMachine;
+import org.openpnp.util.NaturalOrderComparator;
 import org.pmw.tinylog.Logger;
 
 import java.io.File;
@@ -201,23 +203,26 @@ public class PhotonFeederTest {
     }
 
     @Test
-    public void getNameUsesHardwareIdWhenThatIsSet() {
+    public void newlyDiscoveredFeederIsNamedPhoton() {
         feeder.setHardwareId(hardwareId);
-        assertEquals(
-                String.format("Slot: None; %s", hardwareId),
-                feeder.getName()
-        );
+        assertEquals("Slot None: Photon", feeder.getName());
     }
 
     @Test
-    public void getNameUsesHardwareIdAndSlotWhenBothAreSet() {
+    public void getNamePrefixesTheSlotWhenSet() {
         int slot = 27;
         feeder.setHardwareId(hardwareId);
         feeder.setSlotAddress(slot);
-        assertEquals(
-                String.format("Slot: %03d; %s", slot, hardwareId),
-                feeder.getName()
-        );
+        assertEquals(String.format("Slot %d: Photon", slot), feeder.getName());
+    }
+
+    @Test
+    public void existingNameIsKeptWhenItWasTheHardwareId() {
+        feeder.setHardwareId(hardwareId);
+        feeder.setName(hardwareId);
+        feeder.setHardwareId(hardwareId);
+
+        assertEquals(String.format("Slot None: %s", hardwareId), feeder.getName());
     }
 
     @Test
@@ -225,7 +230,7 @@ public class PhotonFeederTest {
         feeder.setName("My Name");
         feeder.setHardwareId(hardwareId);
 
-        assertEquals("Slot: None; My Name", feeder.getName());
+        assertEquals("Slot None: My Name", feeder.getName());
     }
 
     @Test
@@ -235,7 +240,7 @@ public class PhotonFeederTest {
         feeder.setName(name);
 
         assertEquals(
-                String.format("Slot: None; %s", name),
+                String.format("Slot None: %s", name),
                 feeder.getName()
         );
     }
@@ -244,7 +249,7 @@ public class PhotonFeederTest {
     public void setNameWorksWithSlotIncluded() {
         int slot = 13;
         String name = "Test Name";
-        String nameWithSlot = String.format("Slot: %03d; %s", slot, name);
+        String nameWithSlot = String.format("Slot %d: %s", slot, name);
         feeder.setHardwareId(hardwareId);
         feeder.setSlotAddress(slot);
         feeder.setName(nameWithSlot);
@@ -256,26 +261,26 @@ public class PhotonFeederTest {
     public void setNameWorksWithOverridingNoneSlot() {
         int slot = 13;
         String name = "Test Name";
-        String nameWithNoneSlot = String.format("Slot: None; %s", name);
+        String nameWithNoneSlot = String.format("Slot None: %s", name);
         feeder.setHardwareId(hardwareId);
         feeder.setSlotAddress(slot);
         feeder.setName(nameWithNoneSlot);
 
-        String nameWithSlot = String.format("Slot: %03d; %s", slot, name);
+        String nameWithSlot = String.format("Slot %d: %s", slot, name);
         assertEquals(nameWithSlot, feeder.getName());
     }
 
     @Test
     public void setNameWorksWithUnexpectedSlotNumber() {
         String name = "Test Name";
-        String nameWithOldSlot = String.format("Slot: 13; %s", name);
+        String nameWithOldSlot = String.format("Slot 13: %s", name);
 
         int newSlot = 3;
         feeder.setHardwareId(hardwareId);
         feeder.setSlotAddress(newSlot);
         feeder.setName(nameWithOldSlot);
 
-        String nameWithNewSlot = String.format("Slot: %03d; %s", newSlot, name);
+        String nameWithNewSlot = String.format("Slot %d: %s", newSlot, name);
         assertEquals(nameWithNewSlot, feeder.getName());
     }
 
@@ -286,7 +291,7 @@ public class PhotonFeederTest {
         feeder.setName(name);
 
         assertEquals(
-                String.format("Slot: None; %s", name),
+                String.format("Slot None: %s", name),
                 feeder.getName()
         );
     }
@@ -298,7 +303,7 @@ public class PhotonFeederTest {
         feeder.setName(name);
 
         assertEquals(
-                "Slot: None; Test Name",
+                "Slot None: Test Name",
                 feeder.getName()
         );
     }
@@ -309,7 +314,7 @@ public class PhotonFeederTest {
         feeder.setHardwareId(hardwareId);
         feeder.setName(name);
 
-        assertEquals(String.format("Slot: None; %s", name), feeder.getName());
+        assertEquals(String.format("Slot None: %s", name), feeder.getName());
     }
 
     @Test
@@ -317,28 +322,69 @@ public class PhotonFeederTest {
         feeder.setHardwareId(hardwareId);
 
         feeder.setName("Philip (Slot: None)");
-        assertEquals("Slot: None; Philip", feeder.getName());
+        assertEquals("Slot None: Philip", feeder.getName());
 
         feeder.setName("Philip (Slot: 13)");
-        assertEquals("Slot: None; Philip", feeder.getName());
+        assertEquals("Slot None: Philip", feeder.getName());
     }
 
     @Test
-    public void setNameStripsBothCurrentAndLegacySlotDecorations() {
+    public void setNameStripsEveryEarlierSlotDecoration() {
         feeder.setHardwareId(hardwareId);
 
-        feeder.setName("Slot: 005; Philip (Slot: 13)");
+        feeder.setName("Slot 7: Slot: 005; Philip (Slot: 13)");
+        assertEquals("Slot None: Philip", feeder.getName());
 
-        assertEquals("Slot: None; Philip", feeder.getName());
+        feeder.setName("Slot: 005; Philip");
+        assertEquals("Slot None: Philip", feeder.getName());
     }
 
     @Test
-    public void slotIsPaddedToThreeDigitsWhateverTheMaximumAddress() {
-        photonProperties.setMaxFeederAddress(5);
+    public void setNameStripsASlotPrefixAfterLeadingWhitespace() {
+        feeder.setHardwareId(hardwareId);
+
+        feeder.setName(" Slot 4: Philip");
+
+        assertEquals("Slot None: Philip", feeder.getName());
+    }
+
+    @Test
+    public void setNameKeepsAWordThatIsNotASlot() {
+        feeder.setHardwareId(hardwareId);
+
+        feeder.setName("Slot Left: camera");
+
+        assertEquals("Slot None: Slot Left: camera", feeder.getName());
+    }
+
+    @Test
+    public void slotIsNotPadded() {
         feeder.setHardwareId(hardwareId);
         feeder.setSlotAddress(3);
 
-        assertEquals(String.format("Slot: 003; %s", hardwareId), feeder.getName());
+        assertEquals("Slot 3: Photon", feeder.getName());
+    }
+
+    @Test
+    public void namesSortInSlotOrderNaturally() {
+        List<String> names = new ArrayList<>();
+        for (int slot : new int[] {10, 2, 27}) {
+            PhotonFeeder other = new PhotonFeeder();
+            other.setHardwareId(hardwareId);
+            other.setSlotAddress(slot);
+            names.add(other.getName());
+        }
+
+        names.sort(NaturalOrderComparator.INSTANCE);
+
+        assertEquals(List.of("Slot 2: Photon", "Slot 10: Photon", "Slot 27: Photon"), names);
+    }
+
+    @Test
+    public void hardwareIdIsReportedThroughHardwareIdentifiable() {
+        feeder.setHardwareId(hardwareId);
+
+        assertEquals(hardwareId, ((HardwareIdentifiable) feeder).getHardwareId());
     }
 
     @Test
@@ -1240,7 +1286,7 @@ public class PhotonFeederTest {
 
         assertEquals(2, (int) feeder.getSlotAddress());
         assertEquals(
-                String.format("Slot: %03d; %s", 2, hardwareId),
+                String.format("Slot %d: %s", 2, hardwareId),
                 feeder.getName()
         );
 
@@ -1249,7 +1295,7 @@ public class PhotonFeederTest {
         assertEquals(1, (int) newFeeder.getSlotAddress());
         assertEquals(newHardwareUuid, newFeeder.getHardwareId());
         assertEquals(
-                String.format("Slot: %03d; %s", 1, newHardwareUuid),
+                String.format("Slot %d: %s", 1, PhotonFeeder.DEFAULT_NAME),
                 newFeeder.getName()
         );
 
@@ -1343,7 +1389,7 @@ public class PhotonFeederTest {
         assertEquals(1, (int) feeder.getSlotAddress());
         assertEquals(hardwareId, feeder.getHardwareId());
         assertEquals(
-                String.format("Slot: %03d; %s", 1, hardwareId),
+                String.format("Slot %d: %s", 1, PhotonFeeder.DEFAULT_NAME),
                 feeder.getName()
         );
 
@@ -1352,7 +1398,7 @@ public class PhotonFeederTest {
         assertEquals(2, (int) newFeeder.getSlotAddress());
         assertEquals(newHardwareUuid, newFeeder.getHardwareId());
         assertEquals(
-                String.format("Slot: %03d; %s", 2, newHardwareUuid),
+                String.format("Slot %d: %s", 2, PhotonFeeder.DEFAULT_NAME),
                 newFeeder.getName()
         );
 

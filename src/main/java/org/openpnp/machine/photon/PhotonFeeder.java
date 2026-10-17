@@ -40,6 +40,7 @@ import org.openpnp.model.Solutions;
 import org.openpnp.spi.Actuator;
 import org.openpnp.spi.Driver;
 import org.openpnp.spi.Feeder;
+import org.openpnp.spi.HardwareIdentifiable;
 import org.openpnp.spi.Machine;
 import org.openpnp.spi.MachineListener;
 import org.openpnp.spi.Nozzle;
@@ -50,12 +51,18 @@ import org.pmw.tinylog.Logger;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 
-public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectableFeeder {
-    // Fixed width so names sort in slot order whatever the configured maximum address; the bus
-    // addresses 1-254. The "Slot: " decoration is deliberately not translated: setName strips it.
-    private static final String SLOT_ADDRESS_FORMAT = "%03d";
-    private static final Pattern NAME_SLOT_PREFIX = Pattern.compile("^Slot: \\w+; ");
-    private static final Pattern LEGACY_NAME_SLOT_SUFFIX = Pattern.compile(" \\(Slot: \\w+\\)$");
+public class PhotonFeeder extends ReferenceFeeder
+        implements PickOffsetCorrectableFeeder, HardwareIdentifiable {
+    // The slot comes first so sorting by name follows physical order; the Feeders table sorts
+    // naturally, so it needs no padding. The decoration is deliberately not translated: setName
+    // strips it, and also the two earlier formats so older names settle on the bare name.
+    private static final String SLOT_TOKEN = "(?:None|\\d+)";
+    private static final Pattern NAME_SLOT_PREFIX = Pattern.compile("^Slot " + SLOT_TOKEN + ": ");
+    private static final Pattern PADDED_NAME_SLOT_PREFIX = Pattern.compile("^Slot: " + SLOT_TOKEN + "; ");
+    private static final Pattern LEGACY_NAME_SLOT_SUFFIX = Pattern.compile(" \\(Slot: " + SLOT_TOKEN + "\\)$");
+
+    /** Bare name given to newly discovered feeders; the slot prefix identifies them until renamed. */
+    public static final String DEFAULT_NAME = "Photon";
 
     public static final String ACTUATOR_DATA_NAME = "PhotonFeederData";
     PhotonProperties photonProperties;
@@ -661,31 +668,14 @@ public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectab
             return String.format("Unconfigured %s", getClass().getSimpleName());
         }
 
-        StringBuilder result = new StringBuilder();
-        result.append("Slot: ");
-
-        if (slotAddress == null) {
-            result.append("None");
-        } else {
-            result.append(formatSlot(slotAddress));
-        }
-
-        result.append("; ");
-
-        result.append(name);
-
-        return result.toString();
-    }
-
-    private static String formatSlot(int slot) {
-        return String.format(SLOT_ADDRESS_FORMAT, slot);
+        String slot = slotAddress == null ? "None" : Integer.toString(slotAddress);
+        return "Slot " + slot + ": " + name;
     }
 
     @Override
     public void setName(String name) {
-        // Strip both the current prefix and the pre-slot-ordering suffix, so names from older
-        // configurations, or with both, settle on the bare name.
-        String bareName = NAME_SLOT_PREFIX.matcher(name).replaceFirst("");
+        String bareName = NAME_SLOT_PREFIX.matcher(name.trim()).replaceFirst("");
+        bareName = PADDED_NAME_SLOT_PREFIX.matcher(bareName).replaceFirst("");
         bareName = LEGACY_NAME_SLOT_SUFFIX.matcher(bareName).replaceFirst("");
         super.setName(bareName.trim());
     }
@@ -775,6 +765,7 @@ public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectab
         return parts.isEmpty() ? null : parts.get(0);
     }
 
+    @Override
     public String getHardwareId() {
         return hardwareId;
     }
@@ -784,7 +775,7 @@ public class PhotonFeeder extends ReferenceFeeder implements PickOffsetCorrectab
         this.hardwareId = hardwareId;
 
         if (getClass().getSimpleName().equals(name)) {
-            name = hardwareId;
+            name = DEFAULT_NAME;
         }
 
         pickOffsetCorrection.reset();
