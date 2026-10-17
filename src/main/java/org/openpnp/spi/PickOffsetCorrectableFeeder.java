@@ -28,7 +28,19 @@ public interface PickOffsetCorrectableFeeder {
         return null;
     }
 
+    /**
+     * @param machineFrameDirection unit vector in millimetres, machine frame, to use instead of the
+     *        feeder's default, or null to return to the default
+     */
     default void setFeedDirection(Location machineFrameDirection) {
         throw new NotImplementedException();
+    }
+
+    /**
+     * @return true if {@link #getFeedDirection()} is an operator override rather than the feeder's
+     *         default
+     */
+    default boolean isFeedDirectionOverridden() {
+        return false;
     }
 }

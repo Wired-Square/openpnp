@@ -280,13 +280,27 @@ public class PhotonFeeder extends ReferenceFeeder
 
     @Override
     public void setFeedDirection(Location machineFrameDirection) {
-        PhotonFeederSlots.Slot slot = getSlot();
-        if (slot == null || slot.getLocation() == null) {
-            throw new IllegalStateException("The feed direction needs a configured slot.");
-        }
         Location oldValue = getFeedDirection();
-        feedDirectionInSlotFrame = machineFrameDirection.rotateXy(-slot.getLocation().getRotation());
+        boolean wasOverridden = isFeedDirectionOverridden();
+        if (machineFrameDirection == null) {
+            feedDirectionInSlotFrame = null;
+        }
+        else {
+            PhotonFeederSlots.Slot slot = getSlot();
+            if (slot == null || slot.getLocation() == null) {
+                throw new IllegalStateException("The feed direction needs a configured slot.");
+            }
+            feedDirectionInSlotFrame = machineFrameDirection.rotateXy(-slot.getLocation().getRotation());
+        }
         firePropertyChange("feedDirection", oldValue, getFeedDirection());
+        // Fired separately because an override can equal the rail default, which suppresses the
+        // feedDirection event.
+        firePropertyChange("feedDirectionOverridden", wasOverridden, isFeedDirectionOverridden());
+    }
+
+    @Override
+    public boolean isFeedDirectionOverridden() {
+        return feedDirectionInSlotFrame != null;
     }
 
     public boolean getMoveWhileFeeding() {

@@ -73,6 +73,7 @@ public final class PickOffsetCorrectionPanel extends JPanel {
     private JToggleButton yPlusButton;
     private JToggleButton yMinusButton;
     private final ButtonGroup directionGroup = new ButtonGroup();
+    private final JLabel feedDirectionSourceLabel = new JLabel();
 
     // True while refresh() is pushing model values into the controls, so their listeners don't echo
     // the change straight back into the model.
@@ -281,8 +282,29 @@ public final class PickOffsetCorrectionPanel extends JPanel {
         cross.add(xMinusButton, at(0, 1));
         cross.add(xPlusButton, at(2, 1));
         cross.add(yMinusButton, at(1, 2));
+
+        feedDirectionSourceLabel.setToolTipText(Translations.getString(
+                "PickOffsetCorrectionPanel.FeedDirectionSource.toolTipText")); //$NON-NLS-1$
+        cross.add(feedDirectionSourceLabel, at(1, 1));
+
+        GridBagConstraints below = at(0, 3);
+        below.gridwidth = 3;
+        cross.add(new JButton(defaultDirectionAction), below);
         return cross;
     }
+
+    private final transient Action defaultDirectionAction = new AbstractAction(
+            Translations.getString("PickOffsetCorrectionPanel.Action.DefaultFeedDirection")) { //$NON-NLS-1$
+        {
+            putValue(Action.SHORT_DESCRIPTION, Translations.getString(
+                    "PickOffsetCorrectionPanel.Action.DefaultFeedDirection.Description")); //$NON-NLS-1$
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            owner.setFeedDirection(null);
+        }
+    };
 
     private JToggleButton directionButton(String text, double x, double y) {
         JToggleButton button = new JToggleButton(text);
@@ -336,6 +358,9 @@ public final class PickOffsetCorrectionPanel extends JPanel {
                         && !xPlusButton.isSelected() && !xMinusButton.isSelected()) {
                     directionGroup.clearSelection();
                 }
+                feedDirectionSourceLabel.setText(Translations.getString(owner.isFeedDirectionOverridden()
+                        ? "PickOffsetCorrectionPanel.FeedDirectionSource.Override" //$NON-NLS-1$
+                        : "PickOffsetCorrectionPanel.FeedDirectionSource.Default")); //$NON-NLS-1$
 
                 lastNudgeLabel.setText(fmtLength(n.getLastNudge()));
                 nudgeSumLabel.setText(fmtLength(n.getNudgeSum()));
@@ -364,6 +389,10 @@ public final class PickOffsetCorrectionPanel extends JPanel {
             xMinusButton.setEnabled(planeOn);
             yPlusButton.setEnabled(planeOn);
             yMinusButton.setEnabled(planeOn);
+            // Clearing needs no slot, so unlike the direction buttons it ignores whether the
+            // direction is known.
+            defaultDirectionAction.setEnabled(
+                    on && nudgingCheckBox.isSelected() && owner.isFeedDirectionOverridden());
         }
     }
 
@@ -411,6 +440,7 @@ public final class PickOffsetCorrectionPanel extends JPanel {
         correction.addPropertyChangeListener(listener);
         if (owner instanceof AbstractModelObject) {
             ((AbstractModelObject) owner).addPropertyChangeListener("feedDirection", listener);
+            ((AbstractModelObject) owner).addPropertyChangeListener("feedDirectionOverridden", listener);
         }
         Configuration.get().getMachine().addListener(machineListener);
         refresh();
@@ -421,6 +451,7 @@ public final class PickOffsetCorrectionPanel extends JPanel {
         correction.removePropertyChangeListener(listener);
         if (owner instanceof AbstractModelObject) {
             ((AbstractModelObject) owner).removePropertyChangeListener("feedDirection", listener);
+            ((AbstractModelObject) owner).removePropertyChangeListener("feedDirectionOverridden", listener);
         }
         Configuration.get().getMachine().removeListener(machineListener);
         super.removeNotify();
