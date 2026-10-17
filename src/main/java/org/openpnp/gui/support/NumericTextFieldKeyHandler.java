@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -52,6 +53,10 @@ public class NumericTextFieldKeyHandler implements AWTEventListener {
             return;
         }
         if (!((JTextField) ke.getComponent()).isEditable()) {
+            return;
+        }
+        // A spinner's own arrow bindings honour its step and bounds and commit to its model.
+        if (SwingUtilities.getAncestorOfClass(JSpinner.class, ke.getComponent()) != null) {
             return;
         }
 
