@@ -66,6 +66,7 @@ import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.TableUtils;
 import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.CustomBooleanRenderer;
+import org.openpnp.gui.support.HardwareIdLabel;
 import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
 import org.openpnp.gui.support.TableUtils;
@@ -94,6 +95,7 @@ import org.openpnp.spi.NozzleTip;
 import org.openpnp.spi.PartAlignment;
 import org.openpnp.spi.PropertySheetHolder.PropertySheet;
 import org.openpnp.util.MovableUtils;
+import org.openpnp.util.NaturalOrderComparator;
 import org.openpnp.util.UiUtils;
 import org.pmw.tinylog.Logger;
 
@@ -231,7 +233,9 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         table.setDefaultEditor(ReferenceFeeder.Priority.class, new DefaultCellEditor(priorityComboBox));
 
         tableSorter = new TriStateTableRowSorter<>(tableModel);
+        tableSorter.setComparator(FeedersTableModel.NAME_COLUMN, NaturalOrderComparator.INSTANCE);
         table.getColumnModel().moveColumn(1,  2);
+        HardwareIdLabel.installTableColumn(table, FeedersTableModel.HARDWARE_ID_COLUMN);
 
         final JSplitPane splitPane = new JSplitPane();
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -483,7 +487,8 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         RowFilter<FeedersTableModel, Integer> rf = null;
         // If current expression doesn't parse, don't update.
         try {
-            rf = TableUtils.createVisibleColumnsSearchFilter(table, searchTextField.getText());
+            rf = TableUtils.createVisibleColumnsSearchFilter(table, searchTextField.getText(),
+                    FeedersTableModel.HARDWARE_ID_COLUMN);
         }
         catch (PatternSyntaxException e) {
             Logger.warn(e, "Search failed");
