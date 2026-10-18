@@ -21,6 +21,7 @@ package org.openpnp.gui.support;
 
 import java.awt.Color;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.AutoBinding;
@@ -108,8 +109,12 @@ public class JBindings {
                 }
             }
             wrappedBinding.bind();
+            // A property instance of its own: BeanProperty notifies its own listeners synchronously
+            // when written, which would update the component on the source's thread. The
+            // component side instead hears the wrapper's change event, which arrives on the EDT.
+            BeanProperty<Wrapper<SV>, SV> wrapperSourceSide = BeanProperty.create("value");
             binding = Bindings.createAutoBinding(
-                    UpdateStrategy.READ, source, sourceProperty, wrapper, wrapperProperty);
+                    UpdateStrategy.READ, source, sourceProperty, wrapper, wrapperSourceSide);
             binding.bind();
         }
         
@@ -163,7 +168,15 @@ public class JBindings {
             return value;
         }
 
+        /**
+         * Model properties can change on the machine thread (e.g. a feeder's feed count), and the
+         * wrapper drives a Swing component, so an off-EDT change is applied on the EDT.
+         */
         public void setValue(T value) {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> setValue(value));
+                return;
+            }
             T oldValue = this.value;
             this.value = value;
             firePropertyChange("value", oldValue, this.value);

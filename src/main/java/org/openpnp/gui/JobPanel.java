@@ -1754,9 +1754,10 @@ public class JobPanel extends JPanel {
 
     private final PropertyChangeListener titlePropertyChangeListener =
             new PropertyChangeListener() {
+                // The job processor marks the job dirty on the machine thread.
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    updateTitle();
+                    SwingUtilities.invokeLater(() -> updateTitle());
                 }
             };
 
