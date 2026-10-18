@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import org.openpnp.model.Placement.Type;
 import org.simpleframework.xml.Attribute;
@@ -223,30 +224,9 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
      * @return the total number of active placements
      */
     public int getTotalActivePlacements(PlacementsHolderLocation<?> placementsHolderLocation) {
-        if (placementsHolderLocation == null || placementsHolderLocation.getPlacementsHolder() == null ||
-                !placementsHolderLocation.isEnabled()) {
-            return 0;
-        }
-        
-        int counter = 0;
-        if (placementsHolderLocation instanceof BoardLocation) {
-            for(Placement placement : placementsHolderLocation.getPlacementsHolder().getPlacements()) {
-                if (placement.getSide() == placementsHolderLocation.getGlobalSide()
-                        && placement.getType() == Type.Placement
-                        && placement.isEnabled()) {
-                        counter++;
-                }
-            }
-        }
-        else if (placementsHolderLocation instanceof PanelLocation) {
-            for (PlacementsHolderLocation<?> child : ((PanelLocation) placementsHolderLocation).getPanel().getChildren()) {
-                counter += getTotalActivePlacements(child);
-            }
-        }
-        else {
-            throw new UnsupportedOperationException("Instance type " + placementsHolderLocation.getClass() + " not supported.");
-        }
-        return counter;
+        int[] counter = {0};
+        forEachActivePlacement(placementsHolderLocation, (boardLocation, placement) -> counter[0]++);
+        return counter[0];
     }
     
     /**
@@ -256,31 +236,46 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
      * @return the number of active placements
      */
     public int getActivePlacements(PlacementsHolderLocation<?> placementsHolderLocation) {
+        int[] counter = {0};
+        forEachActivePlacement(placementsHolderLocation, (boardLocation, placement) -> {
+            if (!retrievePlacedStatus(boardLocation, placement.getId())) {
+                counter[0]++;
+            }
+        });
+        return counter[0];
+    }
+
+    /**
+     * Visits the Placements held by a PlacementsHolderLocation and its descendants that are
+     * facing up on the machine and are enabled, whether or not they have been placed.
+     * @param placementsHolderLocation - the PlacementsHolderLocation
+     * @param action - receives each Placement and the BoardLocation holding it
+     */
+    public static void forEachActivePlacement(PlacementsHolderLocation<?> placementsHolderLocation,
+            BiConsumer<BoardLocation, Placement> action) {
         if (placementsHolderLocation == null || placementsHolderLocation.getPlacementsHolder() == null ||
                 !placementsHolderLocation.isEnabled()) {
-            return 0;
+            return;
         }
         
-        int counter = 0;
         if (placementsHolderLocation instanceof BoardLocation) {
+            BoardLocation boardLocation = (BoardLocation) placementsHolderLocation;
             for(Placement placement : placementsHolderLocation.getPlacementsHolder().getPlacements()) {
                 if (placement.getSide() == placementsHolderLocation.getGlobalSide()
                         && placement.getType() == Type.Placement
-                        && placement.isEnabled()
-                        && !retrievePlacedStatus(placementsHolderLocation, placement.getId())) {
-                        counter++;
+                        && placement.isEnabled()) {
+                        action.accept(boardLocation, placement);
                 }
             }
         }
         else if (placementsHolderLocation instanceof PanelLocation) {
             for (PlacementsHolderLocation<?> child : ((PanelLocation) placementsHolderLocation).getPanel().getChildren()) {
-                counter += getActivePlacements(child);
+                forEachActivePlacement(child, action);
             }
         }
         else {
             throw new UnsupportedOperationException("Instance type " + placementsHolderLocation.getClass() + " not supported.");
         }
-        return counter;
     }
 
     /**

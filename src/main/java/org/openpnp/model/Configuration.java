@@ -128,6 +128,9 @@ public class Configuration extends AbstractModelObject {
     private Preferences prefs;
     private Scripting scripting;
     private EventBus bus = new EventBus();
+    private final ModelChangeService modelChangeService = new ModelChangeService();
+    private final JobUsageService jobUsageService =
+            new JobUsageService(this, modelChangeService);
     public TreeMap<String, String> scriptState = new TreeMap<>();
 
     public static boolean isInstanceInitialized() {
@@ -169,11 +172,13 @@ public class Configuration extends AbstractModelObject {
         this.prefs = Preferences.userNodeForPackage(Configuration.class);
         File scriptingDirectory = new File(configurationDirectory, "scripts");
         this.scripting = new Scripting(scriptingDirectory);
+        bus.register(jobUsageService);
     }
     
     private Configuration() {
         this.prefs = Preferences.userNodeForPackage(Configuration.class);
         this.scripting = new Scripting(null);
+        bus.register(jobUsageService);
         /**
          * Setting loaded = true allows the mechanism of immediately notifying late
          * Configuration.addListener() calls that the configuration is ready. It's a legacy
@@ -192,6 +197,14 @@ public class Configuration extends AbstractModelObject {
     
     public EventBus getBus() {
         return bus;
+    }
+
+    public ModelChangeService getModelChangeService() {
+        return modelChangeService;
+    }
+
+    public JobUsageService getJobUsageService() {
+        return jobUsageService;
     }
 
     public File getConfigurationDirectory() {

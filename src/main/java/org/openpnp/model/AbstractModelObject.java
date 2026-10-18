@@ -115,9 +115,21 @@ public abstract class AbstractModelObject {
 
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        reportModelChange(propertyName, oldValue, newValue);
     }
     
     protected void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
         propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+        reportModelChange(propertyName, oldValue, newValue);
+    }
+
+    private void reportModelChange(String propertyName, Object oldValue, Object newValue) {
+        // PropertyChangeSupport drops an event whose old and new values are equal, so do the same.
+        if (oldValue != null && newValue != null && oldValue.equals(newValue)) {
+            return;
+        }
+        if (Configuration.isInstanceInitialized()) {
+            Configuration.get().getModelChangeService().modelChanged(this, propertyName);
+        }
     }
 }
