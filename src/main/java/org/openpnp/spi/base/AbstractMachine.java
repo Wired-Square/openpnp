@@ -68,8 +68,12 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
     @ElementList(required = false)
     protected IdentifiableList<Signaler> signalers = new IdentifiableList<>();
 
+    // Copy-on-write: Photon discovery adds feeders on the machine thread while the GUI iterates
+    // them. Replace the list under feedersLock, never mutate a published one.
     @ElementList(required = false)
-    protected IdentifiableList<Feeder> feeders = new IdentifiableList<>();
+    protected volatile IdentifiableList<Feeder> feeders = new IdentifiableList<>();
+
+    private final Object feedersLock = new Object();
 
     @ElementList(required = false)
     protected IdentifiableList<Camera> cameras = new IdentifiableList<>();
@@ -354,16 +358,29 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
 
     @Override
     public void addFeeder(Feeder feeder) throws Exception {
-        feeders.add(feeder);
-        fireIndexedPropertyChange("feeders", feeders.size() - 1, null, feeder);
+        int index;
+        synchronized (feedersLock) {
+            IdentifiableList<Feeder> next = new IdentifiableList<>(feeders);
+            next.add(feeder);
+            index = next.size() - 1;
+            feeders = next;
+        }
+        fireIndexedPropertyChange("feeders", index, null, feeder);
     }
 
     @Override
     public void removeFeeder(Feeder feeder) {
-        int index = feeders.indexOf(feeder);
-        if (feeders.remove(feeder)) {
-            fireIndexedPropertyChange("feeders", index, feeder, null);
+        int index;
+        synchronized (feedersLock) {
+            index = feeders.indexOf(feeder);
+            if (index < 0) {
+                return;
+            }
+            IdentifiableList<Feeder> next = new IdentifiableList<>(feeders);
+            next.remove(index);
+            feeders = next;
         }
+        fireIndexedPropertyChange("feeders", index, feeder, null);
     }
 
     @Override

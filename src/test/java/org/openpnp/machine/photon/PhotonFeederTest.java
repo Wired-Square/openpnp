@@ -194,6 +194,105 @@ public class PhotonFeederTest {
         assertTrue(feeder.isEnabled());
     }
 
+    private List<Object> recordEvents(String propertyName) {
+        List<Object> newValues = new ArrayList<>();
+        feeder.addPropertyChangeListener(propertyName, e -> newValues.add(e.getNewValue()));
+        return newValues;
+    }
+
+    private void configureEnabledFeeder() {
+        feeder.setEnabled(true);
+        feeder.setHardwareId(hardwareId);
+        feeder.setPart(new Part("test-part"));
+        feeder.setSlotAddress(feederAddress);
+        setSlotLocation(feederAddress, baseLocation);
+        feeder.setOffset(feederOffset);
+    }
+
+    @Test
+    public void settingTheSlotLocationReportsTheDerivedEnabledChange() {
+        feeder.setEnabled(true);
+        feeder.setHardwareId(hardwareId);
+        feeder.setPart(new Part("test-part"));
+        feeder.setSlotAddress(feederAddress);
+        feeder.setOffset(feederOffset);
+        List<Object> enabled = recordEvents("enabled");
+
+        setSlotLocation(feederAddress, baseLocation);
+        setSlotLocation(feederAddress, null);
+
+        assertEquals(List.of(true, false), enabled);
+    }
+
+    @Test
+    public void offsetHardwareIdAndSlotChangesReportTheDerivedEnabledChange() {
+        configureEnabledFeeder();
+        List<Object> enabled = recordEvents("enabled");
+
+        feeder.setOffset(null);
+        feeder.setOffset(feederOffset);
+        feeder.setHardwareId(null);
+        feeder.setHardwareId(hardwareId);
+        feeder.setSlotAddress(null);
+
+        assertEquals(List.of(false, true, false, true, false), enabled);
+    }
+
+    @Test
+    public void assigningThePartReportsTheDerivedEnabledChange() {
+        feeder.setEnabled(true);
+        feeder.setHardwareId(hardwareId);
+        feeder.setSlotAddress(feederAddress);
+        setSlotLocation(feederAddress, baseLocation);
+        feeder.setOffset(feederOffset);
+        List<Object> enabled = recordEvents("enabled");
+
+        feeder.setPart(new Part("test-part"));
+
+        assertEquals(List.of(true), enabled);
+    }
+
+    @Test
+    public void changesThatKeepTheFeederEnabledReportNoEnabledChange() {
+        configureEnabledFeeder();
+        List<Object> enabled = recordEvents("enabled");
+
+        feeder.setOffset(feederOffset.add(new Location(LengthUnit.Millimeters, 1, 0, 0, 0)));
+
+        assertEquals(List.of(), enabled);
+    }
+
+    @Test
+    public void feedTimeoutClearsTheSlotWithEvents() throws Exception {
+        configureEnabledFeeder();
+        feeder.setPartPitch(2);
+        photonProperties.setFeederCommunicationMaxRetry(0);
+        bus.when(new InitializeFeeder(feederAddress, hardwareId))
+                .reply(responses.initializeFeeder.ok(feederAddress, hardwareId));
+        bus.when(new MoveFeedForward(feederAddress, 20)).timeout();
+        List<Object> slotAddresses = recordEvents("slotAddress");
+        List<Object> enabled = recordEvents("enabled");
+
+        assertThrows(FeedFailureException.class, () -> feeder.feed(mockedNozzle));
+
+        assertNull(feeder.getSlotAddress());
+        assertFalse(feeder.isInitialized());
+        assertEquals(Collections.singletonList(null), slotAddresses);
+        assertEquals(List.of(false), enabled);
+    }
+
+    @Test
+    public void takingAnotherFeedersSlotClearsItWithEvents() {
+        configureEnabledFeeder();
+        List<Object> enabled = recordEvents("enabled");
+        PhotonFeeder otherFeeder = new PhotonFeeder();
+
+        otherFeeder.setSlotAddress(feederAddress);
+
+        assertNull(feeder.getSlotAddress());
+        assertEquals(List.of(false), enabled);
+    }
+
     @Test
     public void getNameByDefaultReturnsClassSimpleName() {
         assertEquals(

@@ -119,7 +119,10 @@ public class ReferenceSlotAutoFeeder extends ReferenceAutoFeeder {
         if (bank == null) {
             throw new Exception("Bank is required.");
         }
+        Part oldPart = getPart();
+        boolean wasEnabled = isEnabled();
         this.bank = bank;
+        fireLoadedFeederChange(oldPart, wasEnabled);
     }
 
     public Feeder getFeeder() {
@@ -133,7 +136,27 @@ public class ReferenceSlotAutoFeeder extends ReferenceAutoFeeder {
               throw new Exception("Can't set feeder from another bank.");
           }
         }
-        getBank().setFeeder(this, feeder);
+        Part oldPart = getPart();
+        boolean wasEnabled = isEnabled();
+        ReferenceSlotAutoFeeder previousSlot = feeder == null ? null : getBank().getSlot(feeder);
+        if (previousSlot == null || previousSlot == this) {
+            getBank().setFeeder(this, feeder);
+        } else {
+            Part previousSlotOldPart = previousSlot.getPart();
+            boolean previousSlotWasEnabled = previousSlot.isEnabled();
+            getBank().setFeeder(this, feeder);
+            previousSlot.fireLoadedFeederChange(previousSlotOldPart, previousSlotWasEnabled);
+        }
+        fireLoadedFeederChange(oldPart, wasEnabled);
+    }
+
+    /**
+     * getPart() and isEnabled() derive from the bank feeder loaded in this slot, so a change of
+     * bank, loaded feeder or its part reports them here.
+     */
+    private void fireLoadedFeederChange(Part oldPart, boolean wasEnabled) {
+        firePropertyChange("part", oldPart, getPart());
+        firePropertyChange("enabled", wasEnabled, isEnabled());
     }
     
     public static synchronized IdentifiableList<Bank> getBanks() {
@@ -229,6 +252,10 @@ public class ReferenceSlotAutoFeeder extends ReferenceAutoFeeder {
         public Feeder getFeeder(ReferenceSlotAutoFeeder slot) {
             return assignments.inverse().get(slot);
         }
+
+        ReferenceSlotAutoFeeder getSlot(Feeder feeder) {
+            return assignments.get(feeder);
+        }
     }
     
     /**
@@ -295,9 +322,24 @@ public class ReferenceSlotAutoFeeder extends ReferenceAutoFeeder {
         }
 
         public void setPart(Part part) {
-            Object oldValue = this.part;
+            Part oldValue = this.part;
+            ReferenceSlotAutoFeeder slot = findSlot();
+            boolean slotWasEnabled = slot != null && slot.isEnabled();
             this.part = part;
             firePropertyChange("part", oldValue, part);
+            if (slot != null) {
+                slot.fireLoadedFeederChange(oldValue, slotWasEnabled);
+            }
+        }
+
+        private ReferenceSlotAutoFeeder findSlot() {
+            for (Bank bank : getBanks()) {
+                ReferenceSlotAutoFeeder slot = bank.getSlot(this);
+                if (slot != null) {
+                    return slot;
+                }
+            }
+            return null;
         }
 
         public Part getPart() {

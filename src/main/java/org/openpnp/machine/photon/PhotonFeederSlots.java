@@ -11,7 +11,8 @@ public class PhotonFeederSlots {
     @ElementList
     IdentifiableList<Slot> slots = new IdentifiableList<>();
 
-    public Slot getSlot(int address) {
+    // Synchronized because a lookup can add the slot, and the machine thread and EDT both look up.
+    public synchronized Slot getSlot(int address) {
         String slotIdentifier = Slot.getIdentifierFromAddress(address);
         Slot slot = slots.get(slotIdentifier);
 
@@ -54,7 +55,12 @@ public class PhotonFeederSlots {
         }
 
         public void setLocation(Location location) {
+            PhotonFeeder feeder = PhotonFeeder.findBySlotAddress(address);
+            boolean wasEnabled = feeder != null && feeder.isEnabled();
             this.location = location;
+            if (feeder != null) {
+                feeder.fireEnabledChange(wasEnabled);
+            }
         }
     }
 }

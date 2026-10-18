@@ -155,7 +155,7 @@ public abstract class PlacementsHolderLocation<T extends PlacementsHolderLocatio
      * @param side - the side that is to be facing the top side of its most distant ancestor
      */
     public void setGlobalSide(Side side) {
-        Side oldValue = this.side;
+        Side oldValue = getGlobalSide();
         if (parent != null && parent.getGlobalSide() == Side.Bottom) {
             this.side = side.flip();
         }

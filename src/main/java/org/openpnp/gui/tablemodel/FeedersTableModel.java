@@ -22,6 +22,8 @@ package org.openpnp.gui.tablemodel;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import org.openpnp.ConfigurationListener;
 import org.openpnp.Translations;
 import org.openpnp.model.AbstractModelObject;
@@ -55,8 +57,9 @@ public class FeedersTableModel extends AbstractObjectTableModel {
         this.configuration = configuration;
         Configuration.get().addListener(new ConfigurationListener.Adapter() {
             public void configurationComplete(Configuration configuration) throws Exception {
+                // Photon discovery and feed retries change feeders on the machine thread.
                 BeanUtils.addPropertyChangeListener(configuration.getMachine(), "feeders", event -> {
-                    refresh();
+                    SwingUtilities.invokeLater(() -> refresh());
                 });
                 refresh();
             }
@@ -68,12 +71,12 @@ public class FeedersTableModel extends AbstractObjectTableModel {
         for (Feeder f : feeders) {
             if (f instanceof AbstractModelObject) {
                 ((AbstractModelObject)f).addPropertyChangeListener("name",  event-> {
-                    fireTableRowsUpdated(0, feeders.size()-1);
+                    SwingUtilities.invokeLater(() -> fireTableRowsUpdated(0, feeders.size()-1));
                 });
             }
             if ((f instanceof ReferenceFeeder) && ((ReferenceFeeder)f).supportsFeedOptions()) {
                 ((ReferenceFeeder)f).addPropertyChangeListener("feedOptions",  event-> {
-                    fireTableRowsUpdated(0, feeders.size()-1);
+                    SwingUtilities.invokeLater(() -> fireTableRowsUpdated(0, feeders.size()-1));
                 });
             }
         }

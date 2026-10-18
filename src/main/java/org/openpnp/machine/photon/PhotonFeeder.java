@@ -70,7 +70,7 @@ public class PhotonFeeder extends ReferenceFeeder
     @Attribute(required = false)
     protected String hardwareId;
 
-    protected Integer slotAddress = null;
+    protected volatile Integer slotAddress = null;
 
     protected String firmwareVersion = null;
     
@@ -230,9 +230,11 @@ public class PhotonFeeder extends ReferenceFeeder
 
     public void setOffset(Location offsets) {
         Object oldValue = this.offset;
+        boolean wasEnabled = isEnabled();
         this.offset = offsets;
         pickOffsetCorrection.reset();
         firePropertyChange("offset", oldValue, offsets);
+        fireEnabledChange(wasEnabled);
     }
 
     public Location getOffset() {
@@ -476,7 +478,7 @@ public class PhotonFeeder extends ReferenceFeeder
         InitializeFeeder.Response response = initializeFeeder.send(photonBus);
 
         if (response == null) {
-            slotAddress = null;
+            clearSlotAddress();
         } else if (response.error == ErrorTypes.WRONG_FEEDER_UUID) {
             PhotonFeeder otherFeeder = findByHardwareId(response.uuid);
 
@@ -545,12 +547,10 @@ public class PhotonFeeder extends ReferenceFeeder
             MoveFeedForward.Response moveFeedForwardResponse = moveFeedForward.send(photonBus);
 
             if (moveFeedForwardResponse == null) {
-                slotAddress = null;
-                initialized = false;
+                clearSlotAddress();
                 throw new FeedFailureException("Feed command timed out");
             } else if (moveFeedForwardResponse.error == ErrorTypes.UNINITIALIZED_FEEDER) {
-                slotAddress = null;
-                initialized = false;
+                clearSlotAddress();
                 continue;  // We'll initialize it on a retry
             }
 
@@ -719,13 +719,15 @@ public class PhotonFeeder extends ReferenceFeeder
         PhotonFeederSlots.Slot oldSlot = getSlot();
         Integer oldValue = this.slotAddress;
         String oldName = this.getName();
+        boolean wasEnabled = isEnabled();
 
         if (slotAddress != null) {
             // Find any other photon feeders and if they have this slot address, set their address to null
             PhotonFeeder otherFeeder = findBySlotAddress(slotAddress);
-            if (otherFeeder != null) {
-                otherFeeder.slotAddress = null;
-                otherFeeder.initialized = false;
+            if (otherFeeder == this) {
+                initialized = false;
+            } else if (otherFeeder != null) {
+                otherFeeder.clearSlotAddress();
             }
         }
 
@@ -736,6 +738,20 @@ public class PhotonFeeder extends ReferenceFeeder
         firePropertyChange("slotAddress", oldValue, slotAddress);
         firePropertyChange("slot", oldSlot, getSlot());
         firePropertyChange("name", oldName, getName());
+        fireEnabledChange(wasEnabled);
+    }
+
+    private void clearSlotAddress() {
+        setSlotAddress(null);
+        initialized = false;
+    }
+
+    /**
+     * isEnabled() derives from the hardware ID, part, slot, slot location and offset, so each of
+     * their setters reports the derived change too.
+     */
+    void fireEnabledChange(boolean wasEnabled) {
+        firePropertyChange("enabled", wasEnabled, isEnabled());
     }
 
     /**
@@ -786,6 +802,7 @@ public class PhotonFeeder extends ReferenceFeeder
 
     public void setHardwareId(String hardwareId) {
         String oldValue = this.hardwareId;
+        boolean wasEnabled = isEnabled();
         this.hardwareId = hardwareId;
 
         if (getClass().getSimpleName().equals(name)) {
@@ -795,16 +812,23 @@ public class PhotonFeeder extends ReferenceFeeder
         pickOffsetCorrection.reset();
 
         firePropertyChange("hardwareId", oldValue, hardwareId);
+        fireEnabledChange(wasEnabled);
+    }
+
+    @Override
+    public void setPart(Part part) {
+        boolean wasEnabled = isEnabled();
+        super.setPart(part);
+        fireEnabledChange(wasEnabled);
     }
 
     @Override
     public boolean isEnabled() {
-        return super.isEnabled() &&
-                hardwareId != null &&
-                partId != null &&
-                slotAddress != null &&
-                offset != null &&
-                getSlot().getLocation() != null;
+        if (!super.isEnabled() || hardwareId == null || partId == null || offset == null) {
+            return false;
+        }
+        PhotonFeederSlots.Slot slot = getSlot();
+        return slot != null && slot.getLocation() != null;
     }
 
     public boolean isInitialized() {
@@ -894,8 +918,7 @@ public class PhotonFeeder extends ReferenceFeeder
             if (response == null) {
                 PhotonFeeder otherFeeder = findBySlotAddress(address);
                 if (otherFeeder != null) {
-                    otherFeeder.slotAddress = null;
-                    otherFeeder.initialized = false;
+                    otherFeeder.clearSlotAddress();
                 }
             } else {
                 PhotonFeeder otherFeeder = findByHardwareId(response.uuid);
