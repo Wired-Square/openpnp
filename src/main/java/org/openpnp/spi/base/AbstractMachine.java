@@ -2,11 +2,12 @@ package org.openpnp.spi.base;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -97,12 +98,16 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
     protected double speed = 1.0D;
     
     @ElementMap(required = false)
-    protected HashMap<String, Object> properties = new HashMap<>();
+    // Concurrent: the machine thread and the EDT both look up and add properties (e.g. Photon
+    // settings on first use). Configuration load fills a HashMap, so commit() converts it.
+    protected Map<String, Object> properties = new ConcurrentHashMap<>();
     
     @ElementList(required = false)
     protected IdentifiableList<NozzleTip> nozzleTips = new IdentifiableList<>();
 
-    protected Set<MachineListener> listeners = Collections.synchronizedSet(new HashSet<>());
+    // Copy-on-write: the EDT adds and removes listeners (e.g. as feeder wizards show) while the
+    // machine thread iterates them on every move.
+    protected final Set<MachineListener> listeners = new CopyOnWriteArraySet<>();
 
     protected ThreadPoolExecutor executor;
 
@@ -116,6 +121,13 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
         for (Head head : heads) {
             head.setMachine(this);
         }
+        Map<String, Object> loaded = properties;
+        properties = new ConcurrentHashMap<>();
+        loaded.forEach((name, value) -> {
+            if (name != null && value != null) {
+                properties.put(name, value);
+            }
+        });
     }
 
     public void addHead(Head head) {
@@ -778,6 +790,10 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
 
     @Override
     public void setProperty(String name, Object value) {
+        if (value == null) {
+            properties.remove(name);
+            return;
+        }
         properties.put(name, value);
     }
     

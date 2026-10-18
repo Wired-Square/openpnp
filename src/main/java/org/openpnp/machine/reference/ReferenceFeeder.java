@@ -1,7 +1,8 @@
 package org.openpnp.machine.reference;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 
 import org.openpnp.Translations;
@@ -128,8 +129,9 @@ public abstract class ReferenceFeeder extends AbstractFeeder {
     }
 
     // This vector of bits is a record of whether the outcome of the job processor using this feeder
-    // was success or failure.
-    private LinkedList<Boolean> jobFaults;
+    // was success or failure, newest first. The job processor records on the machine thread while
+    // the feeders table summarises on the EDT, so it is an immutable list replaced atomically.
+    private final AtomicReference<List<Boolean>> jobFaults = new AtomicReference<>(List.of());
 
     public void recordJobSuccess(int windowSize) {
         addJobFault(false,windowSize);
@@ -137,11 +139,11 @@ public abstract class ReferenceFeeder extends AbstractFeeder {
     }
 
     public void recordJobFault(int faultLimit,int windowSize,Exception e) {
-        addJobFault(true,windowSize);
+        List<Boolean> faults = addJobFault(true,windowSize);
         //
-        long faultCount = jobFaults.stream().filter(f->f).count();
+        long faultCount = faults.stream().filter(f->f).count();
         if(faultCount>0) {
-            Logger.info("{} faults {} {}",this,summariseJobFaults(),e);
+            Logger.info("{} faults {} {}",this,summarise(faults),e);
         }
         if(isEnabled() && faultCount>=faultLimit && faultLimit>0) {
             Logger.info("{} disabled due to fault limit",this);
@@ -150,30 +152,29 @@ public abstract class ReferenceFeeder extends AbstractFeeder {
         updateView();
     }
 
-    private void addJobFault(boolean fault,int windowSize) {
-        if (jobFaults == null) {
-            jobFaults = new LinkedList<Boolean>();
-        }
-        jobFaults.addFirst(fault);
-        if (windowSize<1) {
-            windowSize = 1;
-        }
-        while(jobFaults.size()>windowSize) {
-            jobFaults.removeLast();
-        }
+    private List<Boolean> addJobFault(boolean fault,int windowSize) {
+        int size = Math.max(windowSize, 1);
+        return jobFaults.updateAndGet(previous -> {
+            List<Boolean> next = new ArrayList<>(size);
+            next.add(fault);
+            next.addAll(previous.subList(0, Math.min(previous.size(), size - 1)));
+            return List.copyOf(next);
+        });
     }
 
     public String summariseJobFaults() {
+        return summarise(jobFaults.get());
+    }
+
+    private static String summarise(List<Boolean> faults) {
         String r = "";
         boolean anyFaultsFound = false;
-        if (jobFaults != null) {
-            for (boolean f : jobFaults) {
-                if (f) {
-                    anyFaultsFound = true;
-                    r += "X";
-                } else {
-                    r += "-";
-                }
+        for (boolean f : faults) {
+            if (f) {
+                anyFaultsFound = true;
+                r += "X";
+            } else {
+                r += "-";
             }
         }
         if (anyFaultsFound) {
@@ -188,7 +189,7 @@ public abstract class ReferenceFeeder extends AbstractFeeder {
         super.setEnabled(enabled);
         if(enabled) {
             // enabling a feeder clears all faults
-            jobFaults = null;
+            jobFaults.set(List.of());
         }
         updateView();
     }

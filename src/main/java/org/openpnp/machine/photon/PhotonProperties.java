@@ -16,38 +16,50 @@ public class PhotonProperties {
 
     final Machine machine;
 
+    // Guards each default-on-first-use against a value set meanwhile on another thread. Static
+    // because callers create a PhotonProperties per use.
+    private static final Object LOCK = new Object();
+
     public PhotonProperties(Machine machine) {
         this.machine = machine;
     }
 
     public int getFeederCommunicationMaxRetry() {
-        Integer maxRetry = (Integer) machine.getProperty(FEEDER_COMMUNICATION_MAX_RETRY);
+        synchronized (LOCK) {
+            Integer maxRetry = (Integer) machine.getProperty(FEEDER_COMMUNICATION_MAX_RETRY);
 
-        if(maxRetry == null) {
-            maxRetry = 3;
-            setFeederCommunicationMaxRetry(maxRetry);
+            if(maxRetry == null) {
+                maxRetry = 3;
+                setFeederCommunicationMaxRetry(maxRetry);
+            }
+
+            return maxRetry;
         }
-
-        return maxRetry;
     }
 
     public void setFeederCommunicationMaxRetry(int maxRetry) {
-        machine.setProperty(FEEDER_COMMUNICATION_MAX_RETRY, maxRetry);
+        synchronized (LOCK) {
+            machine.setProperty(FEEDER_COMMUNICATION_MAX_RETRY, maxRetry);
+        }
     }
 
     public int getMaxFeederAddress() {
-        Integer maxFeederAddress = (Integer) machine.getProperty(MAX_FEEDER_ADDRESS);
+        synchronized (LOCK) {
+            Integer maxFeederAddress = (Integer) machine.getProperty(MAX_FEEDER_ADDRESS);
 
-        if(maxFeederAddress == null) {
-            maxFeederAddress = 50;
-            setMaxFeederAddress(maxFeederAddress);
+            if(maxFeederAddress == null) {
+                maxFeederAddress = 50;
+                setMaxFeederAddress(maxFeederAddress);
+            }
+
+            return maxFeederAddress;
         }
-
-        return maxFeederAddress;
     }
 
     public void setMaxFeederAddress(int maxFeederAddress) {
-        machine.setProperty(MAX_FEEDER_ADDRESS, maxFeederAddress);
+        synchronized (LOCK) {
+            machine.setProperty(MAX_FEEDER_ADDRESS, maxFeederAddress);
+        }
     }
 
     public AutoScanMode getAutoScanMode() {
@@ -69,14 +81,17 @@ public class PhotonProperties {
         machine.setProperty(AUTO_SCAN_MODE, mode.name());
     }
 
-    public synchronized PhotonFeederSlots getFeederSlots() {
-        PhotonFeederSlots feederSlots = (PhotonFeederSlots) machine.getProperty(FEEDER_SLOTS_PROPERTY);
 
-        if(feederSlots == null) {
-            feederSlots = new PhotonFeederSlots();
-            machine.setProperty(FEEDER_SLOTS_PROPERTY, feederSlots);
+    public PhotonFeederSlots getFeederSlots() {
+        synchronized (LOCK) {
+            PhotonFeederSlots feederSlots = (PhotonFeederSlots) machine.getProperty(FEEDER_SLOTS_PROPERTY);
+
+            if(feederSlots == null) {
+                feederSlots = new PhotonFeederSlots();
+                machine.setProperty(FEEDER_SLOTS_PROPERTY, feederSlots);
+            }
+
+            return feederSlots;
         }
-
-        return feederSlots;
     }
 }

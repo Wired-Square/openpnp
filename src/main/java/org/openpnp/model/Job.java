@@ -25,9 +25,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import org.openpnp.model.Placement.Type;
@@ -36,6 +36,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.ElementMap;
 import org.simpleframework.xml.Root;
+import org.simpleframework.xml.core.Commit;
 import org.simpleframework.xml.core.Persist;
 
 /**
@@ -66,16 +67,16 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
     protected Panel rootPanel = new Panel();
     
     @ElementMap(required = false)
-    protected Map<String, Boolean> placedStatusMap = new HashMap<>();
+    protected Map<String, Boolean> placedStatusMap = new ConcurrentHashMap<>();
 
     @ElementMap(required = false)
-    protected Map<String, Boolean> enabledStateMap = new HashMap<>();
+    protected Map<String, Boolean> enabledStateMap = new ConcurrentHashMap<>();
 
     @ElementMap(required = false)
-    protected Map<String, Boolean> checkFiducialsStateMap = new HashMap<>();
+    protected Map<String, Boolean> checkFiducialsStateMap = new ConcurrentHashMap<>();
 
     @ElementMap(required = false)
-    protected Map<String, Placement.ErrorHandling> errorHandlingStateMap = new HashMap<>();
+    protected Map<String, Placement.ErrorHandling> errorHandlingStateMap = new ConcurrentHashMap<>();
 
     
     protected transient File file;
@@ -94,6 +95,27 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
         rootPanelLocation.setLocalToParentTransform(new AffineTransform());
         rootPanelLocation.setCheckFiducials(false);
         addPropertyChangeListener(this);
+    }
+
+    // The job processor writes these maps on the machine thread while the EDT reads and saves
+    // them. Saved jobs name HashMap as their class, so convert whatever was loaded.
+    @Commit
+    private void commit() {
+        placedStatusMap = concurrentCopy(placedStatusMap);
+        enabledStateMap = concurrentCopy(enabledStateMap);
+        checkFiducialsStateMap = concurrentCopy(checkFiducialsStateMap);
+        errorHandlingStateMap = concurrentCopy(errorHandlingStateMap);
+    }
+
+    // ConcurrentHashMap rejects nulls; a null entry read the same as a missing one.
+    private static <V> Map<String, V> concurrentCopy(Map<String, V> loaded) {
+        Map<String, V> copy = new ConcurrentHashMap<>();
+        loaded.forEach((key, value) -> {
+            if (key != null && value != null) {
+                copy.put(key, value);
+            }
+        });
+        return copy;
     }
 
     @Persist
@@ -299,12 +321,8 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
      */
     public boolean retrievePlacedStatus(PlacementsHolderLocation<?> placementsHolderLocation, String placementId) {
         String key = placementsHolderLocation.getUniqueId() + PlacementsHolderLocation.ID_DELIMITTER + placementId;
-        if (placedStatusMap.containsKey(key)) {
-            return placedStatusMap.get(key);
-        } 
-        else {
-            return false;
-        }
+        Boolean placed = placedStatusMap.get(key);
+        return placed != null && placed;
     }
     
     /**
@@ -357,8 +375,9 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
         if (placement != null) {
             key += PlacementsHolderLocation.ID_DELIMITTER + placement.getId();
         }
-        if (enabledStateMap.containsKey(key)) {
-            return enabledStateMap.get(key);
+        Boolean enabled = enabledStateMap.get(key);
+        if (enabled != null) {
+            return enabled;
         } 
         else {
             return placement != null ? placement.isEnabled() : placementsHolderLocation.isLocallyEnabled();
@@ -408,8 +427,9 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
      */
     public boolean retrieveCheckFiducialsState(PlacementsHolderLocation<?> placementsHolderLocation) {
         String key = placementsHolderLocation.getUniqueId();
-        if (checkFiducialsStateMap.containsKey(key)) {
-            return checkFiducialsStateMap.get(key);
+        Boolean checkFiducials = checkFiducialsStateMap.get(key);
+        if (checkFiducials != null) {
+            return checkFiducials;
         } 
         else {
             return placementsHolderLocation.isCheckFiducials();
@@ -442,7 +462,12 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
      */
     public void storeErrorHandlingState(PlacementsHolderLocation<?> placementsHolderLocation, Placement placement, Placement.ErrorHandling errorHandling) {
         String key = placementsHolderLocation.getUniqueId() + PlacementsHolderLocation.ID_DELIMITTER + placement.getId();
-        this.errorHandlingStateMap.put(key, errorHandling);
+        if (errorHandling == null) {
+            this.errorHandlingStateMap.remove(key);
+        }
+        else {
+            this.errorHandlingStateMap.put(key, errorHandling);
+        }
         firePropertyChange("errorHandling", null, this.errorHandlingStateMap);
     }
 
@@ -455,8 +480,9 @@ public class Job extends AbstractModelObject implements PropertyChangeListener {
      */
     public Placement.ErrorHandling retrieveErrorHandlingState(PlacementsHolderLocation<?> placementsHolderLocation, Placement placement) {
         String key = placementsHolderLocation.getUniqueId() + PlacementsHolderLocation.ID_DELIMITTER + placement.getId();
-        if (errorHandlingStateMap.containsKey(key)) {
-            return errorHandlingStateMap.get(key);
+        Placement.ErrorHandling errorHandling = errorHandlingStateMap.get(key);
+        if (errorHandling != null) {
+            return errorHandling;
         } 
         else {
             return placement.getErrorHandling();

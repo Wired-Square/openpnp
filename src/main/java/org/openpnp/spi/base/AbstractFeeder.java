@@ -33,8 +33,9 @@ public abstract class AbstractFeeder extends AbstractModelObject implements Feed
     @Attribute(required = false)
     protected String name;
 
+    // Set on the EDT, read by the job processor on the machine thread.
     @Attribute
-    protected boolean enabled;
+    protected volatile boolean enabled;
 
     @Attribute
     protected String partId;
