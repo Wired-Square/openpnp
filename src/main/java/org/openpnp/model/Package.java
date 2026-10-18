@@ -20,8 +20,6 @@
 package org.openpnp.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -60,7 +58,8 @@ public class Package extends AbstractPartSettingsHolder {
     @ElementList(required = false)
     protected List<String> compatibleNozzleTipIds = new ArrayList<>();
 
-    protected Set<NozzleTip> compatibleNozzleTips; 
+    private final CompatibleNozzleTips compatibleNozzleTips =
+            new CompatibleNozzleTips(() -> compatibleNozzleTipIds);
 
     private Package() {
         this(null);
@@ -160,39 +159,15 @@ public class Package extends AbstractPartSettingsHolder {
         return String.format("id %s", id);
     }
     
-    protected void syncCompatibleNozzleTipIds() {
-        compatibleNozzleTipIds.clear();
-        for (NozzleTip nt : compatibleNozzleTips) {
-            compatibleNozzleTipIds.add(nt.getId());
-        }
-    }
-    
     public Set<NozzleTip> getCompatibleNozzleTips() {
-        if (compatibleNozzleTips == null) {
-            compatibleNozzleTips = new HashSet<>();
-            for (String nozzleTipId : compatibleNozzleTipIds) {
-                NozzleTip nt = Configuration.get().getMachine().getNozzleTip(nozzleTipId);
-                if (nt != null) {
-                    compatibleNozzleTips.add(nt);
-                }
-            }
-        }
-        return Collections.unmodifiableSet(compatibleNozzleTips);
+        return compatibleNozzleTips.get();
     }
 
     public void addCompatibleNozzleTip(NozzleTip nt) {
-        // Makes sure the structure has been initialized.
-        getCompatibleNozzleTips();
-        compatibleNozzleTips.add(nt);
-        syncCompatibleNozzleTipIds();
-        firePropertyChange("compatibleNozzleTips", null, getCompatibleNozzleTips());
+        firePropertyChange("compatibleNozzleTips", null, compatibleNozzleTips.add(nt));
     }
 
     public void removeCompatibleNozzleTip(NozzleTip nt) {
-        // Makes sure the structure has been initialized.
-        getCompatibleNozzleTips();
-        compatibleNozzleTips.remove(nt);
-        syncCompatibleNozzleTipIds();
-        firePropertyChange("compatibleNozzleTips", null, getCompatibleNozzleTips());
+        firePropertyChange("compatibleNozzleTips", null, compatibleNozzleTips.remove(nt));
     }
 }
