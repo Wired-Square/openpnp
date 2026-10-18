@@ -40,6 +40,7 @@ import java.util.TreeMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
@@ -135,7 +136,10 @@ public class Configuration extends AbstractModelObject {
     private final ModelChangeService modelChangeService = new ModelChangeService();
     private final JobUsageService jobUsageService =
             new JobUsageService(this, modelChangeService);
-    public TreeMap<String, String> scriptState = new TreeMap<>();
+    // Scripts write this on whichever thread runs them, e.g. the machine thread for job events,
+    // while save() copies it on the EDT.
+    public final NavigableMap<String, String> scriptState =
+            Collections.synchronizedNavigableMap(new TreeMap<>());
 
     public static boolean isInstanceInitialized() {
         return (instance != null);
@@ -1117,12 +1121,15 @@ public class Configuration extends AbstractModelObject {
     private void loadScriptState(File file) throws Exception {
         Serializer serializer = createSerializer();
         ScriptStateConfigurationHolder holder = serializer.read(ScriptStateConfigurationHolder.class, file);
-        scriptState = holder.scriptState;
+        scriptState.clear();
+        scriptState.putAll(holder.scriptState);
     }
 
     private void saveScriptState(File file) throws Exception {
         ScriptStateConfigurationHolder holder = new ScriptStateConfigurationHolder();
-        holder.scriptState = scriptState;
+        synchronized (scriptState) {
+            holder.scriptState = new TreeMap<>(scriptState);
+        }
         serializeObject(holder, file);
     }
 

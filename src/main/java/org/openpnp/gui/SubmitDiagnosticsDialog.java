@@ -239,10 +239,18 @@ public class SubmitDiagnosticsDialog extends JDialog {
              */
             okButton.setEnabled(false);
 
+            // Saving can ask whether to save modified boards and panels, so it runs on the EDT.
+            try {
+                Configuration.get().save();
+            }
+            catch (Exception e1) {
+                MessageBoxes.errorBox(MainFrame.get(), "Submit Failed", e1);
+                okButton.setEnabled(true);
+                return;
+            }
+
             thread = new Thread(() -> {
                 try {
-                    Configuration.get().save();
-
                     List<File> images = new ArrayList<>();
                     File configDir = Configuration.get().getConfigurationDirectory();
                     File logDir = new File(configDir, "log");
