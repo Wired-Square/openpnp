@@ -11,7 +11,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
-import java.util.ConcurrentModificationException;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.support.Wizard;
@@ -132,19 +131,13 @@ public class SimulatedUpCamera extends ReferenceCamera {
         Machine machine = Configuration.get()
                 .getMachine();
         if (machine != null) {
-            try {
-                for (Head head :  machine.getHeads()) {
-                    for (Nozzle nozzle : head.getNozzles()) {
-                        Location l = SimulationModeMachine.getSimulatedPhysicalLocation(nozzle, getLooking(), true);
-                        if (phyBounds.contains(l.getX(), l.getY())) {
-                            drawNozzle(g, nozzle, l);
-                        }
+            for (Head head :  machine.getHeads()) {
+                for (Nozzle nozzle : head.getNozzles()) {
+                    Location l = SimulationModeMachine.getSimulatedPhysicalLocation(nozzle, getLooking(), true);
+                    if (phyBounds.contains(l.getX(), l.getY())) {
+                        drawNozzle(g, nozzle, l);
                     }
                 }
-            }
-            catch (ConcurrentModificationException e) {
-                // If nozzles are added/removed while enumerating them here, a ConcurrentModificationExceptions 
-                // is thrown. This is not so unlikely when this camera has high fps. 
             }
         }
 

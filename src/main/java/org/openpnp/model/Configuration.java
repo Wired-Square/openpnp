@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.openpnp.ConfigurationListener;
@@ -114,9 +115,12 @@ public class Configuration extends AbstractModelObject {
         Linked
     };
 
-    private LinkedHashMap<String, Package> packages = new LinkedHashMap<>();
-    private LinkedHashMap<String, Part> parts = new LinkedHashMap<>();
-    private LinkedHashMap<String, AbstractVisionSettings> visionSettings = new LinkedHashMap<>();
+    // Packages, parts and vision settings are read on the machine thread and occasionally added
+    // there (visual homing calibration), so each map is guarded by its own monitor and only
+    // copies leave this class. Boards and panels are confined to the EDT.
+    private final LinkedHashMap<String, Package> packages = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Part> parts = new LinkedHashMap<>();
+    private final LinkedHashMap<String, AbstractVisionSettings> visionSettings = new LinkedHashMap<>();
     private Machine machine;
     private LinkedHashMap<File, Panel> panels = new LinkedHashMap<>();
     private LinkedHashMap<File, Board> boards = new LinkedHashMap<>();
@@ -669,60 +673,80 @@ public class Configuration extends AbstractModelObject {
         if (id == null) {
             return null;
         }
-        return packages.get(id.toUpperCase());
+        synchronized (packages) {
+            return packages.get(id.toUpperCase());
+        }
     }
 
     public List<Package> getPackages() {
-        return Collections.unmodifiableList(new ArrayList<>(packages.values()));
+        synchronized (packages) {
+            return List.copyOf(packages.values());
+        }
     }
 
     public void addPackage(Package pkg) {
         if (null == pkg.getId()) {
             throw new Error("Package with null Id cannot be added to Configuration.");
         }
-        packages.put(pkg.getId().toUpperCase(), pkg);
-        firePropertyChange("packages", null, packages);
+        synchronized (packages) {
+            packages.put(pkg.getId().toUpperCase(), pkg);
+        }
+        fireCollectionChange("packages", packages);
     }
 
     public void removePackage(Package pkg) {
-        packages.remove(pkg.getId().toUpperCase());
-        firePropertyChange("packages", null, packages);
+        synchronized (packages) {
+            packages.remove(pkg.getId().toUpperCase());
+        }
+        fireCollectionChange("packages", packages);
     }
 
     public Part getPart(String id) {
         if (id == null) {
             return null;
         }
-        return parts.get(id.toUpperCase());
+        synchronized (parts) {
+            return parts.get(id.toUpperCase());
+        }
     }
 
     public List<Part> getParts() {
-        return Collections.unmodifiableList(new ArrayList<>(parts.values()));
+        synchronized (parts) {
+            return List.copyOf(parts.values());
+        }
     }
 
     public void addPart(Part part) {
         if (null == part.getId()) {
             throw new Error("Part with null Id cannot be added to Configuration.");
         }
-        parts.put(part.getId().toUpperCase(), part);
-        firePropertyChange("parts", null, parts);
+        synchronized (parts) {
+            parts.put(part.getId().toUpperCase(), part);
+        }
+        fireCollectionChange("parts", parts);
     }
 
     public void removePart(Part part) {
-        parts.remove(part.getId().toUpperCase());
-        firePropertyChange("parts", null, parts);
+        synchronized (parts) {
+            parts.remove(part.getId().toUpperCase());
+        }
+        fireCollectionChange("parts", parts);
     }
 
     public void addVisionSettings(AbstractVisionSettings visionSettings) {
         if (null == visionSettings.getId()) {
             throw new Error("Vision Settings with null Id cannot be added to Configuration.");
         }
-        this.visionSettings.put(visionSettings.getId().toUpperCase(), visionSettings);
+        synchronized (this.visionSettings) {
+            this.visionSettings.put(visionSettings.getId().toUpperCase(), visionSettings);
+        }
         fireVisionSettingsChanged();
     }
 
     public List<AbstractVisionSettings> getVisionSettings() {
-        return Collections.unmodifiableList(new ArrayList<>(visionSettings.values()));
+        synchronized (visionSettings) {
+            return List.copyOf(visionSettings.values());
+        }
     }
 
     public AbstractVisionSettings getVisionSettings(String visionSettingsId) {
@@ -730,12 +754,33 @@ public class Configuration extends AbstractModelObject {
             return null;
         }
 
-        return this.visionSettings.get(visionSettingsId.toUpperCase());
+        synchronized (visionSettings) {
+            return this.visionSettings.get(visionSettingsId.toUpperCase());
+        }
     }
 
     public void removeVisionSettings(AbstractVisionSettings visionSettings) {
-        this.visionSettings.remove(visionSettings.getId().toUpperCase());
+        synchronized (this.visionSettings) {
+            this.visionSettings.remove(visionSettings.getId().toUpperCase());
+        }
         fireVisionSettingsChanged();
+    }
+
+    /**
+     * Sends a copy of the map, and on the EDT, because the listeners are Swing models and the
+     * change can come from the machine thread.
+     */
+    private <K, V> void fireCollectionChange(String propertyName, LinkedHashMap<K, V> map) {
+        Map<K, V> snapshot;
+        synchronized (map) {
+            snapshot = Collections.unmodifiableMap(new LinkedHashMap<>(map));
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            firePropertyChange(propertyName, null, snapshot);
+        }
+        else {
+            SwingUtilities.invokeLater(() -> firePropertyChange(propertyName, null, snapshot));
+        }
     }
 
     /**
@@ -757,7 +802,7 @@ public class Configuration extends AbstractModelObject {
      * single properties, therefore this is simply fired globally.
      */
     public void fireVisionSettingsChanged() {
-        firePropertyChange("visionSettings", null, this.visionSettings);
+        fireCollectionChange("visionSettings", visionSettings);
     }
 
     public Machine getMachine() {
@@ -933,7 +978,7 @@ public class Configuration extends AbstractModelObject {
 
     private void savePackages(File file) throws Exception {
         PackagesConfigurationHolder holder = new PackagesConfigurationHolder();
-        holder.packages = new ArrayList<>(packages.values());
+        holder.packages = new ArrayList<>(getPackages());
         serializeObject(holder, file);
     }
 
@@ -947,7 +992,7 @@ public class Configuration extends AbstractModelObject {
 
     private void saveParts(File file) throws Exception {
         PartsConfigurationHolder holder = new PartsConfigurationHolder();
-        holder.parts = new ArrayList<>(parts.values());
+        holder.parts = new ArrayList<>(getParts());
         serializeObject(holder, file);
     }
 
@@ -1065,7 +1110,7 @@ public class Configuration extends AbstractModelObject {
 
     private void saveVisionSettings(File file) throws Exception {
         VisionSettingsConfigurationHolder holder = new VisionSettingsConfigurationHolder();
-        holder.visionSettings = new ArrayList<>(visionSettings.values());
+        holder.visionSettings = new ArrayList<>(getVisionSettings());
         serializeObject(holder, file);
     }
 

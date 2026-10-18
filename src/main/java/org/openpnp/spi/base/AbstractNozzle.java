@@ -64,7 +64,8 @@ public abstract class AbstractNozzle extends AbstractHeadMountable implements No
 
     protected Head head;
 
-    protected Part part;
+    // Set on the machine thread by pick and place, read by the jog and machine panels on the EDT.
+    protected volatile Part part;
 
     protected Feeder partsFeeder;
 

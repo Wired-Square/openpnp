@@ -23,7 +23,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
@@ -62,8 +61,7 @@ public class PartsComboBoxModel extends DefaultComboBoxModel implements Property
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         //Create a sorted list of parts that the parts combo box should have
-        HashMap<String, Part> newParts = (HashMap<String, Part>) evt.getNewValue();
-        List<Part> parts = new ArrayList<Part>(newParts.values());
+        List<Part> parts = new ArrayList<Part>(Configuration.get().getParts());
         Collections.sort(parts, comparator);
         
         //Compute the indices to remove and those to add to modify the current list

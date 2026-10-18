@@ -121,7 +121,8 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
     private Actuator vacuumActuator;
     private Actuator blowOffActuator;
 
-    protected ReferenceNozzleTip nozzleTip;
+    // Changed on the machine thread by nozzle tip changes, read by the GUI on the EDT.
+    protected volatile ReferenceNozzleTip nozzleTip;
 
     public ReferenceNozzle() {
         super();

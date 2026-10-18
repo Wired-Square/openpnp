@@ -1,6 +1,6 @@
 package org.openpnp.util;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.openpnp.model.Identifiable;
 
@@ -12,9 +12,14 @@ import org.openpnp.model.Identifiable;
  * TODO: Perform indexing on insert and remove so that get(String) can perform better. Consider what
  * happens if an id changes out from under us.
  * 
+ * Copy-on-write, because these lists (machine heads, cameras, feeders, board placements and so on)
+ * are edited on the EDT while the machine thread iterates them: each change replaces the backing
+ * array, and an iteration sees the list as it was when it started. Iterators do not support
+ * remove(); use remove(Object) or removeIf.
+ * 
  * @param <E>
  */
-public class IdentifiableList<E extends Identifiable> extends ArrayList<E> {
+public class IdentifiableList<E extends Identifiable> extends CopyOnWriteArrayList<E> {
     private static final long serialVersionUID = -2350184908321182804L;
     
     public IdentifiableList() {

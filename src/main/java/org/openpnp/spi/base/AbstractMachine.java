@@ -69,12 +69,8 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
     @ElementList(required = false)
     protected IdentifiableList<Signaler> signalers = new IdentifiableList<>();
 
-    // Copy-on-write: Photon discovery adds feeders on the machine thread while the GUI iterates
-    // them. Replace the list under feedersLock, never mutate a published one.
     @ElementList(required = false)
-    protected volatile IdentifiableList<Feeder> feeders = new IdentifiableList<>();
-
-    private final Object feedersLock = new Object();
+    protected IdentifiableList<Feeder> feeders = new IdentifiableList<>();
 
     @ElementList(required = false)
     protected IdentifiableList<Camera> cameras = new IdentifiableList<>();
@@ -224,9 +220,10 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
         return null;
     }
 
+    // A snapshot rather than a live view: callers index into it while Photon discovery adds feeders.
     @Override
     public List<Feeder> getFeeders() {
-        return Collections.unmodifiableList(feeders);
+        return List.copyOf(feeders);
     }
 
     @Override
@@ -368,14 +365,14 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
         }
     }
 
+    // Synchronized on the list so the index reported matches the change while Photon discovery
+    // adds feeders on the machine thread and the EDT removes them.
     @Override
     public void addFeeder(Feeder feeder) throws Exception {
         int index;
-        synchronized (feedersLock) {
-            IdentifiableList<Feeder> next = new IdentifiableList<>(feeders);
-            next.add(feeder);
-            index = next.size() - 1;
-            feeders = next;
+        synchronized (feeders) {
+            feeders.add(feeder);
+            index = feeders.size() - 1;
         }
         fireIndexedPropertyChange("feeders", index, null, feeder);
     }
@@ -383,14 +380,12 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
     @Override
     public void removeFeeder(Feeder feeder) {
         int index;
-        synchronized (feedersLock) {
+        synchronized (feeders) {
             index = feeders.indexOf(feeder);
             if (index < 0) {
                 return;
             }
-            IdentifiableList<Feeder> next = new IdentifiableList<>(feeders);
-            next.remove(index);
-            feeders = next;
+            feeders.remove(index);
         }
         fireIndexedPropertyChange("feeders", index, feeder, null);
     }
