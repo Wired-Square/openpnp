@@ -66,6 +66,7 @@ import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.TableUtils;
 import org.openpnp.gui.support.ActionGroup;
 import org.openpnp.gui.support.CustomBooleanRenderer;
+import org.openpnp.gui.support.JobUsageColumn;
 import org.openpnp.gui.support.HardwareIdLabel;
 import org.openpnp.gui.support.Helpers;
 import org.openpnp.gui.support.Icons;
@@ -78,14 +79,11 @@ import org.openpnp.gui.tablemodel.FeedersTableModel;
 import org.openpnp.machine.reference.vision.AbstractPartAlignment;
 import org.openpnp.machine.reference.vision.ReferenceBottomVision;
 import org.openpnp.machine.reference.ReferenceFeeder;
-import org.openpnp.model.BoardLocation;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Configuration.TablesLinked;
-import org.openpnp.model.Job;
 import org.openpnp.model.Length;
 import org.openpnp.model.Location;
 import org.openpnp.model.Part;
-import org.openpnp.model.Placement;
 import org.openpnp.model.Placement.Type;
 import org.openpnp.spi.Camera;
 import org.openpnp.spi.Feeder;
@@ -184,51 +182,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         JComboBox<Type> priorityComboBox = new JComboBox(ReferenceFeeder.Priority.values());
 
 		table = new AutoSelectTextTable(tableModel);
-		table.setDefaultRenderer(Boolean.class, new CustomBooleanRenderer() {
-			// cells are grayed if the feeder is not used by any enabled placement.
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-					boolean hasFocus, int row, int column) {
-				final Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
-						column);
-				if (!isSelected) {
-					String partId = (String) tableModel.getValueAt(tableSorter.convertRowIndexToModel(row), 2);
-					Job job = mainFrame.getJobTab().getJob();
-					boolean bFound = false;
-
-					for (BoardLocation boardLocation : job.getBoardLocations()) {
-						// Only check enabled boards
-						if (!boardLocation.isEnabled()) {
-							continue;
-						}
-
-						for (Placement placement : boardLocation.getBoard().getPlacements()) {
-							// Ignore placements that aren't placements
-							if (placement.getType() != Placement.Type.Placement) {
-								continue;
-							}
-							if (!placement.isEnabled()) {
-								continue;
-							}
-
-							if (placement.getPart() != null && placement.getPart().getId().equals(partId)) {
-								bFound = true;
-								break;
-							}
-						}
-						if (bFound) {
-							break;
-						}
-					}
-					if (!bFound) {
-                        c.setEnabled(false);
-                    } else {
-					    c.setEnabled(true);
-                    }
-				}
-				return c;
-			}
-		});
+		table.setDefaultRenderer(Boolean.class, new CustomBooleanRenderer());
         table.setDefaultEditor(ReferenceFeeder.FeedOptions.class, new DefaultCellEditor(feedOptionsComboBox));
         table.setDefaultEditor(ReferenceFeeder.Priority.class, new DefaultCellEditor(priorityComboBox));
 
@@ -253,6 +207,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         splitPane.setLeftComponent(new JScrollPane(table));
         table.setRowSorter(tableSorter);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JobUsageColumn.install(table, tableSorter, FeedersTableModel.USAGE_COLUMN);
         TableUtils.installColumnWidthSavers(table, prefs, "FeedersPanel.table.columnWidth"); //$NON-NLS-1$
 
         configurationPanel = new JTabbedPane(JTabbedPane.TOP);
@@ -488,7 +443,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         // If current expression doesn't parse, don't update.
         try {
             rf = TableUtils.createVisibleColumnsSearchFilter(table, searchTextField.getText(),
-                    FeedersTableModel.HARDWARE_ID_COLUMN);
+                    FeedersTableModel.HARDWARE_ID_COLUMN, FeedersTableModel.USAGE_COLUMN);
         }
         catch (PatternSyntaxException e) {
             Logger.warn(e, "Search failed");

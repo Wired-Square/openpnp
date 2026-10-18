@@ -48,8 +48,10 @@ public final class JobUsageService {
             this.issues = issues;
         }
 
-        private static Usage inUse(Set<Issue> issues) {
-            return new Usage(true, Collections.unmodifiableSet(EnumSet.copyOf(issues)));
+        public static Usage inUse(Set<Issue> issues) {
+            Set<Issue> copy = EnumSet.noneOf(Issue.class);
+            copy.addAll(issues);
+            return new Usage(true, Collections.unmodifiableSet(copy));
         }
 
         public boolean isInUse() {

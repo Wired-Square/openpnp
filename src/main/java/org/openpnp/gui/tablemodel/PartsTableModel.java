@@ -24,12 +24,16 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import org.openpnp.Translations;
 import org.openpnp.gui.support.LengthCellValue;
 import org.openpnp.gui.support.PercentConverter;
 import org.openpnp.model.BottomVisionSettings;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.FiducialVisionSettings;
+import org.openpnp.model.JobUsageService;
+import org.openpnp.model.JobUsageService.Usage;
 import org.openpnp.model.Length;
 import org.openpnp.model.Package;
 import org.openpnp.model.Part;
@@ -47,16 +51,27 @@ public class PartsTableModel extends AbstractObjectTableModel implements Propert
                     Translations.getString("PartsTableModel.ColumnName.BottomVision"), //$NON-NLS-1$
                     Translations.getString("PartsTableModel.ColumnName.FiducialVision"), //$NON-NLS-1$
                     Translations.getString("PartsTableModel.ColumnName.Placements"), //$NON-NLS-1$
-                    Translations.getString("PartsTableModel.ColumnName.Feeders") //$NON-NLS-1$
+                    Translations.getString("PartsTableModel.ColumnName.Feeders"), //$NON-NLS-1$
+                    "" //$NON-NLS-1$
     };
     private Class[] columnTypes = new Class[] {String.class, String.class, LengthCellValue.class, LengthCellValue.class,
-            Package.class, String.class, BottomVisionSettings.class, FiducialVisionSettings.class, Integer.class, Integer.class};
+            Package.class, String.class, BottomVisionSettings.class, FiducialVisionSettings.class, Integer.class, Integer.class, Usage.class};
     private List<Part> parts;
     private PercentConverter percentConverter = new PercentConverter();
 
-    public PartsTableModel() {
+    public static final int USAGE_COLUMN = 10;
+
+    private final JobUsageService jobUsageService;
+
+    public PartsTableModel(JobUsageService jobUsageService) {
+        this.jobUsageService = jobUsageService;
         Configuration.get().addPropertyChangeListener("parts", this);
         parts = new ArrayList<>(Configuration.get().getParts());
+        jobUsageService.addListener(() -> SwingUtilities.invokeLater(() -> {
+            if (getRowCount() > 0) {
+                fireTableRowsUpdated(0, getRowCount() - 1);
+            }
+        }));
     }
 
     @Override
@@ -162,6 +177,8 @@ public class PartsTableModel extends AbstractObjectTableModel implements Propert
                 return part.getPlacementCount();
             case 9:
                 return part.getAssignedFeeders();
+            case USAGE_COLUMN:
+                return jobUsageService.getSnapshot().getUsage(part);
             default:
                 return null;
         }

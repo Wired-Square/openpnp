@@ -25,6 +25,9 @@ public final class UIColors {
     private static Color typeFiducial;
     // Status
     private static Color statusReady, statusWarning, statusError, statusDisabled;
+    // Job usage icons: foreground colours, at least 3:1 against the table background, except
+    // not-in-use, which is deliberately faint and told apart by its hollow shape.
+    private static Color usageInUse, usageIssue, usageNotInUse;
     // Affine
     private static Color affineGloballySet, affineLocallySet;
     private static Color affineGloballySetAlt, affineLocallySetAlt;
@@ -52,6 +55,10 @@ public final class UIColors {
         statusWarning  = dark ? new Color(120, 120, 40) : new Color(252, 255, 157);
         statusError    = dark ? new Color(140, 50, 50)  : new Color(255, 157, 157);
         statusDisabled = dark ? new Color(90, 90, 90)   : new Color(180, 180, 180);
+
+        usageInUse    = dark ? new Color(90, 190, 100)  : new Color(40, 140, 60);
+        usageIssue    = dark ? new Color(230, 170, 50)  : new Color(200, 120, 0);
+        usageNotInUse = dark ? new Color(125, 125, 125) : new Color(160, 160, 160);
 
         affineGloballySet    = dark ? new Color(50, 120, 60)  : new Color(157, 255, 168);
         affineLocallySet     = dark ? new Color(55, 75, 130)  : new Color(157, 188, 255);
@@ -120,6 +127,23 @@ public final class UIColors {
     public static Color statusDisabled() {
         ensureCache();
         return statusDisabled;
+    }
+
+    // --- Job usage colours ---
+
+    public static Color usageInUse() {
+        ensureCache();
+        return usageInUse;
+    }
+
+    public static Color usageIssue() {
+        ensureCache();
+        return usageIssue;
+    }
+
+    public static Color usageNotInUse() {
+        ensureCache();
+        return usageNotInUse;
     }
 
     // --- Affine transform status colours ---

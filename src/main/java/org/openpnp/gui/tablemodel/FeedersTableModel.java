@@ -28,13 +28,14 @@ import org.openpnp.ConfigurationListener;
 import org.openpnp.Translations;
 import org.openpnp.model.AbstractModelObject;
 import org.openpnp.model.Configuration;
+import org.openpnp.model.JobUsageService.Usage;
 import org.openpnp.model.Part;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.HardwareIdentifiable;
 import org.openpnp.util.BeanUtils;
 import org.openpnp.machine.reference.ReferenceFeeder;
 
-public class FeedersTableModel extends AbstractObjectTableModel {
+public final class FeedersTableModel extends AbstractObjectTableModel {
     final private Configuration configuration;
 
     private String[] columnNames = new String[] {
@@ -45,16 +46,23 @@ public class FeedersTableModel extends AbstractObjectTableModel {
             Translations.getString("FeedersTableModel.ColumnName.Faults"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.Enabled"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.FeedOptions"), //$NON-NLS-1$
-            Translations.getString("FeedersTableModel.ColumnName.HardwareId") //$NON-NLS-1$
+            Translations.getString("FeedersTableModel.ColumnName.HardwareId"), //$NON-NLS-1$
+            "" //$NON-NLS-1$
     };
 
     public static final int NAME_COLUMN = 0;
     public static final int HARDWARE_ID_COLUMN = 7;
+    public static final int USAGE_COLUMN = 8;
 
     private List<Feeder> feeders;
 
     public FeedersTableModel(Configuration configuration) {
         this.configuration = configuration;
+        configuration.getJobUsageService().addListener(() -> SwingUtilities.invokeLater(() -> {
+            if (getRowCount() > 0) {
+                fireTableRowsUpdated(0, getRowCount() - 1);
+            }
+        }));
         Configuration.get().addListener(new ConfigurationListener.Adapter() {
             public void configurationComplete(Configuration configuration) throws Exception {
                 // Photon discovery and feed retries change feeders on the machine thread.
@@ -160,6 +168,9 @@ public class FeedersTableModel extends AbstractObjectTableModel {
         else if (columnIndex == 6) {
             return ReferenceFeeder.FeedOptions.class;
         }
+        else if (columnIndex == USAGE_COLUMN) {
+            return Usage.class;
+        }
         return super.getColumnClass(columnIndex);
     }
 
@@ -203,6 +214,8 @@ public class FeedersTableModel extends AbstractObjectTableModel {
                 }
                 return null;
             }
+            case USAGE_COLUMN:
+                return configuration.getJobUsageService().getSnapshot().getUsage(feeders.get(row));
             default:
                 return null;
         }

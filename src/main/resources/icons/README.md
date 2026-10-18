@@ -61,8 +61,9 @@ Google Material Symbols
 -----------------------
 https://github.com/google/material-design-icons (symbols/web)
 
-fingerprint.svg and fingerprint_dark.svg are recoloured from Material Symbols Outlined,
-released under the Apache License 2.0.
+fingerprint.svg and fingerprint_dark.svg are recoloured from Material Symbols Outlined, and
+check-circle.svg, error.svg and radio-button-unchecked.svg are Material Symbols Outlined
+(recoloured at runtime), released under the Apache License 2.0.
 http://www.apache.org/licenses/LICENSE-2.0
 
 Freepik

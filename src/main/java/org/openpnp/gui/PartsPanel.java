@@ -63,6 +63,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.openpnp.Translations;
 import org.openpnp.gui.components.AutoSelectTextTable;
+import org.openpnp.gui.support.JobUsageColumn;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.TableUtils;
 import org.openpnp.gui.support.ActionGroup;
@@ -128,7 +129,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
         multiSelectionActionGroup.setEnabled(false);
 
         setLayout(new BorderLayout(0, 0));
-        tableModel = new PartsTableModel();
+        tableModel = new PartsTableModel(configuration.getJobUsageService());
         tableSorter = new TriStateTableRowSorter<>(tableModel);
 
         JPanel toolbarAndSearch = new JPanel();
@@ -190,7 +191,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
                 int column = convertColumnIndexToModel(columnAtPoint(evt.getPoint()));
                 if(column==2) { return Translations.getString("PartsTableModel.Column.Height.toolTip"); } //$NON-NLS-1$
                 if(column==3) { return Translations.getString("PartsTableModel.Column.ThroughBoardDepth.toolTip"); } //$NON-NLS-1$
-                return null;
+                return super.getToolTipText(evt);
             }
         };
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -218,6 +219,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
 
         table.setRowSorter(tableSorter);
         table.getTableHeader().setDefaultRenderer(new MultisortTableHeaderCellRenderer());
+        JobUsageColumn.install(table, tableSorter, PartsTableModel.USAGE_COLUMN);
         TableUtils.installColumnWidthSavers(table, prefs, "PartsPanel.table.columnWidth"); //$NON-NLS-1$
         splitPane.setLeftComponent(new JScrollPane(table));
         splitPane.setRightComponent(tabbedPane);
@@ -294,7 +296,8 @@ public class PartsPanel extends JPanel implements WizardContainer {
         RowFilter<PartsTableModel, Integer> rf = null;
         // If current expression doesn't parse, don't update.
         try {
-            rf = TableUtils.createVisibleColumnsSearchFilter(table, searchTextField.getText());
+            rf = TableUtils.createVisibleColumnsSearchFilter(table, searchTextField.getText(),
+                    PartsTableModel.USAGE_COLUMN);
         }
         catch (PatternSyntaxException e) {
             Logger.warn(e, "Search failed");
