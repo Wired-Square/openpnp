@@ -43,8 +43,8 @@ import org.openpnp.Main;
 
 import org.openpnp.gui.components.MarkupTextPane;
 
-@SuppressWarnings("serial")
 public class AboutDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
 
     private final JPanel contentPanel = new JPanel();
     private MarkupTextPane releaseNotes;

@@ -55,18 +55,18 @@ import org.openpnp.model.FiducialVisionSettings;
 import org.openpnp.model.PartSettingsHolder;
 import org.simpleframework.xml.Serializer;
 
-@SuppressWarnings("serial")
 public class VisionSettingsPanel extends JPanel implements WizardContainer {
+    private static final long serialVersionUID = 1L;
 
     private static final String PREF_DIVIDER_POSITION = "VisionSettingsPanel.dividerPosition";
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
-    private Preferences prefs = Preferences.userNodeForPackage(VisionSettingsPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(VisionSettingsPanel.class);
 
     private final Frame frame;
-    protected AbstractVisionSettings selectedVisionSettings;
+    protected transient AbstractVisionSettings selectedVisionSettings;
 
     private VisionSettingsTableModel tableModel;
-    private TableRowSorter<VisionSettingsTableModel> tableSorter;
+    private transient TableRowSorter<VisionSettingsTableModel> tableSorter;
     private JTable table;
     private JComboBox visionTypeFilter;
 
@@ -200,7 +200,7 @@ public class VisionSettingsPanel extends JPanel implements WizardContainer {
         return selections;
     }
 
-    public final Action newSettingsAction = new AbstractAction() {
+    public final transient Action newSettingsAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("VisionSettingsPanel.Action.NewSettings")); //$NON-NLS-1$
@@ -226,7 +226,7 @@ public class VisionSettingsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action deleteSettingsAction = new AbstractAction() {
+    public final transient Action deleteSettingsAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("VisionSettingsPanel.Action.DeleteSettings")); //$NON-NLS-1$
@@ -274,7 +274,7 @@ public class VisionSettingsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action copyPackageToClipboardAction = new AbstractAction() {
+    public final transient Action copyPackageToClipboardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.copy);
             putValue(NAME, Translations.getString("VisionSettingsPanel.Action.CopySettingsToClipboard")); //$NON-NLS-1$
@@ -304,7 +304,7 @@ public class VisionSettingsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action pastePackageToClipboardAction = new AbstractAction() {
+    public final transient Action pastePackageToClipboardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.paste);
             putValue(NAME, Translations.getString("VisionSettingsPanel.Action.CreateSettingsFromClipboard")); //$NON-NLS-1$

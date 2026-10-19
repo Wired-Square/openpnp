@@ -86,22 +86,24 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class MachineControlsPanel extends JPanel {
-    private final Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Configuration configuration;
     private final JobPanel jobPanel;
 
     private static final String PREF_JOG_CONTROLS_EXPANDED =
             "MachineControlsPanel.jogControlsExpanded"; //$NON-NLS-1$
     private static final boolean PREF_JOG_CONTROLS_EXPANDED_DEF = true;
-    private Preferences prefs = Preferences.userNodeForPackage(MachineControlsPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(MachineControlsPanel.class);
 
-    private HeadMountable selectedTool;
-    private HeadMountable lastSelectedNonCamera;
+    private transient HeadMountable selectedTool;
+    private transient HeadMountable lastSelectedNonCamera;
 
     private JComboBox comboBoxHeadMountable;
 
     private JogControlsPanel jogControlsPanel;
 
-    private Location markLocation = null;
+    private transient Location markLocation = null;
 
     private static void setDroBackground(JLabel dro, Color bg) {
         dro.setBackground(bg);
@@ -373,8 +375,9 @@ public class MachineControlsPanel extends JPanel {
         });
     }
 
-    @SuppressWarnings("serial")
-    public Action startStopMachineAction = new AbstractAction(Translations.getString("MachineControls.Action.Stop"), Icons.powerOn) { //$NON-NLS-1$
+    public transient Action startStopMachineAction = new AbstractAction(Translations.getString("MachineControls.Action.Stop"), Icons.powerOn) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('E',
                     Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -417,6 +420,8 @@ public class MachineControlsPanel extends JPanel {
     };
 
     public class HomeAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         public HomeAction() {
             super(Translations.getString("MachineControls.Action.Home"), Icons.home); //$NON-NLS-1$
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE,
@@ -436,8 +441,9 @@ public class MachineControlsPanel extends JPanel {
     }
     public HomeAction homeAction = new HomeAction();
 
-    @SuppressWarnings("serial")
-    public Action targetToolAction = new AbstractAction(null, Icons.centerTool) {
+    public transient Action targetToolAction = new AbstractAction(null, Icons.centerTool) {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -454,8 +460,9 @@ public class MachineControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action targetCameraAction = new AbstractAction(null, Icons.centerCamera) {
+    public transient Action targetCameraAction = new AbstractAction(null, Icons.centerCamera) {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -472,7 +479,7 @@ public class MachineControlsPanel extends JPanel {
         }
     };
 
-    public Action copyDroAction = new AbstractAction() {
+    public transient Action copyDroAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("MachineControls.Action.Copy")); //$NON-NLS-1$
         }
@@ -505,7 +512,7 @@ public class MachineControlsPanel extends JPanel {
         this.lastSelectedNonCamera = lastSelectedNonCamera;
     }
 
-    private MachineListener machineListener = new MachineListener.Adapter() {
+    private transient MachineListener machineListener = new MachineListener.Adapter() {
         private Location lastUserActionLocation;
 
         @Override
@@ -577,7 +584,7 @@ public class MachineControlsPanel extends JPanel {
         }
     };
 
-    private ConfigurationListener configurationListener = new ConfigurationListener.Adapter() {
+    private transient ConfigurationListener configurationListener = new ConfigurationListener.Adapter() {
         @Override
         public void configurationComplete(Configuration configuration) {
             SwingUtilities.invokeLater(() -> {

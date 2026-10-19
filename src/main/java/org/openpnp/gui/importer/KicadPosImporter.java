@@ -40,7 +40,6 @@ import org.openpnp.model.Package;
 import org.openpnp.model.Part;
 import org.openpnp.model.Placement;
 
-@SuppressWarnings("serial")
 public class KicadPosImporter implements BoardImporter {
     private final static String NAME = "KiCAD .pos"; //$NON-NLS-1$
     final static String DESCRIPTION = Translations.getString("KicadPosImporter.Importer.Description"); //$NON-NLS-1$

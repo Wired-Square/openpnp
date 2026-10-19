@@ -123,8 +123,9 @@ import org.openpnp.util.UiUtils;
 import org.pmw.tinylog.Logger;
 import com.google.common.eventbus.Subscribe;
 
-@SuppressWarnings("serial")  //$NON-NLS-1$
 public class JobPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     enum State {
         Stopped,
         Paused,
@@ -133,7 +134,7 @@ public class JobPanel extends JPanel {
         Stopping
     }
     
-    final private Configuration configuration;
+    final private transient Configuration configuration;
     final private MainFrame mainFrame;
 
     private static final String PREF_DIVIDER_POSITION = "JobPanel.dividerPosition"; //$NON-NLS-1$
@@ -150,22 +151,22 @@ public class JobPanel extends JPanel {
 
     private PlacementsHolderLocationViewerDialog jobViewer;
     
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
-    private ActionGroup singleTopLevelSelectionActionGroup;
-    private ActionGroup multiTopLevelSelectionActionGroup;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
+    private transient ActionGroup singleTopLevelSelectionActionGroup;
+    private transient ActionGroup multiTopLevelSelectionActionGroup;
 
-    private Preferences prefs = Preferences.userNodeForPackage(JobPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(JobPanel.class);
 
     public JMenu mnOpenRecent;
 
-    private List<File> recentJobs = new ArrayList<>();
+    private transient List<File> recentJobs = new ArrayList<>();
 
     private final JobPlacementsPanel jobPlacementsPanel;
 
-    private Job job;
+    private transient Job job;
 
-    private JobProcessor jobProcessor;
+    private transient JobProcessor jobProcessor;
     
     private State state = State.Stopped;
     
@@ -198,9 +199,7 @@ public class JobPanel extends JPanel {
         jobTableModel = new PlacementsHolderLocationsTableModel(configuration);
 
 
-        // Suppress because adding the type specifiers breaks WindowBuilder.
-        @SuppressWarnings({"unchecked", "rawtypes"})  //$NON-NLS-1$  //$NON-NLS-2$
-        JComboBox sidesComboBox = new JComboBox(Side.values());
+        JComboBox<Side> sidesComboBox = new JComboBox<>(Side.values());
 
         jobTable = new AutoSelectTextTable(jobTableModel) {
             @Override
@@ -836,7 +835,7 @@ public class JobPanel extends JPanel {
         return true;
     }
 
-    public final Action openJobAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.Open")) { //$NON-NLS-1$
+    public final transient Action openJobAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.Open")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_O);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('O',
@@ -874,7 +873,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action newJobAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.New")) { //$NON-NLS-1$
+    public final transient Action newJobAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.New")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_N);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('N',
@@ -893,7 +892,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action saveJobAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.Save")) { //$NON-NLS-1$
+    public final transient Action saveJobAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.Save")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_S);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('S',
@@ -906,7 +905,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action saveJobAsAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.SaveAs")) { //$NON-NLS-1$
+    public final transient Action saveJobAsAction = new AbstractAction(Translations.getString("JobPanel.Action.Job.SaveAs")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_A);
         }
@@ -1078,7 +1077,7 @@ public class JobPanel extends JPanel {
         }
     }
     
-    public final Action startPauseResumeJobAction = new AbstractAction() {
+    public final transient Action startPauseResumeJobAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.start);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Start")); //$NON-NLS-1$
@@ -1107,7 +1106,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action stepJobAction = new AbstractAction() {
+    public final transient Action stepJobAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.step);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Step")); //$NON-NLS-1$
@@ -1129,7 +1128,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action stopJobAction = new AbstractAction() {
+    public final transient Action stopJobAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.stop);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Stop")); //$NON-NLS-1$
@@ -1145,7 +1144,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action deferErrorsAction = new AbstractAction() {
+    public final transient Action deferErrorsAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.errorDefer);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Defer")); //$NON-NLS-1$
@@ -1159,7 +1158,7 @@ public class JobPanel extends JPanel {
         }
     };
     
-    public final Action resetAllPlacedAction = new AbstractAction() {
+    public final transient Action resetAllPlacedAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.ResetAllPlaced")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPanel.Action.Job.ResetAllPlaced.Description")); //$NON-NLS-1$
@@ -1172,7 +1171,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action addBoardAction = new AbstractAction() {
+    public final transient Action addBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.AddBoard")); //$NON-NLS-1$
             putValue(SMALL_ICON, Icons.add);
@@ -1184,7 +1183,7 @@ public class JobPanel extends JPanel {
         public void actionPerformed(ActionEvent arg0) {}
     };
 
-    public final Action addNewBoardAction = new AbstractAction() {
+    public final transient Action addNewBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.AddBoard.NewBoard")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPanel.Action.Job.AddBoard.NewBoard.Description")); //$NON-NLS-1$
@@ -1223,7 +1222,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action addExistingBoardAction = new AbstractAction() {
+    public final transient Action addExistingBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.AddBoard.ExistingBoard")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPanel.Action.Job.AddBoard.ExistingBoard.Description")); //$NON-NLS-1$
@@ -1268,7 +1267,7 @@ public class JobPanel extends JPanel {
         Helpers.selectObjectTableRow(jobTable, boardLocation);
     }
     
-    public final Action addNewPanelAction = new AbstractAction() {
+    public final transient Action addNewPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.AddBoard.NewPanel")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPanel.Action.Job.AddBoard.NewPanel.Description")); //$NON-NLS-1$
@@ -1308,7 +1307,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action addExistingPanelAction = new AbstractAction() {
+    public final transient Action addExistingPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.AddBoard.ExistingPanel")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPanel.Action.Job.AddBoard.ExistingPanel.Description")); //$NON-NLS-1$
@@ -1353,7 +1352,7 @@ public class JobPanel extends JPanel {
         Helpers.selectObjectTableRow(jobTable, panelLocation);
     }
     
-    public final Action removeBoardAction = new AbstractAction() {
+    public final transient Action removeBoardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.RemoveBoard")); //$NON-NLS-1$
@@ -1371,7 +1370,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action captureCameraBoardLocationAction = new AbstractAction() {
+    public final transient Action captureCameraBoardLocationAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.captureCamera);
             putValue(NAME,Translations.getString("JobPanel.Action.Job.Board.CaptureCameraLocation")); //$NON-NLS-1$
@@ -1395,7 +1394,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action captureToolBoardLocationAction = new AbstractAction() {
+    public final transient Action captureToolBoardLocationAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.captureTool);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Board.CaptureToolLocation")); //$NON-NLS-1$
@@ -1420,7 +1419,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action moveCameraToBoardLocationAction = new AbstractAction() {
+    public final transient Action moveCameraToBoardLocationAction = new AbstractAction() {
                 {
                     putValue(SMALL_ICON, Icons.centerCamera);
                     putValue(NAME, Translations.getString("JobPanel.Action.Job.Camera.PositionAtBoardLocation")); //$NON-NLS-1$
@@ -1442,7 +1441,7 @@ public class JobPanel extends JPanel {
                     });
                 }
             };
-    public final Action moveCameraToBoardLocationNextAction = new AbstractAction() {
+    public final transient Action moveCameraToBoardLocationNextAction = new AbstractAction() {
                 {
                     putValue(SMALL_ICON, Icons.centerCameraMoveNext);
                     putValue(NAME, Translations.getString("JobPanel.Action.Job.Camera.PositionAtNextBoardLocation")); //$NON-NLS-1$
@@ -1472,7 +1471,7 @@ public class JobPanel extends JPanel {
                 }
             };
 
-    public final Action moveToolToBoardLocationAction = new AbstractAction() {
+    public final transient Action moveToolToBoardLocationAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.centerTool);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Tool.PositionAtBoardLocation")); //$NON-NLS-1$
@@ -1490,7 +1489,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action twoPointLocateBoardLocationAction = new AbstractAction() {
+    public final transient Action twoPointLocateBoardLocationAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.twoPointLocate);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Board.TwoPointBoardLocation")); //$NON-NLS-1$
@@ -1506,7 +1505,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action fiducialCheckAction = new AbstractAction() {
+    public final transient Action fiducialCheckAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.fiducialCheck);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Board.FiducialCheck")); //$NON-NLS-1$
@@ -1547,7 +1546,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action viewerAction = new AbstractAction() {
+    public final transient Action viewerAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.colorTrue);
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Board.ViewJob")); //$NON-NLS-1$
@@ -1574,7 +1573,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action setEnabledAction = new AbstractAction() {
+    public final transient Action setEnabledAction = new AbstractAction() {
         {
             putValue(NAME,
                     Translations.getString("JobPanel.Action.Job.Board.SetEnabled")); //$NON-NLS-1$
@@ -1587,6 +1586,8 @@ public class JobPanel extends JPanel {
     };
 
     class SetEnabledAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean value;
 
         public SetEnabledAction(Boolean value) {
@@ -1613,7 +1614,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    public final Action setCheckFidsAction = new AbstractAction() {
+    public final transient Action setCheckFidsAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Board.SetCheckFids")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPanel.Action.Job.Board.SetCheckFids.Description")); //$NON-NLS-1$
@@ -1624,6 +1625,8 @@ public class JobPanel extends JPanel {
     };
 
     class SetCheckFidsAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean value;
 
         public SetCheckFidsAction(Boolean value) {
@@ -1647,7 +1650,7 @@ public class JobPanel extends JPanel {
         }
     };
     
-    public final Action setSideAction = new AbstractAction() {
+    public final transient Action setSideAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPanel.Action.Job.Board.SetSide")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, 
@@ -1659,6 +1662,8 @@ public class JobPanel extends JPanel {
     };
 
     class SetSideAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Side side;
 
         public SetSideAction(Side side) {
@@ -1698,6 +1703,8 @@ public class JobPanel extends JPanel {
     };
     
     public class OpenRecentJobAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         private final File file;
 
         public OpenRecentJobAction(File file) {
@@ -1737,7 +1744,7 @@ public class JobPanel extends JPanel {
         mainFrame.getFeedersTab().updateView();
     }
 
-    private final MachineListener machineListener = new MachineListener.Adapter() {
+    private final transient MachineListener machineListener = new MachineListener.Adapter() {
         @Override
         public void machineEnabled(Machine machine) {
             SwingUtilities.invokeLater(() -> updateJobActions());
@@ -1752,7 +1759,7 @@ public class JobPanel extends JPanel {
         }
     };
 
-    private final PropertyChangeListener titlePropertyChangeListener =
+    private final transient PropertyChangeListener titlePropertyChangeListener =
             new PropertyChangeListener() {
                 // The job processor marks the job dirty on the machine thread.
                 @Override
@@ -1761,7 +1768,7 @@ public class JobPanel extends JPanel {
                 }
             };
 
-    private final TextStatusListener textStatusListener = text -> {
+    private final transient TextStatusListener textStatusListener = text -> {
         MainFrame.get().setStatus(text);
         // Repainting here refreshes the tables, which contain status that needs to be updated.
         // Would be better to have property notifiers but this is going to have to do for now.

@@ -75,9 +75,10 @@ import org.openpnp.model.Configuration.TablesLinked;
 import org.openpnp.model.Configuration;
 import com.google.common.eventbus.Subscribe;
 
-@SuppressWarnings("serial")
 public class PanelsPanel extends JPanel {
-    final private Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    final private transient Configuration configuration;
     final private MainFrame frame;
 
     private static final String PREF_DIVIDER_POSITION = "PanelsPanel.dividerPosition"; //$NON-NLS-1$
@@ -87,10 +88,10 @@ public class PanelsPanel extends JPanel {
     private JTable panelsTable;
     private JSplitPane splitPane;
 
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
 
-    private Preferences prefs = Preferences.userNodeForPackage(PanelsPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(PanelsPanel.class);
 
     private final PanelDefinitionPanel panelDefinitionPanel;
 
@@ -352,7 +353,7 @@ public class PanelsPanel extends JPanel {
         return selections;
     }
 
-    public final Action addPanelAction = new AbstractAction() {
+    public final transient Action addPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelsPanel.Action.AddPanel")); //$NON-NLS-1$
             putValue(SMALL_ICON, Icons.add);
@@ -364,7 +365,7 @@ public class PanelsPanel extends JPanel {
         public void actionPerformed(ActionEvent arg0) {}
     };
 
-    public final Action addNewPanelAction = new AbstractAction() {
+    public final transient Action addNewPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelsPanel.Action.AddPanel.NewPanel")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelsPanel.Action.AddPanel.NewPanel.Description")); //$NON-NLS-1$
@@ -407,7 +408,7 @@ public class PanelsPanel extends JPanel {
         }
     };
 
-    public final Action addExistingPanelAction = new AbstractAction() {
+    public final transient Action addExistingPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelsPanel.Action.AddPanel.ExistingPanel")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelsPanel.Action.AddPanel.ExistingPanel.Description")); //$NON-NLS-1$
@@ -451,7 +452,7 @@ public class PanelsPanel extends JPanel {
         return panel;
     }
     
-    public final Action removePanelAction = new AbstractAction() { //$NON-NLS-1$
+    public final transient Action removePanelAction = new AbstractAction() { //$NON-NLS-1$
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("PanelsPanel.Action.RemovePanel")); //$NON-NLS-1$
@@ -476,7 +477,7 @@ public class PanelsPanel extends JPanel {
         }
     };
     
-    public final Action copyPanelAction = new AbstractAction() {
+    public final transient Action copyPanelAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.copy);
             putValue(NAME, Translations.getString("PanelsPanel.Action.CopyPanel")); //$NON-NLS-1$
@@ -527,7 +528,7 @@ public class PanelsPanel extends JPanel {
         }
     };
 
-    public final Action cleanUpAction = new AbstractAction() {
+    public final transient Action cleanUpAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.clean);
             putValue(NAME, Translations.getString("PanelsPanel.Action.CleanUp")); //$NON-NLS-1$

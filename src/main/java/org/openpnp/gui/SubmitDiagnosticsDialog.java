@@ -51,6 +51,8 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class SubmitDiagnosticsDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
+
     private static final int VISION_IMAGE_LIMIT = 10;
     private static final String DIAGNOSTICS_DIRECTORY = "diagnostics";
     private static final String NEW_ISSUE_URL = "https://github.com/Wired-Square/openpnp/issues/new";
@@ -71,9 +73,9 @@ public class SubmitDiagnosticsDialog extends JDialog {
     private JProgressBar progressBar;
     private JButton okButton;
     private JButton cancelButton;
-    private SwingWorker<File, Integer> worker;
+    private transient SwingWorker<File, Integer> worker;
 
-    private BufferedImage screenShot;
+    private transient BufferedImage screenShot;
 
     /**
      * Create the dialog.
@@ -230,8 +232,9 @@ public class SubmitDiagnosticsDialog extends JDialog {
         }
     }
 
-    @SuppressWarnings("serial")
-    public Action sendAction = new AbstractAction("Save") {
+    public transient Action sendAction = new AbstractAction("Save") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent e) {
             okButton.setEnabled(false);
@@ -369,8 +372,9 @@ public class SubmitDiagnosticsDialog extends JDialog {
         }
     }
 
-    @SuppressWarnings("serial")
-    public Action cancelAction = new AbstractAction("Cancel") {
+    public transient Action cancelAction = new AbstractAction("Cancel") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             if (worker != null) {

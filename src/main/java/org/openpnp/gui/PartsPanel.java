@@ -97,25 +97,25 @@ import org.openpnp.util.FeederUtils;
 import org.pmw.tinylog.Logger;
 import org.simpleframework.xml.Serializer;
 
-@SuppressWarnings("serial")
 public class PartsPanel extends JPanel implements WizardContainer {
+    private static final long serialVersionUID = 1L;
 
 
     private static final String PREF_DIVIDER_POSITION = "PartsPanel.dividerPosition";
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
-    private Preferences prefs = Preferences.userNodeForPackage(PartsPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(PartsPanel.class);
 
-    final private Configuration configuration;
+    final private transient Configuration configuration;
     final private Frame frame;
 
     private PartsTableModel tableModel;
-    private TableRowSorter<PartsTableModel> tableSorter;
+    private transient TableRowSorter<PartsTableModel> tableSorter;
     private JTextField searchTextField;
     private JTable table;
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
     private JTabbedPane tabbedPane;
-    private Part selectedPart;
+    private transient Part selectedPart;
     private int priorRowIndex = -1;
     private HashMap<Class, Integer> lastSelectedTabIndex = new HashMap<>();
 
@@ -306,7 +306,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
         tableSorter.setRowFilter(rf);
     }
 
-    public final Action newPartAction = new AbstractAction() {
+    public final transient Action newPartAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("PartsPanel.Action.NewPart")); //$NON-NLS-1$
@@ -344,7 +344,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action deletePartAction = new AbstractAction() {
+    public final transient Action deletePartAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("PartsPanel.Action.DeletePart")); //$NON-NLS-1$
@@ -375,7 +375,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action pickPartAction = new AbstractAction() {
+    public final transient Action pickPartAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.pick);
             putValue(NAME, Translations.getString("PartsPanel.Action.PickPart")); //$NON-NLS-1$
@@ -396,7 +396,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action copyPartToClipboardAction = new AbstractAction() {
+    public final transient Action copyPartToClipboardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.copy);
             putValue(NAME, Translations.getString("PartsPanel.Action.CopyPartToClipboard")); //$NON-NLS-1$
@@ -423,7 +423,7 @@ public class PartsPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action pastePartToClipboardAction = new AbstractAction() {
+    public final transient Action pastePartToClipboardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.paste);
             putValue(NAME, Translations.getString("PartsPanel.Action.PastePartFromClipboard")); //$NON-NLS-1$

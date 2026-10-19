@@ -75,7 +75,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class EagleBoardImporter implements BoardImporter {
     private final static String NAME = "CadSoft EAGLE Board"; //$NON-NLS-1$
     private final static String DESCRIPTION =
@@ -653,10 +652,12 @@ public class EagleBoardImporter implements BoardImporter {
     }
 
     class Dlg extends JDialog {
+        private static final long serialVersionUID = 1L;
+
         private JTextField textFieldBoardFile;
-        private final Action browseBoardFileAction = new SwingAction();
-        private final Action importAction = new SwingAction_2();
-        private final Action cancelAction = new SwingAction_3();
+        private final transient Action browseBoardFileAction = new SwingAction();
+        private final transient Action importAction = new SwingAction_2();
+        private final transient Action cancelAction = new SwingAction_3();
         private JCheckBox chckbxCreateMissingParts;
         private JCheckBox chckbxUpdateExistingParts;
         private JCheckBox chckbxAddLibraryPrefix;
@@ -749,6 +750,8 @@ public class EagleBoardImporter implements BoardImporter {
         }
 
         private class SwingAction extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction() {
                 putValue(NAME, Translations.getString("EagleBoardImporter.BrowseAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleBoardImporter.BrowseAction.ShortDescription")); //$NON-NLS-1$
@@ -773,6 +776,8 @@ public class EagleBoardImporter implements BoardImporter {
         }
 
         private class SwingAction_2 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_2() {
                 putValue(NAME, Translations.getString("EagleBoardImporter.ImportAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleBoardImporter.ImportAction.ShortDescription")); //$NON-NLS-1$
@@ -817,6 +822,8 @@ public class EagleBoardImporter implements BoardImporter {
         }
 
         private class SwingAction_3 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_3() {
                 putValue(NAME, Translations.getString("EagleBoardImporter.CancelAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleBoardImporter.CancelAction.ShortDescription")); //$NON-NLS-1$

@@ -104,23 +104,24 @@ import org.openpnp.util.UiUtils;
 import org.openpnp.util.Utils2D;
 import com.google.common.eventbus.Subscribe;
 
-@SuppressWarnings("serial")
 public class JobPlacementsPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private JTable table;
     private PlacementsHolderPlacementsTableModel tableModel;
-    private TableRowSorter<PlacementsHolderPlacementsTableModel> tableSorter;
-    private ActionGroup topLevelSingleInstanceActionGroup;
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
-    private ActionGroup positionActionGroup;
-    private ActionGroup captureActionGroup;
-    private PlacementsHolderLocation<?> boardOrPanelLocation;
+    private transient TableRowSorter<PlacementsHolderPlacementsTableModel> tableSorter;
+    private transient ActionGroup topLevelSingleInstanceActionGroup;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
+    private transient ActionGroup positionActionGroup;
+    private transient ActionGroup captureActionGroup;
+    private transient PlacementsHolderLocation<?> boardOrPanelLocation;
     private JobPanel jobPanel;
     private boolean topLevel;
     private boolean singleInstance;
-    private ActionGroup editFeederActionGroup;
-    private Preferences prefs = Preferences.userNodeForPackage(JobPlacementsPanel.class);
-    private Configuration configuration;
+    private transient ActionGroup editFeederActionGroup;
+    private transient Preferences prefs = Preferences.userNodeForPackage(JobPlacementsPanel.class);
+    private transient Configuration configuration;
     private boolean editDefinition;
 
     public JobPlacementsPanel(JobPanel jobPanel) {
@@ -158,19 +159,14 @@ public class JobPlacementsPanel extends JPanel {
                 captureToolPlacementLocation);
         captureActionGroup.setEnabled(false);
 
-        // Suppress because adding the type specifiers breaks WindowBuilder.
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JComboBox<PartsComboBoxModel> partsComboBox = new JComboBox(new PartsComboBoxModel());
+        JComboBox<Part> partsComboBox = new JComboBox<>(new PartsComboBoxModel());
         partsComboBox.setMaximumRowCount(20);
         partsComboBox.setRenderer(new IdentifiableListCellRenderer<Part>());
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JComboBox<Side> sidesComboBox = new JComboBox(Side.values());
+        JComboBox<Side> sidesComboBox = new JComboBox<>(Side.values());
         // Note we don't use Type.values() here because there are a couple Types that are only
         // there for backwards compatibility and we don't want them in the list.
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JComboBox<Type> typesComboBox = new JComboBox(new Type[] { Type.Placement, Type.Fiducial });
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JComboBox<Type> errorHandlingComboBox = new JComboBox(ErrorHandling.values());
+        JComboBox<Type> typesComboBox = new JComboBox<>(new Type[] { Type.Placement, Type.Fiducial });
+        JComboBox<ErrorHandling> errorHandlingComboBox = new JComboBox<>(ErrorHandling.values());
         
         setLayout(new BorderLayout(0, 0));
 
@@ -540,7 +536,7 @@ public class JobPlacementsPanel extends JPanel {
         return tableModel;
     }
 
-    public final Action newAction = new AbstractAction() {
+    public final transient Action newAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("JobPlacementsPanel.NewPlacement.Name")); //$NON-NLS-1$
@@ -599,7 +595,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action removeAction = new AbstractAction() {
+    public final transient Action removeAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("JobPlacementsPanel.RemovePlacement.Name")); //$NON-NLS-1$
@@ -619,7 +615,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action moveCameraToPlacementLocation = new AbstractAction() {
+    public final transient Action moveCameraToPlacementLocation = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.centerCamera);
             putValue(NAME, Translations.getString("JobPlacementsPanel.PositionCameraAtPlacement.Name")); //$NON-NLS-1$
@@ -644,7 +640,7 @@ public class JobPlacementsPanel extends JPanel {
             });
         }
     };
-    public final Action moveCameraToPlacementLocationNext = new AbstractAction() {
+    public final transient Action moveCameraToPlacementLocationNext = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.centerCameraMoveNext);
             putValue(NAME, Translations.getString("JobPlacementsPanel.PositionCameraAtNextPlacement.Name")); //$NON-NLS-1$
@@ -675,7 +671,7 @@ public class JobPlacementsPanel extends JPanel {
         };
     };
 
-    public final Action moveToolToPlacementLocation = new AbstractAction() {
+    public final transient Action moveToolToPlacementLocation = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.centerTool);
             putValue(NAME, Translations.getString("JobPlacementsPanel.PositionToolAtPlacement.Name")); //$NON-NLS-1$
@@ -696,7 +692,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action captureCameraPlacementLocation = new AbstractAction() {
+    public final transient Action captureCameraPlacementLocation = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.captureCamera);
             putValue(NAME, Translations.getString(
@@ -718,7 +714,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action captureToolPlacementLocation = new AbstractAction() {
+    public final transient Action captureToolPlacementLocation = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.captureTool);
             putValue(NAME, Translations.getString("JobPlacementsPanel.CaptureToolPlacementLocation.Name")); //$NON-NLS-1$
@@ -738,7 +734,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action editPlacementFeederAction = new AbstractAction() {
+    public final transient Action editPlacementFeederAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.editFeeder);
             putValue(NAME, Translations.getString("JobPlacementsPanel.EditPlacementFeeder.Name")); //$NON-NLS-1$
@@ -753,7 +749,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action setTypeAction = new AbstractAction() {
+    public final transient Action setTypeAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPlacementsPanel.SetType.Name")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString(
@@ -765,6 +761,8 @@ public class JobPlacementsPanel extends JPanel {
     };
 
     class SetTypeAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Placement.Type type;
 
         public SetTypeAction(Placement.Type type) {
@@ -799,7 +797,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action setSideAction = new AbstractAction() {
+    public final transient Action setSideAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPlacementsPanel.SetSide.Name")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPlacementsPanel.SetSide.ShortDescription")); //$NON-NLS-1$
@@ -810,6 +808,8 @@ public class JobPlacementsPanel extends JPanel {
     };
 
     class SetSideAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Side side;
 
         public SetSideAction(Side side) {
@@ -842,7 +842,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
     
-    public final Action setErrorHandlingAction = new AbstractAction() {
+    public final transient Action setErrorHandlingAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPlacementsPanel.SetErrorHandling.Name")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPlacementsPanel.SetErrorHandling.ShortDescription")); //$NON-NLS-1$
@@ -853,6 +853,8 @@ public class JobPlacementsPanel extends JPanel {
     };
 
     class SetErrorHandlingAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         Placement.ErrorHandling errorHandling;
 
         public SetErrorHandlingAction(Placement.ErrorHandling errorHandling) {
@@ -891,7 +893,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
     
-    public final Action setPlacedAction = new AbstractAction() {
+    public final transient Action setPlacedAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPlacementsPanel.SetPlaced.Name")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPlacementsPanel.SetPlaced.ShortDescription")); //$NON-NLS-1$
@@ -902,6 +904,8 @@ public class JobPlacementsPanel extends JPanel {
     };
 
     class SetPlacedAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean placed;
 
         public SetPlacedAction(Boolean placed) {
@@ -926,7 +930,7 @@ public class JobPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action setEnabledAction = new AbstractAction() {
+    public final transient Action setEnabledAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("JobPlacementsPanel.SetEnabled.Name")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("JobPlacementsPanel.SetEnabled.ShortDescription")); //$NON-NLS-1$
@@ -938,6 +942,8 @@ public class JobPlacementsPanel extends JPanel {
     private JTextField searchTextField;
 
     class SetEnabledAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean enabled;
 
         public SetEnabledAction(Boolean enabled) {
@@ -967,6 +973,8 @@ public class JobPlacementsPanel extends JPanel {
     };
 
     static class TypeRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void setValue(Object value) {
             if (value == null) {
@@ -1007,6 +1015,8 @@ public class JobPlacementsPanel extends JPanel {
     }
 
     static class StatusRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
+
         public void setValue(Object value) {
             if (value == null) {
                 return;

@@ -69,8 +69,9 @@ import org.openpnp.util.BeanUtils;
 import org.openpnp.util.Utils2D;
 import javax.swing.border.EtchedBorder;
 
-@SuppressWarnings("serial")
 public class PanelArrayBuilderDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_WINDOW_X = "PanelArrayBuilderDialog.windowX"; //$NON-NLS-1$
     private static final int PREF_WINDOW_X_DEF = 100;
     private static final String PREF_WINDOW_Y = "PanelArrayBuilderDialog.windowY"; //$NON-NLS-1$
@@ -98,7 +99,7 @@ public class PanelArrayBuilderDialog extends JDialog {
     
     private LengthUnit systemUnit = Configuration.get().getSystemUnits();
 
-    private List<PlacementsHolderLocation<?>> newChildren = new ArrayList<>();
+    private transient List<PlacementsHolderLocation<?>> newChildren = new ArrayList<>();
     private ArrayType arrayType = ArrayType.Rectangular;
     private final JPanel contentPanel = new JPanel();
     private JTextField textFieldRowSpacing;
@@ -108,30 +109,30 @@ public class PanelArrayBuilderDialog extends JDialog {
     private JTextField textFieldCenterY;
     private final ButtonGroup buttonGroup = new ButtonGroup();
     private JPanel panelControls;
-    private PanelLocation panelLocation;
-    private PlacementsHolderLocation<?> rootChildLocation;
-    private Runnable refresh;
-    protected BufferedImage panelImage;
+    private transient PanelLocation panelLocation;
+    private transient PlacementsHolderLocation<?> rootChildLocation;
+    private transient Runnable refresh;
+    protected transient BufferedImage panelImage;
     private int columnCount = 1;
     private int rowCount = 1;
     private int angularCount = 1;
     private int radialCount = 1;
-    private Length columnSpacing = new Length(10, LengthUnit.Millimeters);
-    private Length rowSpacing = new Length(10, LengthUnit.Millimeters);
-    private Length alternateOffset = new Length(0, LengthUnit.Millimeters);
+    private transient Length columnSpacing = new Length(10, LengthUnit.Millimeters);
+    private transient Length rowSpacing = new Length(10, LengthUnit.Millimeters);
+    private transient Length alternateOffset = new Length(0, LengthUnit.Millimeters);
     private int alternateRowColumnDelta = 0;
-    private Length centerX = new Length(0, LengthUnit.Millimeters);
-    private Length centerY = new Length(0, LengthUnit.Millimeters);
+    private transient Length centerX = new Length(0, LengthUnit.Millimeters);
+    private transient Length centerY = new Length(0, LengthUnit.Millimeters);
     private boolean increaseProportionally = false;
     private boolean panelReferenceFrame = true;
     private PlacementsHolderLocationViewer panelLayout;
-    private Preferences prefs = Preferences.userNodeForPackage(PanelArrayBuilderDialog.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(PanelArrayBuilderDialog.class);
 
     private String rootChildId;
 
     private boolean dirtyState;
 
-    private WindowAdapter windowCloseListener;
+    private transient WindowAdapter windowCloseListener;
 
     /**
      * Create the dialog.

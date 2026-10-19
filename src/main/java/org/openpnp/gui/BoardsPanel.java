@@ -71,9 +71,10 @@ import org.openpnp.model.Configuration;
 import org.openpnp.model.Configuration.TablesLinked;
 import com.google.common.eventbus.Subscribe;
 
-@SuppressWarnings("serial")
 public class BoardsPanel extends JPanel {
-    final private Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    final private transient Configuration configuration;
     final private MainFrame frame;
 
     private static final String PREF_DIVIDER_POSITION = "BoardsPanel.dividerPosition"; //$NON-NLS-1$
@@ -83,10 +84,10 @@ public class BoardsPanel extends JPanel {
     private JTable boardsTable;
     private JSplitPane splitPane;
 
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
 
-    private Preferences prefs = Preferences.userNodeForPackage(BoardsPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(BoardsPanel.class);
 
     private final BoardPlacementsPanel boardPlacementsPanel;
 
@@ -314,7 +315,7 @@ public class BoardsPanel extends JPanel {
         return selections;
     }
 
-    public final Action addBoardAction = new AbstractAction() {
+    public final transient Action addBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.Action.AddBoard")); //$NON-NLS-1$
             putValue(SMALL_ICON, Icons.add);
@@ -326,7 +327,7 @@ public class BoardsPanel extends JPanel {
         public void actionPerformed(ActionEvent arg0) {}
     };
 
-    public final Action addNewBoardAction = new AbstractAction() {
+    public final transient Action addNewBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.Action.AddBoard.NewBoard")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, 
@@ -368,7 +369,7 @@ public class BoardsPanel extends JPanel {
         }
     };
 
-    public final Action addExistingBoardAction = new AbstractAction() {
+    public final transient Action addExistingBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.Action.AddBoard.ExistingBoard")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, 
@@ -417,7 +418,7 @@ public class BoardsPanel extends JPanel {
         return boardPlacementsPanel;
     }
 
-    public final Action removeBoardAction = new AbstractAction("Remove Board") { //$NON-NLS-1$
+    public final transient Action removeBoardAction = new AbstractAction("Remove Board") { //$NON-NLS-1$
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("BoardsPanel.Action.RemoveBoard")); //$NON-NLS-1$
@@ -443,7 +444,7 @@ public class BoardsPanel extends JPanel {
         }
     };
     
-    public final Action copyBoardAction = new AbstractAction() {
+    public final transient Action copyBoardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.copy);
             putValue(NAME, Translations.getString("BoardsPanel.Action.CopyBoard")); //$NON-NLS-1$
@@ -494,7 +495,7 @@ public class BoardsPanel extends JPanel {
         }
     };
 
-    public final Action cleanUpAction = new AbstractAction() {
+    public final transient Action cleanUpAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.clean);
             putValue(NAME, Translations.getString("BoardsPanel.Action.CleanUp")); //$NON-NLS-1$

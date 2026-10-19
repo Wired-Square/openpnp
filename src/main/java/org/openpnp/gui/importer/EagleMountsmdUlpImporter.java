@@ -68,7 +68,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class EagleMountsmdUlpImporter implements BoardImporter {
     private final static String NAME = "EAGLE mountsmd.ulp"; //$NON-NLS-1$
     private final static String DESCRIPTION = Translations.getString("EagleMountsmdUlpImporter.Importer.Description"); //$NON-NLS-1$
@@ -160,12 +159,14 @@ public class EagleMountsmdUlpImporter implements BoardImporter {
     }
 
     class Dlg extends JDialog {
+        private static final long serialVersionUID = 1L;
+
         private JTextField textFieldTopFile;
         private JTextField textFieldBottomFile;
-        private final Action browseTopFileAction = new SwingAction();
-        private final Action browseBottomFileAction = new SwingAction_1();
-        private final Action importAction = new SwingAction_2();
-        private final Action cancelAction = new SwingAction_3();
+        private final transient Action browseTopFileAction = new SwingAction();
+        private final transient Action browseBottomFileAction = new SwingAction_1();
+        private final transient Action importAction = new SwingAction_2();
+        private final transient Action cancelAction = new SwingAction_3();
         private JCheckBox chckbxCreateMissingParts;
 
         public Dlg(Frame parent) {
@@ -244,6 +245,8 @@ public class EagleMountsmdUlpImporter implements BoardImporter {
         }
 
         private class SwingAction extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction() {
                 putValue(NAME, Translations.getString("EagleMountsmdUlpImporter.BrowseAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleMountsmdUlpImporter.BrowseAction.ShortDescription")); //$NON-NLS-1$
@@ -267,6 +270,8 @@ public class EagleMountsmdUlpImporter implements BoardImporter {
         }
 
         private class SwingAction_1 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_1() {
                 putValue(NAME, Translations.getString("EagleMountsmdUlpImporter.BrowseAction2.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleMountsmdUlpImporter.BrowseAction2.ShortDescription")); //$NON-NLS-1$
@@ -290,6 +295,8 @@ public class EagleMountsmdUlpImporter implements BoardImporter {
         }
 
         private class SwingAction_2 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_2() {
                 putValue(NAME, Translations.getString("EagleMountsmdUlpImporter.ImportAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleMountsmdUlpImporter.ImportAction.ShortDescription")); //$NON-NLS-1$
@@ -322,6 +329,8 @@ public class EagleMountsmdUlpImporter implements BoardImporter {
         }
 
         private class SwingAction_3 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_3() {
                 putValue(NAME, Translations.getString("EagleMountsmdUlpImporter.CancelAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("EagleMountsmdUlpImporter.CancelAction.ShortDescription")); //$NON-NLS-1$

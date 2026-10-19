@@ -65,9 +65,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard {
-    private final AbstractSettlingCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient AbstractSettlingCamera camera;
     
     public CameraVisionConfigurationWizard(AbstractSettlingCamera camera) {
         AbstractMachine machine = (AbstractMachine) Configuration.get().getMachine();
@@ -391,7 +392,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
         });
     }
 
-    private Action settleTestLeftAction = new AbstractAction("", Icons.arrowRight) {
+    private transient Action settleTestLeftAction = new AbstractAction("", Icons.arrowRight) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestLeftAction.Description")); //$NON-NLS-1$
@@ -401,7 +402,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
             settleTestPlanar(e, -1, 0, 0);
         }
     };
-    private Action settleTestRightAction = new AbstractAction("", Icons.arrowLeft) {
+    private transient Action settleTestRightAction = new AbstractAction("", Icons.arrowLeft) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestRightAction.Description")); //$NON-NLS-1$
@@ -411,7 +412,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
             settleTestPlanar(e, 1, 0, 0);
         }
     };
-    private Action settleTestRearAction = new AbstractAction("", Icons.arrowDown) {
+    private transient Action settleTestRearAction = new AbstractAction("", Icons.arrowDown) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestRearAction.Description")); //$NON-NLS-1$
@@ -421,7 +422,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
             settleTestPlanar(e, 0, 1, 0);
         }
     };
-    private Action settleTestFrontAction = new AbstractAction("", Icons.arrowUp) {
+    private transient Action settleTestFrontAction = new AbstractAction("", Icons.arrowUp) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestFrontAction.Description")); //$NON-NLS-1$
@@ -431,7 +432,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
             settleTestPlanar(e, 0, -1, 0);
         }
     };
-    private Action settleTestRotateAction = new AbstractAction("", Icons.rotateCounterclockwise) {
+    private transient Action settleTestRotateAction = new AbstractAction("", Icons.rotateCounterclockwise) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestRotateAction.Description")); //$NON-NLS-1$
@@ -441,7 +442,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
             settleTestPlanar(e, 0, 0, 1);
         }
     };
-    private Action settleTestUpAction = new AbstractAction("", Icons.centerTool) {
+    private transient Action settleTestUpAction = new AbstractAction("", Icons.centerTool) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestUpAction.Description")); //$NON-NLS-1$
@@ -474,7 +475,7 @@ public class CameraVisionConfigurationWizard extends AbstractConfigurationWizard
             });
         }
     };
-    private Action settleTestAction = new AbstractAction("", Icons.captureCamera) {
+    private transient Action settleTestAction = new AbstractAction("", Icons.captureCamera) {
         {
             putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                     "CameraVisionConfigurationWizard.Action.SettleTestAction.Description")); //$NON-NLS-1$

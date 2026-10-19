@@ -97,25 +97,25 @@ import org.openpnp.spi.PartAlignment;
 import org.pmw.tinylog.Logger;
 import org.simpleframework.xml.Serializer;
 
-@SuppressWarnings("serial")
 public class PackagesPanel extends JPanel implements WizardContainer {
+    private static final long serialVersionUID = 1L;
 
 
     private static final String PREF_DIVIDER_POSITION = "PackagesPanel.dividerPosition";
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
-    private Preferences prefs = Preferences.userNodeForPackage(PackagesPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(PackagesPanel.class);
 
-    final private Configuration configuration;
+    final private transient Configuration configuration;
     final private Frame frame;
 
     private PackagesTableModel tableModel;
-    private TableRowSorter<PackagesTableModel> tableSorter;
+    private transient TableRowSorter<PackagesTableModel> tableSorter;
     private JTextField searchTextField;
     private JTable table;
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
     private JTabbedPane tabbedPane;
-    private Package selectedPackage;
+    private transient Package selectedPackage;
 
     public PackagesPanel(Configuration configuration, Frame frame) {
         this.configuration = configuration;
@@ -299,7 +299,7 @@ public class PackagesPanel extends JPanel implements WizardContainer {
         tableSorter.setRowFilter(rf);
     }
 
-    public final Action newPackageAction = new AbstractAction() {
+    public final transient Action newPackageAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("PackagesPanel.Action.NewPackage")); //$NON-NLS-1$
@@ -329,7 +329,7 @@ public class PackagesPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action deletePackageAction = new AbstractAction() {
+    public final transient Action deletePackageAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("PackagesPanel.Action.DeletePackage")); //$NON-NLS-1$
@@ -376,7 +376,7 @@ public class PackagesPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action copyPackageToClipboardAction = new AbstractAction() {
+    public final transient Action copyPackageToClipboardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.copy);
             putValue(NAME, Translations.getString("PackagesPanel.Action.CopyPackage")); //$NON-NLS-1$
@@ -403,7 +403,7 @@ public class PackagesPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action pastePackageToClipboardAction = new AbstractAction() {
+    public final transient Action pastePackageToClipboardAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.paste);
             putValue(NAME, Translations.getString("PackagesPanel.Action.PastePackage")); //$NON-NLS-1$

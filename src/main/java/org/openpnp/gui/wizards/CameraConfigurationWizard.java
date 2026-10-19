@@ -74,9 +74,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class CameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final AbstractBroadcastingCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient AbstractBroadcastingCamera camera;
 
     private final static String uppFormat = "%.8f";
 
@@ -89,7 +90,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
     private final static String upLookingCalibrationInstructions = Translations.getString(
             "CameraConfigurationWizard.upLookingCalibrationInstructions"); //$NON-NLS-1$
 
-    protected Location measurementLocation;
+    protected transient Location measurementLocation;
 
     public CameraConfigurationWizard(AbstractBroadcastingCamera camera) {
         AbstractMachine machine = (AbstractMachine) Configuration.get()
@@ -612,7 +613,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         adaptDialog();
     }
 
-    private Action captureToolZAction = new AbstractAction("", Icons.captureTool) {
+    private transient Action captureToolZAction = new AbstractAction("", Icons.captureTool) {
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Capture the Z height that the selected tool is at.");
@@ -630,7 +631,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private Action measure1Action = new AbstractAction(Translations.getString(
+    private transient Action measure1Action = new AbstractAction(Translations.getString(
             "CameraConfigurationWizard.Action.Measure1")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
@@ -647,7 +648,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private Action confirmMeasure1Action = new AbstractAction(Translations.getString(
+    private transient Action confirmMeasure1Action = new AbstractAction(Translations.getString(
             "CameraConfigurationWizard.Action.ConfirmMeasure1")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
@@ -658,7 +659,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private Action cancelMeasure1Action = new AbstractAction(Translations.getString(
+    private transient Action cancelMeasure1Action = new AbstractAction(Translations.getString(
             "CameraConfigurationWizard.Action.CancelMeasure1")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
@@ -672,7 +673,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private Action measure2Action = new AbstractAction(Translations.getString(
+    private transient Action measure2Action = new AbstractAction(Translations.getString(
             "CameraConfigurationWizard.Action.Measure2")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
@@ -690,7 +691,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private Action confirmMeasure2Action = new AbstractAction(Translations.getString(
+    private transient Action confirmMeasure2Action = new AbstractAction(Translations.getString(
             "CameraConfigurationWizard.Action.ConfirmMeasure2")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
@@ -701,7 +702,7 @@ public class CameraConfigurationWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private Action cancelMeasure2Action = new AbstractAction(Translations.getString(
+    private transient Action cancelMeasure2Action = new AbstractAction(Translations.getString(
             "CameraConfigurationWizard.Action.CancelMeasure2")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {

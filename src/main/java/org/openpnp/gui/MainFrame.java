@@ -110,8 +110,9 @@ import com.jgoodies.forms.layout.RowSpec;
 /**
  * The main window of the application.
  */
-@SuppressWarnings("serial")
 public class MainFrame extends JFrame {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_WINDOW_X = "MainFrame.windowX"; //$NON-NLS-1$
     private static final int PREF_WINDOW_X_DEF = 0;
     private static final String PREF_WINDOW_Y = "MainFrame.windowY"; //$NON-NLS-1$
@@ -147,7 +148,7 @@ public class MainFrame extends JFrame {
                              Math.max(768, screen.height * 3 / 4));
     }
 
-    private final Configuration configuration;
+    private final transient Configuration configuration;
 
     private static MainFrame mainFrame;
 
@@ -166,7 +167,7 @@ public class MainFrame extends JFrame {
     private VisionSettingsPanel visionSettingsPanel;
     private JDialog frameCamera;
     private JDialog frameMachineControls;
-    private Map<KeyStroke, Action> hotkeyActionMap;
+    private transient Map<KeyStroke, Action> hotkeyActionMap;
     private AbstractConfigurationWizard wizardWithActiveProcess = null;
     private UndoManager undoManager = new UndoManager();
     private boolean windowStyleMultiple;
@@ -264,7 +265,7 @@ public class MainFrame extends JFrame {
     private JButton btnInstructionsCancel;
     private JTextPane lblInstructions;
     private JPanel panel_2;
-    private ScheduledExecutorService scheduledExecutor;
+    private transient ScheduledExecutorService scheduledExecutor;
     private JMenuBar menuBar;
     private JMenu mnImport;
     private JMenu mnScripts;
@@ -278,12 +279,12 @@ public class MainFrame extends JFrame {
         return hotkeyActionMap;
     }
 
-    private Preferences prefs = Preferences.userNodeForPackage(MainFrame.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(MainFrame.class);
 
-    private ActionListener instructionsCancelActionListener;
-    private ActionListener instructionsProceedActionListener;
+    private transient ActionListener instructionsCancelActionListener;
+    private transient ActionListener instructionsProceedActionListener;
 
-    private ScriptFileWatcher scriptFileWatcher;
+    private transient ScriptFileWatcher scriptFileWatcher;
     private JMenuItem mnEditRemoveBoard;
     private JMenu mnEditAddBoard;
     private JMenuItem mnCaptureToolLocation;
@@ -1161,7 +1162,7 @@ public class MainFrame extends JFrame {
         tabs.setSelectedIndex(index);
     }
 
-    private ComponentListener mainFrameListener = new ComponentAdapter() {
+    private transient ComponentListener mainFrameListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt(PREF_WINDOW_X, getLocation().x);
@@ -1188,7 +1189,7 @@ public class MainFrame extends JFrame {
         }
     };
 
-    private ComponentListener cameraWindowListener = new ComponentAdapter() {
+    private transient ComponentListener cameraWindowListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt(PREF_CAMERA_WINDOW_X, frameCamera.getLocation().x);
@@ -1202,7 +1203,7 @@ public class MainFrame extends JFrame {
         }
     };
 
-    private ComponentListener machineControlsWindowListener = new ComponentAdapter() {
+    private transient ComponentListener machineControlsWindowListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt(PREF_MACHINECONTROLS_WINDOW_X, frameMachineControls.getLocation().x);
@@ -1216,7 +1217,7 @@ public class MainFrame extends JFrame {
         }
     };
     
-    private Action inchesUnitSelected = new AbstractAction(LengthUnit.Inches.name()) {
+    private transient Action inchesUnitSelected = new AbstractAction(LengthUnit.Inches.name()) {
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_I);
         }
@@ -1229,7 +1230,7 @@ public class MainFrame extends JFrame {
       }
     };
 
-    private Action millimetersUnitSelected = new AbstractAction(LengthUnit.Millimeters.name()) {
+    private transient Action millimetersUnitSelected = new AbstractAction(LengthUnit.Millimeters.name()) {
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_M);
         }
@@ -1242,21 +1243,21 @@ public class MainFrame extends JFrame {
         }
     };
 
-    private Action tablesUnlinkedSelected = new AbstractAction(TablesLinked.Unlinked.name()) {
+    private transient Action tablesUnlinkedSelected = new AbstractAction(TablesLinked.Unlinked.name()) {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             configuration.setTablesLinked(TablesLinked.Unlinked);
         }
     };
 
-    private Action tablesLinkedSelected = new AbstractAction(TablesLinked.Linked.name()) {
+    private transient Action tablesLinkedSelected = new AbstractAction(TablesLinked.Linked.name()) {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             configuration.setTablesLinked(TablesLinked.Linked);
         }
     };
 
-    private Action windowStyleMultipleSelected = new AbstractAction(Translations.getString("Menu.Window.MultipleStyle")) { //$NON-NLS-1$
+    private transient Action windowStyleMultipleSelected = new AbstractAction(Translations.getString("Menu.Window.MultipleStyle")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_M);
         }
@@ -1274,21 +1275,21 @@ public class MainFrame extends JFrame {
         }
     };
 
-    private Action editThemeAction = new AbstractAction(Translations.getString("Menu.Window.Theme")) { //$NON-NLS-1$
+    private transient Action editThemeAction = new AbstractAction(Translations.getString("Menu.Window.Theme")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
             ThemeDialog.showThemeDialog(mainFrame);
         }
     };
 
-    private Action saveConfigAction = new AbstractAction(Translations.getString("Menu.File.SaveConfiguration")) { //$NON-NLS-1$
+    private transient Action saveConfigAction = new AbstractAction(Translations.getString("Menu.File.SaveConfiguration")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
 			saveConfig();
         }
     };
 
-    private Action quitAction = new AbstractAction(Translations.getString("Menu.File.Exit")) { //$NON-NLS-1$
+    private transient Action quitAction = new AbstractAction(Translations.getString("Menu.File.Exit")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_X);
         }
@@ -1299,7 +1300,7 @@ public class MainFrame extends JFrame {
         }
     };
 
-    private Action aboutAction = new AbstractAction(Translations.getString("Menu.Help.About")) { //$NON-NLS-1$
+    private transient Action aboutAction = new AbstractAction(Translations.getString("Menu.Help.About")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_A);
         }
@@ -1310,35 +1311,35 @@ public class MainFrame extends JFrame {
         }
     };
     
-    private Action quickStartLinkAction = new AbstractAction(Translations.getString("Menu.Help.QuickStart")) { //$NON-NLS-1$
+    private transient Action quickStartLinkAction = new AbstractAction(Translations.getString("Menu.Help.QuickStart")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.browseUri("https://github.com/openpnp/openpnp/wiki/Quick-Start"); //$NON-NLS-1$
         }
     };
     
-    private Action setupAndCalibrationLinkAction = new AbstractAction(Translations.getString("Menu.Help.SetupAndCalibration")) { //$NON-NLS-1$
+    private transient Action setupAndCalibrationLinkAction = new AbstractAction(Translations.getString("Menu.Help.SetupAndCalibration")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.browseUri("https://github.com/openpnp/openpnp/wiki/Setup-and-Calibration"); //$NON-NLS-1$
         }
     };
     
-    private Action userManualLinkAction = new AbstractAction(Translations.getString("Menu.Help.UserManual")) { //$NON-NLS-1$
+    private transient Action userManualLinkAction = new AbstractAction(Translations.getString("Menu.Help.UserManual")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.browseUri("https://github.com/openpnp/openpnp/wiki/User-Manual"); //$NON-NLS-1$
         }
     };
     
-    private Action changeLogAction = new AbstractAction(Translations.getString("Menu.Help.ChangeLog")) { //$NON-NLS-1$
+    private transient Action changeLogAction = new AbstractAction(Translations.getString("Menu.Help.ChangeLog")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.browseUri(Main.getSourceUri()+"CHANGES.md"); //$NON-NLS-1$
         }
     };
     
-    private Action submitDiagnosticsAction = new AbstractAction(Translations.getString("Menu.Help.SubmitDiagnostics")) { //$NON-NLS-1$
+    private transient Action submitDiagnosticsAction = new AbstractAction(Translations.getString("Menu.Help.SubmitDiagnostics")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent arg0) {
             SubmitDiagnosticsDialog dialog = new SubmitDiagnosticsDialog();
@@ -1349,7 +1350,7 @@ public class MainFrame extends JFrame {
         }
     };
     
-    public final Action undoAction = new AbstractAction(Translations.getString("Menu.Edit.Undo")) { //$NON-NLS-1$
+    public final transient Action undoAction = new AbstractAction(Translations.getString("Menu.Edit.Undo")) { //$NON-NLS-1$
         {
             putValue(MNEMONIC_KEY, KeyEvent.VK_Z);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z',
@@ -1367,7 +1368,7 @@ public class MainFrame extends JFrame {
         }
     };
     
-    public final Action redoAction = new AbstractAction(Translations.getString("Menu.Edit.Redo")) { //$NON-NLS-1$
+    public final transient Action redoAction = new AbstractAction(Translations.getString("Menu.Edit.Redo")) { //$NON-NLS-1$
         {
 //            putValue(MNEMONIC_KEY, KeyEvent.VK_Y);
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z',
@@ -1386,6 +1387,8 @@ public class MainFrame extends JFrame {
     };
     
     public class LanguageSelectionAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         private final Locale locale;
         
         public LanguageSelectionAction(Locale locale) {

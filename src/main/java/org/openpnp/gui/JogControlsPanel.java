@@ -81,8 +81,10 @@ import com.jgoodies.forms.layout.RowSpec;
  * @author jason
  */
 public class JogControlsPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private final MachineControlsPanel machineControlsPanel;
-    private final Configuration configuration;
+    private final transient Configuration configuration;
     private JPanel panelActuators;
     private JSlider sliderIncrements;
     private JCheckBox boardProtectionCheck;
@@ -455,7 +457,7 @@ public class JogControlsPanel extends JPanel {
         panelSafety.add(boardProtectionCheck, "1, 1"); //$NON-NLS-1$
     }
 
-    private FocusTraversalPolicy focusPolicy = new FocusTraversalPolicy() {
+    private transient FocusTraversalPolicy focusPolicy = new FocusTraversalPolicy() {
         @Override
         public Component getComponentAfter(Container aContainer, Component aComponent) {
             return sliderIncrements;
@@ -491,72 +493,81 @@ public class JogControlsPanel extends JPanel {
         return speedSlider.getValue() * 0.01D;
     }
 
-    @SuppressWarnings("serial")
-    public Action yPlusAction = new AbstractAction("Y+", Icons.arrowUp) { //$NON-NLS-1$
+    public transient Action yPlusAction = new AbstractAction("Y+", Icons.arrowUp) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(0, 1, 0, 0);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action yMinusAction = new AbstractAction("Y-", Icons.arrowDown) { //$NON-NLS-1$
+    public transient Action yMinusAction = new AbstractAction("Y-", Icons.arrowDown) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(0, -1, 0, 0);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action xPlusAction = new AbstractAction("X+", Icons.arrowRight) { //$NON-NLS-1$
+    public transient Action xPlusAction = new AbstractAction("X+", Icons.arrowRight) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(1, 0, 0, 0);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action xMinusAction = new AbstractAction("X-", Icons.arrowLeft) { //$NON-NLS-1$
+    public transient Action xMinusAction = new AbstractAction("X-", Icons.arrowLeft) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(-1, 0, 0, 0);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action zPlusAction = new AbstractAction("Z+", Icons.arrowUp) { //$NON-NLS-1$
+    public transient Action zPlusAction = new AbstractAction("Z+", Icons.arrowUp) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(0, 0, 1, 0);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action zMinusAction = new AbstractAction("Z-", Icons.arrowDown) { //$NON-NLS-1$
+    public transient Action zMinusAction = new AbstractAction("Z-", Icons.arrowDown) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(0, 0, -1, 0);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action cPlusAction = new AbstractAction("C+", Icons.rotateCounterclockwise) { //$NON-NLS-1$
+    public transient Action cPlusAction = new AbstractAction("C+", Icons.rotateCounterclockwise) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(0, 0, 0, 1);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action cMinusAction = new AbstractAction("C-", Icons.rotateClockwise) { //$NON-NLS-1$
+    public transient Action cMinusAction = new AbstractAction("C-", Icons.rotateClockwise) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             jog(0, 0, 0, -1);
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action xyParkAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.ParkXY"), Icons.park) { //$NON-NLS-1$
+    public transient Action xyParkAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.ParkXY"), Icons.park) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -572,8 +583,9 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action zParkAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.ParkZ"), Icons.park) { //$NON-NLS-1$
+    public transient Action zParkAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.ParkZ"), Icons.park) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -594,8 +606,9 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action cParkAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.ParkC"), Icons.park) { //$NON-NLS-1$
+    public transient Action cParkAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.ParkC"), Icons.park) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -625,8 +638,9 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action safezAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.HeadSafeZ")) { //$NON-NLS-1$
+    public transient Action safezAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.HeadSafeZ")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -638,8 +652,9 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action discardAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.Discard")) { //$NON-NLS-1$
+    public transient Action discardAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.Discard")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -649,8 +664,9 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action recycleAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.Recycle")) { //$NON-NLS-1$
+    public transient Action recycleAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.Recycle")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -678,8 +694,9 @@ public class JogControlsPanel extends JPanel {
     };
 
 
-    @SuppressWarnings("serial")
-    public Action raiseIncrementAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.RaiseJogIncrement")) { //$NON-NLS-1$
+    public transient Action raiseIncrementAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.RaiseJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(
@@ -687,8 +704,9 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action lowerIncrementAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.LowerJogIncrement")) { //$NON-NLS-1$
+    public transient Action lowerIncrementAction = new AbstractAction(Translations.getString("JogControlsPanel.Action.LowerJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(
@@ -696,36 +714,41 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    @SuppressWarnings("serial")
-    public Action setIncrement1Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.FirstJogIncrement")) { //$NON-NLS-1$
+    public transient Action setIncrement1Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.FirstJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(1);
         }
     };
-    @SuppressWarnings("serial")
-    public Action setIncrement2Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.SecondJogIncrement")) { //$NON-NLS-1$
+    public transient Action setIncrement2Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.SecondJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(2);
         }
     };
-    @SuppressWarnings("serial")
-    public Action setIncrement3Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.ThirdJogIncrement")) { //$NON-NLS-1$
+    public transient Action setIncrement3Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.ThirdJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(3);
         }
     };
-    @SuppressWarnings("serial")
-    public Action setIncrement4Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.FourthJogIncrement")) { //$NON-NLS-1$
+    public transient Action setIncrement4Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.FourthJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(4);
         }
     };
-    @SuppressWarnings("serial")
-    public Action setIncrement5Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.FifthJogIncrement")) { //$NON-NLS-1$
+    public transient Action setIncrement5Action = new AbstractAction(Translations.getString("JogControlsPanel.Action.FifthJogIncrement")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sliderIncrements.setValue(5);
@@ -759,7 +782,7 @@ public class JogControlsPanel extends JPanel {
         panelActuators.remove(actuatorButtons.remove(actuator));
     }
 
-    private ConfigurationListener configurationListener = new ConfigurationListener.Adapter() {
+    private transient ConfigurationListener configurationListener = new ConfigurationListener.Adapter() {
         @Override
         public void configurationComplete(Configuration configuration) throws Exception {
             setUnits(configuration.getSystemUnits());
@@ -833,6 +856,6 @@ public class JogControlsPanel extends JPanel {
         }
     };
 
-    private Map<Actuator, JButton> actuatorButtons = new HashMap<>();
+    private transient Map<Actuator, JButton> actuatorButtons = new HashMap<>();
     private JSlider speedSlider;
 }

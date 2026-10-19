@@ -110,8 +110,9 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 
-@SuppressWarnings("serial")
 public class PlacementsHolderLocationViewer extends JPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
     private static final double SCREEN_PPI = Toolkit.getDefaultToolkit().getScreenResolution();
     private static final double INCHES_PER_MAJOR_DIVISION = 0.75;
     private static final double PIXELS_PER_MAJOR_DIVISION = SCREEN_PPI * INCHES_PER_MAJOR_DIVISION;
@@ -134,9 +135,9 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     private Color fiducialEnabledColor = copperColor;
     private Color fiducialDisabledColor = Color.DARK_GRAY;
     
-    private BufferedImage placementsHolderImage;
-    private BufferedImage horizontalScaleImage;
-    private BufferedImage verticalScaleImage;
+    private transient BufferedImage placementsHolderImage;
+    private transient BufferedImage horizontalScaleImage;
+    private transient BufferedImage verticalScaleImage;
 
     private DrawingPanel drawingPanel;
 
@@ -149,15 +150,15 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     private Double scrollingBounds;
     private Double viewPortBounds;
     private double aspectRatio;
-    private PlacementsHolder<?> placementsHolder;
-    private PlacementsHolderLocation<?> placementsHolderLocation;
-    private List<PlacementsHolderLocation<?>> selections;
+    private transient PlacementsHolder<?> placementsHolder;
+    private transient PlacementsHolderLocation<?> placementsHolderLocation;
+    private transient List<PlacementsHolderLocation<?>> selections;
     private boolean isJob = false;
     private LengthUnit units;
-    private Rectangle2D graphicsBounds;
-    private Map<Area, PlacementsHolderLocation<?>> profileMap;
-    private Map<Area, Placement> placementMap;
-    private Map<Placement, Area> placementInverseMap;
+    private transient Rectangle2D graphicsBounds;
+    private transient Map<Area, PlacementsHolderLocation<?>> profileMap;
+    private transient Map<Area, Placement> placementMap;
+    private transient Map<Placement, Area> placementInverseMap;
     private Double defaultViewableBounds;
     private Double viewableBounds;
     private double scaleFactor;
@@ -183,8 +184,8 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     protected boolean showOrigins = false;
     protected boolean showLocations = true;
     protected ViewingOption viewingOption = ViewingOption.CHILDREN;
-    private PlacementsHolderLocation<?> arrayRoot;
-    private List<PlacementsHolderLocation<?>> newArrayMembers;
+    private transient PlacementsHolderLocation<?> arrayRoot;
+    private transient List<PlacementsHolderLocation<?>> newArrayMembers;
     private JButton btnViewingSide;
     private JComboBox <Enum> cbxViewingOptions;
     private JCheckBox chckbxReticle;
@@ -722,6 +723,8 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     }
     
     private class DrawingPanelUnit extends JPanel {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -750,6 +753,8 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     }
     
     private class DrawingPanelColumnHeader extends JPanel {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -762,6 +767,7 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     }
 
     private class DrawingPanelRowHeader extends JPanel {
+        private static final long serialVersionUID = 1L;
         
         @Override
         public void paintComponent(Graphics g) {
@@ -775,6 +781,7 @@ public class PlacementsHolderLocationViewer extends JPanel implements PropertyCh
     }
     
     private class DrawingPanel extends JPanel {
+        private static final long serialVersionUID = 1L;
         
         @Override
         public void paintComponent(Graphics g) {

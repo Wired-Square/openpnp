@@ -70,7 +70,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public abstract class CsvImporter {
     // this method provides a string that is used by the GUI
     abstract String getImporterDescription();
@@ -430,10 +429,12 @@ public abstract class CsvImporter {
     }
 
     class Dlg extends JDialog {
+        private static final long serialVersionUID = 1L;
+
         private JTextField textFieldFile;
-        private final Action browseFileAction = new SwingAction();
-        private final Action importAction = new SwingAction_2();
-        private final Action cancelAction = new SwingAction_3();
+        private final transient Action browseFileAction = new SwingAction();
+        private final transient Action importAction = new SwingAction_2();
+        private final transient Action cancelAction = new SwingAction_3();
         private JCheckBox chckbxCreateMissingParts;
         private JCheckBox chckbxUpdatePartHeight;
 
@@ -508,6 +509,8 @@ public abstract class CsvImporter {
         }
 
         private class SwingAction extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction() {
                 putValue(NAME, Translations.getString("CsvImporter.BrowseAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("CsvImporter.BrowseAction.ShortDescription")); //$NON-NLS-1$
@@ -535,6 +538,8 @@ public abstract class CsvImporter {
 
 
         private class SwingAction_2 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_2() {
                 putValue(NAME, Translations.getString("CsvImporter.Import2Action.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("CsvImporter.Import2Action.ShortDescription")); //$NON-NLS-1$
@@ -563,6 +568,8 @@ public abstract class CsvImporter {
         }
 
         private class SwingAction_3 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_3() {
                 putValue(NAME, Translations.getString("CsvImporter.CancelAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("CsvImporter.CancelAction.ShortDescription")); //$NON-NLS-1$

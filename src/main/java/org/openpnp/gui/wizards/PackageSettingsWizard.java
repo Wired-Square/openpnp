@@ -35,9 +35,10 @@ import com.jgoodies.forms.layout.FormSpecs;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-@SuppressWarnings("serial")
 public class PackageSettingsWizard extends AbstractConfigurationWizard {
-    private final org.openpnp.model.Package pkg;
+    private static final long serialVersionUID = 1L;
+
+    private final transient org.openpnp.model.Package pkg;
     private JPanel vacuumBlowOffPanel;
     private JLabel lblNewLabel;
     private JTextField vacuumLevel;

@@ -103,37 +103,38 @@ import javax.swing.JTable;
 import java.awt.FileDialog;
 import java.awt.Frame;
 
-@SuppressWarnings("serial")
 public class PanelDefinitionPanel extends JPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_DIVIDER_POSITION = "PanelDefinitionPanel.dividerPosition"; //$NON-NLS-1$
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
     
-    private Preferences prefs = Preferences.userNodeForPackage(PanelDefinitionPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(PanelDefinitionPanel.class);
     
     private AutoSelectTextTable fiducialTable;
     private PlacementsHolderPlacementsTableModel fiducialTableModel;
-    private TableRowSorter<PlacementsHolderPlacementsTableModel> fiducialTableSorter;
+    private transient TableRowSorter<PlacementsHolderPlacementsTableModel> fiducialTableSorter;
     
-    private ActionGroup fiducialSingleSelectionActionGroup;
-    private ActionGroup fiducialMultiSelectionActionGroup;
+    private transient ActionGroup fiducialSingleSelectionActionGroup;
+    private transient ActionGroup fiducialMultiSelectionActionGroup;
     
     private AutoSelectTextTable childrenTable;
     private PlacementsHolderLocationsTableModel childrenTableModel;
-    private TableRowSorter<PlacementsHolderLocationsTableModel> childrenTableSorter;
+    private transient TableRowSorter<PlacementsHolderLocationsTableModel> childrenTableSorter;
     
-    private ActionGroup childrenSingleSelectionActionGroup;
-    private ActionGroup childrenMultiSelectionActionGroup;
-    private ActionGroup replaceChildrenSelectionActionGroup;
+    private transient ActionGroup childrenSingleSelectionActionGroup;
+    private transient ActionGroup childrenMultiSelectionActionGroup;
+    private transient ActionGroup replaceChildrenSelectionActionGroup;
     
-    private PanelLocation rootPanelLocation = new PanelLocation();
-    private Panel panel;
+    private transient PanelLocation rootPanelLocation = new PanelLocation();
+    private transient Panel panel;
     private PanelsPanel panelsPanel;
     
     private PlacementsHolderLocationViewerDialog panelViewer;
 
     private JSplitPane splitPane;
     private MainFrame frame;
-    private Configuration configuration;
+    private transient Configuration configuration;
     private boolean dirty;
 
     public PanelDefinitionPanel(PanelsPanel panelsPanel) {
@@ -172,12 +173,10 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         replaceChildrenSelectionActionGroup = new ActionGroup(replaceChildrenAction);
         replaceChildrenSelectionActionGroup.setEnabled(false);
         
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JComboBox<PartsComboBoxModel> partsComboBox = new JComboBox(new PartsComboBoxModel());
+        JComboBox<Part> partsComboBox = new JComboBox<>(new PartsComboBoxModel());
         partsComboBox.setMaximumRowCount(20);
         partsComboBox.setRenderer(new IdentifiableListCellRenderer<Part>());
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        JComboBox<Side> sidesComboBox = new JComboBox(Side.values());
+        JComboBox<Side> sidesComboBox = new JComboBox<>(Side.values());
         
         setLayout(new BorderLayout(0, 0));
         
@@ -570,7 +569,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         return selectedChildren;
     }
 
-    public final Action addFiducialAction = new AbstractAction() {
+    public final transient Action addFiducialAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("PanelDefinition.PanelAlignment.Add")); //$NON-NLS-1$
@@ -622,7 +621,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action removeFiducialAction = new AbstractAction() {
+    public final transient Action removeFiducialAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("PanelDefinition.PanelAlignment.Remove")); //$NON-NLS-1$
@@ -647,7 +646,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action useChildFiducialAction = new AbstractAction() {
+    public final transient Action useChildFiducialAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.useChildFiducial);
             putValue(NAME, Translations.getString("PanelDefinition.PanelAlignment.UseChildren")); //$NON-NLS-1$
@@ -666,7 +665,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action addChildAction = new AbstractAction() {
+    public final transient Action addChildAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("PanelDefinition.Children.Add")); //$NON-NLS-1$
@@ -678,7 +677,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action addNewBoardAction = new AbstractAction() {
+    public final transient Action addNewBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.Children.Add.NewBoard")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.Children.Add.NewBoard.Description")); //$NON-NLS-1$
@@ -720,7 +719,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action addExistingBoardAction = new AbstractAction() {
+    public final transient Action addExistingBoardAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.Children.Add.ExistingBoard")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.Children.Add.ExistingBoard.Description")); //$NON-NLS-1$
@@ -767,7 +766,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         return boardLocation;
     }
     
-    public final Action addNewPanelAction = new AbstractAction() {
+    public final transient Action addNewPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.Children.Add.NewPanel")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.Children.Add.NewPanel.Description")); //$NON-NLS-1$
@@ -809,7 +808,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action addExistingPanelAction = new AbstractAction() {
+    public final transient Action addExistingPanelAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.Children.Add.ExistingPanel")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.Children.Add.ExistingPanel.Description")); //$NON-NLS-1$
@@ -867,7 +866,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     }
     
-    public final Action removeChildAction = new AbstractAction() {
+    public final transient Action removeChildAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("PanelDefinition.Children.Remove")); //$NON-NLS-1$
@@ -888,7 +887,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action createArrayAction = new AbstractAction() {
+    public final transient Action createArrayAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.autoPanelize);
             putValue(NAME, Translations.getString("PanelDefinition.Children.CreateArray")); //$NON-NLS-1$
@@ -909,7 +908,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
     
-    public final Action viewerAction = new AbstractAction() {
+    public final transient Action viewerAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.colorTrue);
             putValue(NAME, ""); //$NON-NLS-1$
@@ -935,7 +934,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action replaceChildrenAction = new AbstractAction() {
+    public final transient Action replaceChildrenAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.Children.Replace")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.Children.Replace.Description")); //$NON-NLS-1$
@@ -1002,7 +1001,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action setSideAction = new AbstractAction() {
+    public final transient Action setSideAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.SetSide")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.SetSide.Description")); //$NON-NLS-1$
@@ -1013,6 +1012,8 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
     };
 
     class SetFiducialSideAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Side side;
 
         public SetFiducialSideAction(Side side) {
@@ -1038,6 +1039,8 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
     };
     
     class SetChildrenSideAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Side side;
 
         public SetChildrenSideAction(Side side) {
@@ -1062,7 +1065,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
     
-    public final Action setEnabledAction = new AbstractAction() {
+    public final transient Action setEnabledAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.SetEnabled")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.SetEnabled.Description")); //$NON-NLS-1$
@@ -1073,6 +1076,8 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
     };
 
     class SetFiducialEnabledAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean enabled;
 
         public SetFiducialEnabledAction(Boolean enabled) {
@@ -1098,6 +1103,8 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
     };
 
     class SetChildrenEnabledAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean enabled;
 
         public SetChildrenEnabledAction(Boolean enabled) {
@@ -1122,7 +1129,7 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         }
     };
 
-    public final Action setCheckFidsAction = new AbstractAction() {
+    public final transient Action setCheckFidsAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("PanelDefinition.SetCheckFids")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("PanelDefinition.SetCheckFids.Description")); //$NON-NLS-1$
@@ -1133,6 +1140,8 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
     };
 
     class SetCheckFidsAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean value;
 
         public SetCheckFidsAction(Boolean value) {

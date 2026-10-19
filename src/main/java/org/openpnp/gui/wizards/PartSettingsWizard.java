@@ -35,9 +35,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class PartSettingsWizard extends AbstractConfigurationWizard {
-    private final Part part;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Part part;
     private JPanel pickConditionsPanel;
     private JLabel lblNewLabel;
     private JTextField textFieldPickRetryCount;

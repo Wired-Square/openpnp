@@ -110,20 +110,21 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 
-@SuppressWarnings("serial")
 public class BoardPlacementsPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private JTable table;
     private PlacementsHolderPlacementsTableModel tableModel;
-    private TableRowSorter<PlacementsHolderPlacementsTableModel> tableSorter;
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
+    private transient TableRowSorter<PlacementsHolderPlacementsTableModel> tableSorter;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
     private BoardsPanel boardsPanel;
-    private Board board;
-    private Preferences prefs = Preferences.userNodeForPackage(BoardPlacementsPanel.class);
+    private transient Board board;
+    private transient Preferences prefs = Preferences.userNodeForPackage(BoardPlacementsPanel.class);
     protected PlacementsHolderLocationViewerDialog boardViewer;
     private JButton btnImport;
-    private List<BoardImporter> boardImporters;
-    private Configuration configuration;
+    private transient List<BoardImporter> boardImporters;
+    private transient Configuration configuration;
 
     public BoardPlacementsPanel(BoardsPanel boardsPanel) {
     	this.boardsPanel = boardsPanel;
@@ -135,7 +136,6 @@ public class BoardPlacementsPanel extends JPanel {
      * Scans the importer's package for BoardImporters
      * @return the list of BoardImporters that were found
      */
-    @SuppressWarnings("unchecked")
     private List<BoardImporter> scanForBoardImporters() {
         List<BoardImporter> boardImporters = new ArrayList<>();
         try (ScanResult scanResult = new ClassGraph().enableClassInfo()
@@ -145,7 +145,7 @@ public class BoardPlacementsPanel extends JPanel {
             for (ClassInfo boardImporterInfo : importerClassInfoList) {
                 BoardImporter boardImporter;
                 try {
-                    boardImporter = ((Class<? extends BoardImporter>) boardImporterInfo.loadClass())
+                    boardImporter = boardImporterInfo.loadClass().asSubclass(BoardImporter.class)
                             .getDeclaredConstructor().newInstance();
                 }
                 catch (Exception e) {
@@ -179,7 +179,6 @@ public class BoardPlacementsPanel extends JPanel {
                 setTypeAction, setSideAction, setErrorHandlingAction, setEnabledAction);
         multiSelectionActionGroup.setEnabled(false);
 
-        @SuppressWarnings("unchecked")
         JComboBox<Part> partsComboBox = new JComboBox<>(new PartsComboBoxModel());
         partsComboBox.setMaximumRowCount(20);
         partsComboBox.setRenderer(new IdentifiableListCellRenderer<Part>());
@@ -465,7 +464,7 @@ public class BoardPlacementsPanel extends JPanel {
         return boardImporters;
     }
 
-    public final Action newAction = new AbstractAction() {
+    public final transient Action newAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.NewPlacement")); //$NON-NLS-1$
@@ -514,7 +513,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action removeAction = new AbstractAction() {
+    public final transient Action removeAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.RemovePlacement")); //$NON-NLS-1$
@@ -619,7 +618,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     }
 
-    public final Action importAction = new AbstractAction() {
+    public final transient Action importAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.importt);
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.Import")); //$NON-NLS-1$
@@ -649,7 +648,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action viewerAction = new AbstractAction() {
+    public final transient Action viewerAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.colorTrue);
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.View")); //$NON-NLS-1$
@@ -674,7 +673,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action setTypeAction = new AbstractAction() {
+    public final transient Action setTypeAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.SetType")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("BoardsPanel.BoardPlacements.Action.SetType.Description")); //$NON-NLS-1$
@@ -685,6 +684,8 @@ public class BoardPlacementsPanel extends JPanel {
     };
 
     class SetTypeAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Placement.Type type;
 
         public SetTypeAction(Placement.Type type) {
@@ -714,7 +715,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     };
 
-    public final Action setSideAction = new AbstractAction() {
+    public final transient Action setSideAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.SetSide")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("BoardsPanel.BoardPlacements.Action.SetSide.Description")); //$NON-NLS-1$
@@ -725,6 +726,8 @@ public class BoardPlacementsPanel extends JPanel {
     };
 
     class SetSideAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Side side;
 
         public SetSideAction(Side side) {
@@ -751,7 +754,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     };
     
-    public final Action setErrorHandlingAction = new AbstractAction() {
+    public final transient Action setErrorHandlingAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.SetErrorHandling")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("BoardsPanel.BoardPlacements.Action.SetErrorHandling.Description")); //$NON-NLS-1$
@@ -762,6 +765,8 @@ public class BoardPlacementsPanel extends JPanel {
     };
 
     class SetErrorHandlingAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         Placement.ErrorHandling errorHandling;
 
         public SetErrorHandlingAction(Placement.ErrorHandling errorHandling) {
@@ -802,7 +807,7 @@ public class BoardPlacementsPanel extends JPanel {
         }
     };
     
-    public final Action setEnabledAction = new AbstractAction() {
+    public final transient Action setEnabledAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("BoardsPanel.BoardPlacements.Action.SetEnabled")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("BoardsPanel.BoardPlacements.Action.SetEnabled.Description")); //$NON-NLS-1$
@@ -814,6 +819,8 @@ public class BoardPlacementsPanel extends JPanel {
     private JTextField searchTextField;
 
     class SetEnabledAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean enabled;
 
         public SetEnabledAction(Boolean enabled) {
@@ -840,6 +847,8 @@ public class BoardPlacementsPanel extends JPanel {
     };
 
     static class TypeRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void setValue(Object value) {
             if (value == null) {

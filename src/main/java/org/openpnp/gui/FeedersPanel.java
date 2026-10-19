@@ -99,9 +99,10 @@ import org.pmw.tinylog.Logger;
 
 import com.google.common.eventbus.Subscribe;
 
-@SuppressWarnings("serial")
 public class FeedersPanel extends JPanel implements WizardContainer {
-    private final Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Configuration configuration;
     private final MainFrame mainFrame;
 
     private static final String PREF_DIVIDER_POSITION = "FeedersPanel.dividerPosition";
@@ -110,13 +111,13 @@ public class FeedersPanel extends JPanel implements WizardContainer {
     private JTable table;
 
     private FeedersTableModel tableModel;
-    private TableRowSorter<FeedersTableModel> tableSorter;
+    private transient TableRowSorter<FeedersTableModel> tableSorter;
     private JTextField searchTextField;
 
-    private ActionGroup singleSelectActionGroup;
-    private ActionGroup multiSelectActionGroup;
+    private transient ActionGroup singleSelectActionGroup;
+    private transient ActionGroup multiSelectActionGroup;
 
-    private Preferences prefs = Preferences.userNodeForPackage(FeedersPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(FeedersPanel.class);
     
     private JTabbedPane configurationPanel;
     private int priorRowIndex = -1;
@@ -525,7 +526,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         return pickLocation;
     }
 
-    public Action newFeederAction = new AbstractAction() {
+    public transient Action newFeederAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("FeedersPanel.Action.NewFeeder")); //$NON-NLS-1$
@@ -538,7 +539,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public Action deleteFeederAction = new AbstractAction() {
+    public transient Action deleteFeederAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("FeedersPanel.Action.DeleteFeeder")); //$NON-NLS-1$
@@ -571,7 +572,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public Action feedFeederAction = new AbstractAction() {
+    public transient Action feedFeederAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.feed);
             putValue(NAME, Translations.getString("FeedersPanel.Action.FeedFeeder")); //$NON-NLS-1$
@@ -588,7 +589,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public Action pickFeederAction = new AbstractAction() {
+    public transient Action pickFeederAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.pick);
             putValue(NAME, Translations.getString("FeedersPanel.Action.PickFeeder")); //$NON-NLS-1$
@@ -764,7 +765,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         return nozzle;
     }
 
-    public Action moveCameraToPickLocation = new AbstractAction() {
+    public transient Action moveCameraToPickLocation = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.centerCameraOnFeeder);
             putValue(NAME, Translations.getString("FeedersPanel.Action.MoveCameraToPick")); //$NON-NLS-1$
@@ -791,7 +792,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public Action moveToolToPickLocation = new AbstractAction() {
+    public transient Action moveToolToPickLocation = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.centerNozzleOnFeeder);
             putValue(NAME, Translations.getString("FeedersPanel.Action.MoveToolToPick")); //$NON-NLS-1$
@@ -811,7 +812,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
     };
     
-    public final Action setEnabledAction = new AbstractAction() {
+    public final transient Action setEnabledAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("FeedersPanel.Action.SetEnabled")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("FeedersPanel.Action.SetEnabled.Description")); //$NON-NLS-1$
@@ -822,6 +823,8 @@ public class FeedersPanel extends JPanel implements WizardContainer {
     };
 
     class SetEnabledAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final Boolean value;
 
         public SetEnabledAction(Boolean value) {
@@ -842,7 +845,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         }
     };
 
-    public final Action setFeedOptionsAction = new AbstractAction() {
+    public final transient Action setFeedOptionsAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("FeedersPanel.Action.SetFeedOptions")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("FeedersPanel.Action.SetFeedOptions.Description")); //$NON-NLS-1$
@@ -853,6 +856,8 @@ public class FeedersPanel extends JPanel implements WizardContainer {
     };
 
     class SetFeedOptionsAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         final ReferenceFeeder.FeedOptions value;
 
         public SetFeedOptionsAction(ReferenceFeeder.FeedOptions value) {

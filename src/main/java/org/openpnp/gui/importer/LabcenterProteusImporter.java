@@ -68,7 +68,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class LabcenterProteusImporter implements BoardImporter {
     private final static String NAME = "Labcenter Proteus .pkp"; //$NON-NLS-1$
     private final static String DESCRIPTION = Translations.getString("LabcenterProteusImporter.Importer.Description"); //$NON-NLS-1$
@@ -184,11 +183,13 @@ public class LabcenterProteusImporter implements BoardImporter {
     }
 
     class Dlg extends JDialog {
+        private static final long serialVersionUID = 1L;
+
         private JTextField textFieldFileName;
         private JTextField textFieldBottomFile;
-        private final Action browseTopFileAction = new SwingAction();
-        private final Action importAction = new SwingAction_2();
-        private final Action cancelAction = new SwingAction_3();
+        private final transient Action browseTopFileAction = new SwingAction();
+        private final transient Action importAction = new SwingAction_2();
+        private final transient Action cancelAction = new SwingAction_3();
         private JCheckBox chckbxCreateMissingParts;
 		private JCheckBox chckbxStockCodesIncluded;
 		
@@ -262,6 +263,8 @@ public class LabcenterProteusImporter implements BoardImporter {
         }
 
         private class SwingAction extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction() {
                 putValue(NAME, Translations.getString("LabcenterProteusImporter.BrowseAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("LabcenterProteusImporter.BrowseAction.Description")); //$NON-NLS-1$
@@ -288,6 +291,8 @@ public class LabcenterProteusImporter implements BoardImporter {
         }
 
         private class SwingAction_2 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_2() {
                 putValue(NAME, Translations.getString("LabcenterProteusImporter.ImportAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("LabcenterProteusImporter.ImportAction.Description")); //$NON-NLS-1$
@@ -319,6 +324,8 @@ public class LabcenterProteusImporter implements BoardImporter {
         }
 
         private class SwingAction_3 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_3() {
                 putValue(NAME, Translations.getString("LabcenterProteusImporter.CancelAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("LabcenterProteusImporter.CancelAction.ShortDescription")); //$NON-NLS-1$

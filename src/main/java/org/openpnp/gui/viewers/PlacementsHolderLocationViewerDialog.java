@@ -38,8 +38,9 @@ import org.openpnp.model.PlacementsHolder;
 import org.openpnp.model.PlacementsHolderLocation;
 
 
-@SuppressWarnings("serial")
 public class PlacementsHolderLocationViewerDialog extends JFrame {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_WINDOW_X = "PlacementsHolderLocationViewerDialog.windowX"; //$NON-NLS-1$
     private static final int PREF_WINDOW_X_DEF = 100;
     private static final String PREF_WINDOW_Y = "PlacementsHolderLocationViewerDialog.windowY"; //$NON-NLS-1$
@@ -51,7 +52,7 @@ public class PlacementsHolderLocationViewerDialog extends JFrame {
 
     private boolean isJob;
     private PlacementsHolderLocationViewer contentPane;
-    private Preferences prefs = Preferences.userNodeForPackage(PlacementsHolderLocationViewerDialog.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(PlacementsHolderLocationViewerDialog.class);
     private String prefsSuffix;
     
     /**

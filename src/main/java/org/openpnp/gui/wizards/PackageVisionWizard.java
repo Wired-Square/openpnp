@@ -70,13 +70,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class PackageVisionWizard extends AbstractConfigurationWizard {
+    private static final long serialVersionUID = 1L;
+
     private FootprintTableModel tableModel;
     private JTable table;
 
-    final private Package pkg;
-    final private Footprint footprint;
+    final private transient Package pkg;
+    final private transient Footprint footprint;
 
     public PackageVisionWizard(Package pkg) {
         this.pkg = pkg;
@@ -282,7 +283,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         return tableModel.getPad(index);
     }
 
-    public final Action newAction = new AbstractAction() {
+    public final transient Action newAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.add);
             putValue(NAME, Translations.getString("PackageVisionWizard.PadsPanel.Action.NewPad")); //$NON-NLS-1$
@@ -309,7 +310,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         }
     };
 
-    public final Action deleteAction = new AbstractAction() {
+    public final transient Action deleteAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("PackageVisionWizard.PadsPanel.Action.DeletePad")); //$NON-NLS-1$
@@ -331,7 +332,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         }
     };
 
-    public final Action toggleMarkAction = new AbstractAction() {
+    public final transient Action toggleMarkAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.footprintToggle);
             putValue(NAME, Translations.getString("PackageVisionWizard.PadsPanel.Action.ToggleMark")); //$NON-NLS-1$
@@ -346,7 +347,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         }
     };
 
-    public final Action generateDualAction = new AbstractAction() {
+    public final transient Action generateDualAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.footprintDual);
             putValue(SHORT_DESCRIPTION, Translations.getString("PackageVisionWizard.SettingsPanel.GenerateDualButton.toolTipText")); //$NON-NLS-1$
@@ -358,7 +359,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         }
     };
 
-    public final Action generateQuadAction = new AbstractAction() {
+    public final transient Action generateQuadAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.footprintQuad);
             putValue(SHORT_DESCRIPTION, Translations.getString("PackageVisionWizard.SettingsPanel.GenerateQuadButton.toolTipText")); //$NON-NLS-1$
@@ -370,7 +371,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         }
     };
 
-    public final Action generateBgaAction = new AbstractAction() {
+    public final transient Action generateBgaAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.footprintBga);
             putValue(SHORT_DESCRIPTION, Translations.getString("PackageVisionWizard.SettingsPanel.GenerateBgaButton.toolTipText")); //$NON-NLS-1$
@@ -382,7 +383,7 @@ public class PackageVisionWizard extends AbstractConfigurationWizard {
         }
     };
 
-    public final Action generateFromKicad = new AbstractAction() {
+    public final transient Action generateFromKicad = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.kicad);
             putValue(SHORT_DESCRIPTION, Translations.getString("PackageVisionWizard.SettingsPanel.GenerateFromKicadButton.toolTipText")); //$NON-NLS-1$

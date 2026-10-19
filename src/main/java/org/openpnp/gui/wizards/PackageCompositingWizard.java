@@ -66,9 +66,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class PackageCompositingWizard extends AbstractConfigurationWizard {
-    private final org.openpnp.model.Package pkg;
+    private static final long serialVersionUID = 1L;
+
+    private final transient org.openpnp.model.Package pkg;
     private JPanel compositingPanel;
     private JLabel lblMethod;
     private JLabel lblMaxPickTolerance;
@@ -80,7 +81,7 @@ public class PackageCompositingWizard extends AbstractConfigurationWizard {
     private JTextField minLeverageFactor;
     private JButton btnTest;
 
-    private VisionCompositing visionCompositing;
+    private transient VisionCompositing visionCompositing;
     private VisionCompositingPreview visionPreview;
     private JLabel lblExtraShots;
     private JTextField extraShots;
@@ -173,7 +174,7 @@ public class PackageCompositingWizard extends AbstractConfigurationWizard {
         pkg.addPropertyChangeListener("footprint", (e) -> computeCompositingAction.actionPerformed(null)); //$NON-NLS-1$
     }
 
-    public final Action computeCompositingAction = new AbstractAction() {
+    public final transient Action computeCompositingAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.refresh);
             putValue(NAME, Translations.getString("PackageCompositingWizard.ComputeCompositing.Name")); //$NON-NLS-1$
@@ -186,7 +187,7 @@ public class PackageCompositingWizard extends AbstractConfigurationWizard {
         }
     };
 
-    private VisionCompositing.Composite composite;
+    private transient VisionCompositing.Composite composite;
     private String status;
 
 

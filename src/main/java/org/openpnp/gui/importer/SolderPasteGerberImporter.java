@@ -25,7 +25,6 @@ import java.io.File;
 import org.openpnp.Translations;
 import org.openpnp.model.Board;
 
-@SuppressWarnings("serial")
 public class SolderPasteGerberImporter implements BoardImporter {
     private final static String NAME = "Gerber Solder Paste Layer"; //$NON-NLS-1$
     final static String DESCRIPTION = Translations.getString("SolderPasteGerberImporter.Importer.Description"); //$NON-NLS-1$

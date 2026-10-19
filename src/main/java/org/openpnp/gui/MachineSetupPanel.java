@@ -68,8 +68,8 @@ import org.openpnp.spi.PropertySheetHolder;
 import org.openpnp.spi.PropertySheetHolder.PropertySheet;
 import org.openpnp.util.BeanUtils;
 
-@SuppressWarnings("serial")
 public class MachineSetupPanel extends JPanel implements WizardContainer {
+    private static final long serialVersionUID = 1L;
 
 
     private static final String PREF_DIVIDER_POSITION = "MachineSetupPanel.dividerPosition";
@@ -77,12 +77,12 @@ public class MachineSetupPanel extends JPanel implements WizardContainer {
 
     private JTextField searchTextField;
 
-    private Preferences prefs = Preferences.userNodeForPackage(MachineSetupPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(MachineSetupPanel.class);
     private JTree tree;
     private DefaultTreeModel treeModel;
     private JTabbedPane tabbedPane;
     private JToolBar toolBar;
-    private final Action action = new SwingAction();
+    private final transient Action action = new SwingAction();
     private JCheckBox cbExp;
     
     /**
@@ -93,7 +93,7 @@ public class MachineSetupPanel extends JPanel implements WizardContainer {
      * whatever the first tab is.
      */
     private boolean disableLastSelectedListener = false;
-    private Object lastSelectedNode = null;
+    private transient Object lastSelectedNode = null;
     private HashMap<Class, Integer> lastSelectedTabIndex = new HashMap<>();
 
     public MachineSetupPanel() {
@@ -366,7 +366,7 @@ public class MachineSetupPanel extends JPanel implements WizardContainer {
         }
     }
 
-    private TreeCellRenderer treeCellRenderer = new DefaultTreeCellRenderer() {
+    private transient TreeCellRenderer treeCellRenderer = new DefaultTreeCellRenderer() {
         // http://stackoverflow.com/questions/20691946/set-icon-to-each-node-in-jtree
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
@@ -382,6 +382,8 @@ public class MachineSetupPanel extends JPanel implements WizardContainer {
         }
     };
     private class SwingAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
         public SwingAction() {
             putValue(NAME, Translations.getString("MachineSetupPanel.Action.Expand")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("MachineSetupPanel.Action.Expand.Description")); //$NON-NLS-1$

@@ -9,8 +9,8 @@ import javax.swing.AbstractAction;
 import org.openpnp.model.Configuration;
 import org.openpnp.util.UiUtils;
 
-@SuppressWarnings("serial")
 public class ScriptAction extends AbstractAction{
+    private static final long serialVersionUID = 1L;
 
     public ScriptAction(String eventName) {
         this.eventName = eventName;

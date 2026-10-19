@@ -33,9 +33,10 @@ import org.openpnp.model.Configuration;
 import org.openpnp.spi.NozzleTip;
 import java.awt.BorderLayout;
 
-@SuppressWarnings("serial")
 public class PackageNozzleTipsWizard extends AbstractConfigurationWizard /*JPanel*/ {
-    private final org.openpnp.model.Package pkg;
+    private static final long serialVersionUID = 1L;
+
+    private final transient org.openpnp.model.Package pkg;
     private JTable table;
     private JScrollPane scrollPane;
 
@@ -49,11 +50,13 @@ public class PackageNozzleTipsWizard extends AbstractConfigurationWizard /*JPane
     }
 
     public class NozzleTipsTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+
         private String[] columnNames = new String[] {
                 Translations.getString("NozzleTipsTableModel.ColumnName.NozzleTip"), //$NON-NLS-1$
                 Translations.getString("NozzleTipsTableModel.ColumnName.Compatible") }; //$NON-NLS-1$
         private Class[] columnClasses = new Class[] { String.class, Boolean.class };
-        private List<NozzleTip> nozzleTips;
+        private transient List<NozzleTip> nozzleTips;
 
         public NozzleTipsTableModel() {
             refresh();

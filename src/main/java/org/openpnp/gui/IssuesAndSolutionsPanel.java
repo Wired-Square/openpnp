@@ -75,16 +75,17 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class IssuesAndSolutionsPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_DIVIDER_POSITION = "IssuesAndSolutionsPanel.dividerPosition";
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
-    private Preferences prefs = Preferences.userNodeForPackage(IssuesAndSolutionsPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(IssuesAndSolutionsPanel.class);
 
-    final private Configuration configuration;
+    final private transient Configuration configuration;
     final private MainFrame frame;
     private Solutions solutions;
-    private ReferenceMachine machine;
+    private transient ReferenceMachine machine;
     private IssuePanel issuePanel;
 
     public IssuesAndSolutionsPanel(Configuration configuration, MainFrame frame) {
@@ -430,7 +431,7 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     }
 
-    private Action findSolutionsAction =
+    private transient Action findSolutionsAction =
             new AbstractAction(Translations.getString("IssuesAndSolutionsPanel.Action.FindSolution"), //$NON-NLS-1$
                     Icons.solutions) {
         {
@@ -444,7 +445,7 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     };
 
-    private Action acceptSolutionAction =
+    private transient Action acceptSolutionAction =
             new AbstractAction(Translations.getString("IssuesAndSolutionsPanel.Action.AcceptSolution"), //$NON-NLS-1$
                     Icons.accept) {
         {
@@ -474,7 +475,7 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     };
 
-    private Action dismissSolutionAction = new AbstractAction(Translations.getString(
+    private transient Action dismissSolutionAction = new AbstractAction(Translations.getString(
                     "IssuesAndSolutionsPanel.Action.DismissSolution"), Icons.dismiss) { //$NON-NLS-1$
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
@@ -494,7 +495,7 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     };
 
-    private Action reopenSolutionAction = new AbstractAction(Translations.getString(
+    private transient Action reopenSolutionAction = new AbstractAction(Translations.getString(
             "IssuesAndSolutionsPanel.Action.ReopenSolution"), Icons.undo) { //$NON-NLS-1$
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
@@ -514,7 +515,7 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     }; 
 
-    private Action infoAction =
+    private transient Action infoAction =
             new AbstractAction("", Icons.info) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
@@ -532,7 +533,7 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     };
 
-    private Action infoMilestoneAction =
+    private transient Action infoMilestoneAction =
             new AbstractAction("", Icons.info) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
@@ -545,9 +546,9 @@ public class IssuesAndSolutionsPanel extends JPanel {
         }
     };
 
-    private ActionGroup singleSelectionActionGroup;
-    private ActionGroup multiSelectionActionGroup;
-    private TableRowSorter tableSorter;
+    private transient ActionGroup singleSelectionActionGroup;
+    private transient ActionGroup multiSelectionActionGroup;
+    private transient TableRowSorter tableSorter;
     private AutoSelectTextTable table;
     private JLabel labelWarn;
     private JPanel issuePane;

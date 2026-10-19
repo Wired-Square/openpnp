@@ -79,8 +79,9 @@ import org.openpnp.util.QuickHull;
 import org.openpnp.util.Utils2D;
 import org.pmw.tinylog.Logger;
 
-@SuppressWarnings("serial")
 public class ChildFiducialSelectorDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_WINDOW_X = "ChildFiducialSelectorDialog.windowX"; //$NON-NLS-1$
     private static final int PREF_WINDOW_X_DEF = 100;
     private static final String PREF_WINDOW_Y = "ChildFiducialSelectorDialog.windowY"; //$NON-NLS-1$
@@ -96,16 +97,16 @@ public class ChildFiducialSelectorDialog extends JDialog {
     private PlacementTypes placementTypes = PlacementTypes.FiducialsOnly;
     private JTable childFiducialsTable;
     private PlacementsHolderPlacementsTableModel tableModel;
-    private PanelLocation panelLocation;
+    private transient PanelLocation panelLocation;
     private JRadioButton placementsButton;
     private JRadioButton fiducialsButton;
     private JRadioButton bothButton;
-    private List<Placement> allPseudoPlacements;
-    private List<Placement> filteredPseudoPlacements;
-    private List<Placement> filteredPseudoPlacementsHull;
-    private List<Placement> goodPseudoPlacements;
+    private transient List<Placement> allPseudoPlacements;
+    private transient List<Placement> filteredPseudoPlacements;
+    private transient List<Placement> filteredPseudoPlacementsHull;
+    private transient List<Placement> goodPseudoPlacements;
     protected boolean showHullOnly = true;
-    private Preferences prefs = Preferences.userNodeForPackage(ChildFiducialSelectorDialog.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(ChildFiducialSelectorDialog.class);
     private JButton okButton;
 
     /**

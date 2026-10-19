@@ -65,7 +65,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class DipTraceImporter implements BoardImporter {
     private final static String NAME = "Diptrace .csv"; //$NON-NLS-1$
     private final static String DESCRIPTION = Translations.getString("DipTraceImporter.Importer.Description"); //$NON-NLS-1$
@@ -154,11 +153,13 @@ public class DipTraceImporter implements BoardImporter {
     }
 
     class Dlg extends JDialog {
+        private static final long serialVersionUID = 1L;
+
         private JTextField textFieldFileName;
         private JTextField textFieldBottomFile;
-        private final Action browseTopFileAction = new SwingAction();
-        private final Action importAction = new SwingAction_2();
-        private final Action cancelAction = new SwingAction_3();
+        private final transient Action browseTopFileAction = new SwingAction();
+        private final transient Action importAction = new SwingAction_2();
+        private final transient Action cancelAction = new SwingAction_3();
         private JCheckBox chckbxCreateMissingParts;
 
         public Dlg(Frame parent) {
@@ -226,6 +227,8 @@ public class DipTraceImporter implements BoardImporter {
         }
 
         private class SwingAction extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction() {
                 putValue(NAME, Translations.getString("DipTraceImporter.BrowseAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("DipTraceImporter.BrowseAction.ShortDescription")); //$NON-NLS-1$
@@ -249,6 +252,8 @@ public class DipTraceImporter implements BoardImporter {
         }
 
         private class SwingAction_2 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_2() {
                 putValue(NAME, Translations.getString("DipTraceImporter.ImportAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("DipTraceImporter.ImportAction.ShortDescription")); //$NON-NLS-1$
@@ -278,6 +283,8 @@ public class DipTraceImporter implements BoardImporter {
         }
 
         private class SwingAction_3 extends AbstractAction {
+            private static final long serialVersionUID = 1L;
+
             public SwingAction_3() {
                 putValue(NAME, Translations.getString("DipTraceImporter.CancelAction.Name")); //$NON-NLS-1$
                 putValue(SHORT_DESCRIPTION, Translations.getString("DipTraceImporter.CancelAction.ShortDescription")); //$NON-NLS-1$
