@@ -27,9 +27,10 @@ import javax.swing.JList;
 
 import org.openpnp.model.Identifiable;
 
-@SuppressWarnings("serial")
 public class IdentifiableListCellRenderer<T extends Identifiable> extends DefaultListCellRenderer {
-    IdentifiableObjectToStringConverter<T> converter = new IdentifiableObjectToStringConverter<>();
+    private static final long serialVersionUID = 1L;
+
+    transient IdentifiableObjectToStringConverter<T> converter = new IdentifiableObjectToStringConverter<>();
 
     @Override
     public Component getListCellRendererComponent(JList arg0, Object arg1, int arg2, boolean arg3,

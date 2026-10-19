@@ -45,10 +45,10 @@ import org.openpnp.util.SimpleGraph;
 import org.openpnp.util.SimpleGraph.DataRow;
 import org.openpnp.util.SimpleGraph.DataScale;
 
-@SuppressWarnings("serial")
 public class SimpleGraphView extends JComponent implements MouseMotionListener, MouseListener {  
+    private static final long serialVersionUID = 1L;
 
-    private SimpleGraph graph;
+    private transient SimpleGraph graph;
     private final Dimension preferredSize = new Dimension(100, 80);
     private Integer xMouse;
     private Integer yMouse;

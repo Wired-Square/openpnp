@@ -29,9 +29,10 @@ import javax.swing.DefaultComboBoxModel;
 import org.openpnp.spi.Driver;
 import org.openpnp.spi.base.AbstractMachine;
 
-@SuppressWarnings({"serial", "rawtypes"})
-public class DriversComboBoxModel extends DefaultComboBoxModel implements PropertyChangeListener {
-    final private AbstractMachine machine; 
+public class DriversComboBoxModel extends DefaultComboBoxModel<String> implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
+    final private transient AbstractMachine machine; 
     final private boolean addEmpty;
 
     public DriversComboBoxModel(AbstractMachine machine, boolean addEmpty) {

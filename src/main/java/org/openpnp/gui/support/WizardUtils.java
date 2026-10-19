@@ -38,14 +38,13 @@ public class WizardUtils {
      * @param parameters - zero or more parameters needed by the wizard's constructor
      * @return the wizard
      */
-    @SuppressWarnings("unchecked")
     public static <T extends AbstractConfigurationWizard> T configurationWizardFactory(
             Class<T> wizardToConstruct, String id, Object... parameters ) {
         if (MainFrame.get().getWizardWithActiveProcess() != null && 
                 MainFrame.get().getWizardWithActiveProcess().getClass() ==  wizardToConstruct &&
                 MainFrame.get().getWizardWithActiveProcess().getId() == id) {
             //A wizard is already registered so just return it
-            return (T) MainFrame.get().getWizardWithActiveProcess();
+            return wizardToConstruct.cast(MainFrame.get().getWizardWithActiveProcess());
         }
         else {
             //Attempt to construct a new wizard
@@ -55,7 +54,7 @@ public class WizardUtils {
             for (Constructor<?> constructor : constructors) {
                 if (constructor.getParameterCount() == parameters.length) {
                     try {
-                        ret = (T) wizardToConstruct.getDeclaredConstructor(constructor.getParameterTypes()).newInstance(parameters);
+                        ret = wizardToConstruct.getDeclaredConstructor(constructor.getParameterTypes()).newInstance(parameters);
                         ret.id = id;
                         return ret;
                     }

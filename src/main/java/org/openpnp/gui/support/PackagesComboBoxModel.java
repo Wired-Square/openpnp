@@ -22,8 +22,8 @@ package org.openpnp.gui.support;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Package;
 
-@SuppressWarnings("serial")
 public class PackagesComboBoxModel extends TableComboBoxModel<Package> {
+    private static final long serialVersionUID = 1L;
 
     public PackagesComboBoxModel() {
         super("packages");

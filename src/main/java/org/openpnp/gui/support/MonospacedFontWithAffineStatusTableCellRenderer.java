@@ -32,9 +32,9 @@ import java.awt.*;
  * {@link PlacementsHolderLocationsTableModel}, the background cell color is changed based on the 
  * status of the {@link PlacementsHolderLocation}'s placement transform.
  */
-@SuppressWarnings("serial")
 public class MonospacedFontWithAffineStatusTableCellRenderer extends DefaultTableCellRenderer
 {
+    private static final long serialVersionUID = 1L;
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,

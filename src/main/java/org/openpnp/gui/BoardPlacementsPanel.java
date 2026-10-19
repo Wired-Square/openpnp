@@ -180,7 +180,7 @@ public class BoardPlacementsPanel extends JPanel {
         multiSelectionActionGroup.setEnabled(false);
 
         @SuppressWarnings("unchecked")
-        JComboBox<PartsComboBoxModel> partsComboBox = new JComboBox<>(new PartsComboBoxModel());
+        JComboBox<Part> partsComboBox = new JComboBox<>(new PartsComboBoxModel());
         partsComboBox.setMaximumRowCount(20);
         partsComboBox.setRenderer(new IdentifiableListCellRenderer<Part>());
         JComboBox<Side> sidesComboBox = new JComboBox<>(Side.values());

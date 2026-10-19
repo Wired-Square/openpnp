@@ -8,10 +8,11 @@ import javax.swing.DefaultComboBoxModel;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Named;
 
-@SuppressWarnings("serial")
 public class NamedComboBoxModel<T extends Named> extends DefaultComboBoxModel<T> implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
     protected final Class<T> namedClass;
-    protected final NamedComparator<T> comparator = new NamedComparator<>();
+    protected final transient NamedComparator<T> comparator = new NamedComparator<>();
 
     public NamedComboBoxModel(String property) {
         this.namedClass = null;

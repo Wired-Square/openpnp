@@ -50,8 +50,9 @@ import org.openpnp.util.UiUtils;
 
 // TODO: For the time being, since setting a property on the reticle doesn't re-save it we are
 // making a redundant call to setReticle on every property update. Fix that somehow.
-@SuppressWarnings("serial")
 public class CameraViewPopupMenu extends JPopupMenu {
+    private static final long serialVersionUID = 1L;
+
     private CameraView cameraView;
     private JMenu zoomIncMenu;
     private JMenu reticleMenu;
@@ -555,14 +556,18 @@ public class CameraViewPopupMenu extends JPopupMenu {
         reticleOptionsMenu = menu;
     }
 
-    private Action showImageInfoAction = new AbstractAction("Show Image Info?") {
+    private transient Action showImageInfoAction = new AbstractAction("Show Image Info?") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent e) {
             cameraView.setShowImageInfo(((JCheckBoxMenuItem) e.getSource()).isSelected());
         }
     };
 
-    private Action noReticleAction = new AbstractAction("None") {
+    private transient Action noReticleAction = new AbstractAction("None") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             setReticleOptionsMenu(null);
@@ -570,7 +575,9 @@ public class CameraViewPopupMenu extends JPopupMenu {
         }
     };
 
-    private Action crosshairReticleAction = new AbstractAction("Crosshair") {
+    private transient Action crosshairReticleAction = new AbstractAction("Crosshair") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             CrosshairReticle reticle = new CrosshairReticle();
@@ -580,7 +587,9 @@ public class CameraViewPopupMenu extends JPopupMenu {
         }
     };
 
-    private Action gridReticleAction = new AbstractAction("Grid") {
+    private transient Action gridReticleAction = new AbstractAction("Grid") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             GridReticle reticle = new GridReticle();
@@ -590,7 +599,9 @@ public class CameraViewPopupMenu extends JPopupMenu {
         }
     };
 
-    private Action rulerReticleAction = new AbstractAction("Ruler") {
+    private transient Action rulerReticleAction = new AbstractAction("Ruler") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             RulerReticle reticle = new RulerReticle();
@@ -600,7 +611,9 @@ public class CameraViewPopupMenu extends JPopupMenu {
         }
     };
 
-    private Action fiducialReticleAction = new AbstractAction("Fiducial") {
+    private transient Action fiducialReticleAction = new AbstractAction("Fiducial") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             FiducialReticle reticle = new FiducialReticle();
@@ -613,7 +626,7 @@ public class CameraViewPopupMenu extends JPopupMenu {
     /**
      * Listen for menu selection to estimate an object's height
      */
-    private ActionListener estimateZCoordinateAction = new ActionListener() {
+    private transient ActionListener estimateZCoordinateAction = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -626,7 +639,7 @@ public class CameraViewPopupMenu extends JPopupMenu {
      * Listener for menu selection to move the selected nozzle to the camera (only works for
      * non-movable cameras)
      */
-    private ActionListener moveSelectedNozzleToCameraAction = new ActionListener() {
+    private transient ActionListener moveSelectedNozzleToCameraAction = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.submitUiMachineTask(() -> {

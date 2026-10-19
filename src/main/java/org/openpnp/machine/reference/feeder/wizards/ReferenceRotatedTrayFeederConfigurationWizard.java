@@ -95,7 +95,7 @@ public class ReferenceRotatedTrayFeederConfigurationWizard extends AbstractConfi
 
     private JPanel panelPart;
 
-    private JComboBox<?> comboBoxPart;
+    private JComboBox<Part> comboBoxPart;
     private LocationButtonsPanel locationButtonsPanel;
     private LocationButtonsPanel lastLocationButtonsPanel;
     private JTextField retryCountTf;
@@ -142,7 +142,7 @@ public class ReferenceRotatedTrayFeederConfigurationWizard extends AbstractConfi
                         FormSpecs.RELATED_GAP_ROWSPEC,
                         FormSpecs.DEFAULT_ROWSPEC,}));
 
-        comboBoxPart = new JComboBox();
+        comboBoxPart = new JComboBox<>();
         try {
             comboBoxPart.setModel(new PartsComboBoxModel());
         } catch (Throwable t) {

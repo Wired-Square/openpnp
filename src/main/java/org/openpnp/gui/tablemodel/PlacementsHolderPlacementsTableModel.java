@@ -49,10 +49,11 @@ import org.openpnp.model.PlacementsHolderLocation;
 import org.openpnp.util.Utils2D;
 import com.google.common.eventbus.Subscribe;
 
-@SuppressWarnings("serial")
 public class PlacementsHolderPlacementsTableModel extends AbstractObjectTableModel 
         implements ColumnAlignable, ColumnWidthSaveable {
-    private PlacementsHolder<?> placementsHolder = null;
+    private static final long serialVersionUID = 1L;
+
+    private transient PlacementsHolder<?> placementsHolder = null;
 
     private String[] columnNames =
             new String[] {Translations.getString("PlacementsHolderPlacementsTableModel.ColumnName.Enabled"), //$NON-NLS-1$
@@ -85,8 +86,7 @@ public class PlacementsHolderPlacementsTableModel extends AbstractObjectTableMod
             "comments" //$NON-NLS-1$
     };
     
-    @SuppressWarnings("rawtypes")
-    private Class[] columnTypes = new Class[] {Boolean.class, PartCellValue.class, Part.class, 
+    private Class<?>[] columnTypes = new Class<?>[] {Boolean.class, PartCellValue.class, Part.class, 
             Side.class, LengthCellValue.class, LengthCellValue.class, RotationCellValue.class, 
             Type.class, Boolean.class, Status.class, ErrorHandling.class, Integer.class, String.class};
     
@@ -107,15 +107,15 @@ public class PlacementsHolderPlacementsTableModel extends AbstractObjectTableMod
 
     private boolean localReferenceFrame = true;
 
-    private PanelLocation parent = null;
+    private transient PanelLocation parent = null;
 
-    private List<Placement> placements = null;
+    private transient List<Placement> placements = null;
 
-    private PlacementsHolderLocation<?> placementsHolderLocation;
+    private transient PlacementsHolderLocation<?> placementsHolderLocation;
     private JobPlacementsPanel jobPlacementsPanel;
     private boolean editDefinition;
     private boolean isPanel;
-    private Configuration configuration;
+    private transient Configuration configuration;
 
     private Container container;
     

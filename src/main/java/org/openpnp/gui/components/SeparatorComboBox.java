@@ -37,8 +37,9 @@ import javax.swing.ListCellRenderer;
  * box selection to skip over the separator. If you attempt to select the separator with the mouse,
  * the selection will be ignored and the drop down will remain open.
  */
-@SuppressWarnings("serial")
 public class SeparatorComboBox extends JComboBox implements KeyListener {
+    private static final long serialVersionUID = 1L;
+
     // Track key presses and releases
 
     private boolean released = true;

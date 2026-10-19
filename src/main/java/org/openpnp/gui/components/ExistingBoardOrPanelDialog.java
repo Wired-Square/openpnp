@@ -52,15 +52,14 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.JScrollPane;
 
-@SuppressWarnings("serial")
 public class ExistingBoardOrPanelDialog extends JDialog {
+    private static final long serialVersionUID = 1L;
 
     private final JPanel contentPanel = new JPanel();
     private String fileExtension;
-    private List<File> existingList = new ArrayList<>();
+    private transient List<File> existingList = new ArrayList<>();
     private File file = null;
-    @SuppressWarnings("rawtypes")
-    private JList existingListDisplay;
+    private JList<File> existingListDisplay;
     protected Exception savedException;
     private String boardOrPanel;
     private JButton okButton;
@@ -100,7 +99,7 @@ public class ExistingBoardOrPanelDialog extends JDialog {
             contentPanel.add(txtrSelectOneFile, BorderLayout.NORTH);
         }
         {
-            existingListDisplay = new JList<>(existingList.toArray());
+            existingListDisplay = new JList<>(existingList.toArray(new File[0]));
             existingListDisplay.setVisibleRowCount(8);
             existingListDisplay.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
             existingListDisplay.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -126,7 +125,7 @@ public class ExistingBoardOrPanelDialog extends JDialog {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        file = (File) existingListDisplay.getSelectedValue();
+                        file = existingListDisplay.getSelectedValue();
                         close();
                     }});
                 okButton.setEnabled(false);

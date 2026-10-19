@@ -7,9 +7,10 @@ import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-@SuppressWarnings("serial")
 public class TableComboBoxModel<T extends Identifiable> extends DefaultComboBoxModel<T> implements PropertyChangeListener {
-    protected final IdentifiableComparator<T> comparator = new IdentifiableComparator<>();
+    private static final long serialVersionUID = 1L;
+
+    protected final transient IdentifiableComparator<T> comparator = new IdentifiableComparator<>();
 
     public TableComboBoxModel(String property) {
         addAllElements();

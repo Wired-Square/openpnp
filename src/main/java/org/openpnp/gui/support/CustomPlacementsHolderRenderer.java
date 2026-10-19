@@ -35,9 +35,10 @@ import java.util.Arrays;
  * A renderer for PlacementsHolderLocation Table cells that displays an icon showing the type of 
  * PlacementsHolderLocation the row of the table contains
  */
-@SuppressWarnings("serial")
 public class CustomPlacementsHolderRenderer extends JLabel implements TableCellRenderer, UIResource
 {
+    private static final long serialVersionUID = 1L;
+
     private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
     private final JLabel left;
     private final JLabel right;

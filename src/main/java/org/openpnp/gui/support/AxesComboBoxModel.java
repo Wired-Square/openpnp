@@ -33,9 +33,10 @@ import org.openpnp.model.Configuration;
 import org.openpnp.spi.Axis;
 import org.openpnp.spi.base.AbstractMachine;
 
-@SuppressWarnings({"serial", "rawtypes"})
-public class AxesComboBoxModel extends DefaultComboBoxModel implements PropertyChangeListener {
-    private Comparator<Axis> comparator = new Comparator<Axis>() {
+public class AxesComboBoxModel extends DefaultComboBoxModel<String> implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
+    private transient Comparator<Axis> comparator = new Comparator<Axis>() {
         @Override
         public int compare(Axis o1, Axis o2) {
             return o1.getName().compareTo(o2.getName());
@@ -43,7 +44,7 @@ public class AxesComboBoxModel extends DefaultComboBoxModel implements PropertyC
     };
     final private boolean addEmpty;
     final private Class<? extends Axis> types;
-    final private AbstractMachine machine; 
+    final private transient AbstractMachine machine; 
     private Axis.Type axisType; 
 
     public AxesComboBoxModel(AbstractMachine machine, Class<? extends Axis> types, Axis.Type axisType, boolean addEmpty) {

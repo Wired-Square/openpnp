@@ -32,23 +32,23 @@ import org.openpnp.model.Length;
 import org.openpnp.model.Location;
 import org.openpnp.model.Panel;
 
-@SuppressWarnings("serial")
 public class PlacementsHolderTableModel extends AbstractObjectTableModel implements ColumnAlignable, ColumnWidthSaveable {
-    private final Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Configuration configuration;
 
     private String[] columnNames = new String[] {"PlacementsHolder Name", //$NON-NLS-1$
             Translations.getString("PlacementsHolderTableModel.ColumnName.Width"), //$NON-NLS-1$
             Translations.getString("PlacementsHolderTableModel.ColumnName.Length")}; //$NON-NLS-1$
 
-    @SuppressWarnings("rawtypes")
-    private Class[] columnTypes = new Class[] {String.class, LengthCellValue.class,
+    private Class<?>[] columnTypes = new Class<?>[] {String.class, LengthCellValue.class,
             LengthCellValue.class};
     
     private int[] columnAlignments = new int[] {LEFT, CENTER, CENTER};
     
     private int[] columnWidthTypes = new int[] {PROPORTIONAL, FIXED, FIXED};
 
-    private Supplier<List<? extends PlacementsHolder<?>>> placementsHolders;
+    private transient Supplier<List<? extends PlacementsHolder<?>>> placementsHolders;
 
     private Class<? extends PlacementsHolder<?>> classType;
 

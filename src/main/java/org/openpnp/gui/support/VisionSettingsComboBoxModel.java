@@ -3,8 +3,9 @@ package org.openpnp.gui.support;
 import org.openpnp.model.AbstractVisionSettings;
 import org.openpnp.model.Configuration;
 
-@SuppressWarnings("serial")
 public class VisionSettingsComboBoxModel<T extends AbstractVisionSettings> extends NamedComboBoxModel<AbstractVisionSettings> {
+    private static final long serialVersionUID = 1L;
+
     public VisionSettingsComboBoxModel(Class<T> visionClass) {
         super("visionSettings", (Class<AbstractVisionSettings>) visionClass);
     }

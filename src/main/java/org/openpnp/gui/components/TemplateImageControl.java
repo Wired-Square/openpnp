@@ -41,15 +41,15 @@ import org.openpnp.model.Location;
 import org.openpnp.spi.Camera;
 import org.openpnp.vision.TemplateImage;
 
-@SuppressWarnings("serial")
 public class TemplateImageControl extends JComponent implements MouseMotionListener, MouseListener {  
+    private static final long serialVersionUID = 1L;
 
-    private TemplateImage templateImage = null;
+    private transient TemplateImage templateImage = null;
     private int minWidth = 100;
     private int minHeight = 100;
-    private Camera camera = null;
+    private transient Camera camera = null;
     private String name = "Template";
-    private Location captureLocation = null; 
+    private transient Location captureLocation = null; 
     
     public TemplateImageControl() {
         addMouseMotionListener(this);

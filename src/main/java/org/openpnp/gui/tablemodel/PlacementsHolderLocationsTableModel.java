@@ -41,10 +41,11 @@ import org.openpnp.model.Length;
 import org.openpnp.model.Location;
 import org.openpnp.model.PanelLocation;
 
-@SuppressWarnings("serial")
 public class PlacementsHolderLocationsTableModel extends AbstractObjectTableModel 
         implements ColumnAlignable, ColumnWidthSaveable {
-    private final Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Configuration configuration;
 
     private final String[] columnNames = new String[] {
             Translations.getString("PlacementsHolderLocationsTableModel.ColumnName.BoardPanelId"), //$NON-NLS-1$
@@ -70,8 +71,7 @@ public class PlacementsHolderLocationsTableModel extends AbstractObjectTableMode
             "locallyEnabled",  //$NON-NLS-1$
             "checkFiducials"}; //$NON-NLS-1$
     
-    @SuppressWarnings("rawtypes")
-    private Class[] columnTypes = new Class[] {String.class, String.class, LengthCellValue.class,
+    private Class<?>[] columnTypes = new Class<?>[] {String.class, String.class, LengthCellValue.class,
             LengthCellValue.class, Side.class, LengthCellValue.class, LengthCellValue.class,
             LengthCellValue.class, RotationCellValue.class, Boolean.class, Boolean.class};
 
@@ -81,11 +81,11 @@ public class PlacementsHolderLocationsTableModel extends AbstractObjectTableMode
     private int[] columnWidthTypes = new int[] {FIXED, PROPORTIONAL, FIXED, FIXED, FIXED, 
             FIXED, FIXED, FIXED, FIXED, FIXED, FIXED};
 
-    private Job job;
+    private transient Job job;
 
-    private PanelLocation rootPanelLocation;
+    private transient PanelLocation rootPanelLocation;
 
-    private List<PlacementsHolderLocation<?>> placementsHolderLocations;
+    private transient List<PlacementsHolderLocation<?>> placementsHolderLocations;
 
     public PlacementsHolderLocationsTableModel(Configuration configuration) {
         this.configuration = configuration;

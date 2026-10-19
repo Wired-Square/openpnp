@@ -51,11 +51,12 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
 
-@SuppressWarnings("serial")
 public class ClassSelectionDialog<T> extends JDialog {
+    private static final long serialVersionUID = 1L;
+
     private Class<? extends T> selectedClass;
     private JTable table;
-    private List<Class<? extends T>> availableClasses;
+    private transient List<Class<? extends T>> availableClasses;
 
     public ClassSelectionDialog(Frame parent, String title, String description,
             List<Class<? extends T>> availableClasses) {
@@ -86,6 +87,8 @@ public class ClassSelectionDialog<T> extends JDialog {
         lblDescription.setText(description);
 
         table = new JTable(new ClassTableModel()) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getToolTipText(MouseEvent e) {
                 int row = rowAtPoint(e.getPoint());
@@ -135,8 +138,10 @@ public class ClassSelectionDialog<T> extends JDialog {
         selectAction.setEnabled(false);
     }
 
-    private final Action selectAction = new AbstractAction(Translations.getString(
+    private final transient Action selectAction = new AbstractAction(Translations.getString(
             "ClassSelectionDialog.Action.Accept")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             int row = table.getSelectedRow();
@@ -148,8 +153,10 @@ public class ClassSelectionDialog<T> extends JDialog {
         }
     };
 
-    private final Action cancelAction = new AbstractAction(Translations.getString(
+    private final transient Action cancelAction = new AbstractAction(Translations.getString(
             "ClassSelectionDialog.Action.Cancel")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             setVisible(false);
@@ -172,6 +179,8 @@ public class ClassSelectionDialog<T> extends JDialog {
     }
 
     private class ClassTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+
         private final String[] columnNames = {"Name", "Description"};
 
         @Override

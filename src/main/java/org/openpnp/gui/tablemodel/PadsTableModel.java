@@ -32,16 +32,17 @@ import org.openpnp.model.Configuration;
 import org.openpnp.model.Length;
 import org.openpnp.model.Location;
 
-@SuppressWarnings("serial")
 public class PadsTableModel extends AbstractTableModel {
-    final Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    final transient Configuration configuration;
 
     private String[] columnNames = new String[] {"Name", "Side", "X", "Y", "Rot.", "Type"};
 
     private Class[] columnTypes = new Class[] {String.class, Side.class, LengthCellValue.class,
             LengthCellValue.class, String.class, Type.class};
 
-    private Board board;
+    private transient Board board;
 
     public PadsTableModel(Configuration configuration) {
         this.configuration = configuration;

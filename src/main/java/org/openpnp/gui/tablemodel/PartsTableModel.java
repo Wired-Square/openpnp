@@ -39,8 +39,9 @@ import org.openpnp.model.Package;
 import org.openpnp.model.Part;
 import org.openpnp.util.Collect;
 
-@SuppressWarnings("serial")
 public class PartsTableModel extends AbstractObjectTableModel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
     private String[] columnNames =
             new String[] {Translations.getString("PartsTableModel.ColumnName.ID"), //$NON-NLS-1$
                     Translations.getString("PartsTableModel.ColumnName.Description"), //$NON-NLS-1$
@@ -56,12 +57,12 @@ public class PartsTableModel extends AbstractObjectTableModel implements Propert
     };
     private Class[] columnTypes = new Class[] {String.class, String.class, LengthCellValue.class, LengthCellValue.class,
             Package.class, String.class, BottomVisionSettings.class, FiducialVisionSettings.class, Integer.class, Integer.class, Usage.class};
-    private List<Part> parts;
-    private PercentConverter percentConverter = new PercentConverter();
+    private transient List<Part> parts;
+    private transient PercentConverter percentConverter = new PercentConverter();
 
     public static final int USAGE_COLUMN = 10;
 
-    private final JobUsageService jobUsageService;
+    private final transient JobUsageService jobUsageService;
 
     public PartsTableModel(JobUsageService jobUsageService) {
         this.jobUsageService = jobUsageService;

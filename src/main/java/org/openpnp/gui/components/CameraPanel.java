@@ -44,13 +44,14 @@ import org.openpnp.spi.base.AbstractCamera;
 /**
  * Shows a square grid of cameras or a blown up image from a single camera.
  */
-@SuppressWarnings("serial")
 public class CameraPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private static final String SHOW_NONE_ITEM = "Show None";
     private static final String SHOW_ALL_ITEM_H = "Show All Horizontal";
     private static final String SHOW_ALL_ITEM_V = "Show All Vertical";
 
-    private Map<Camera, CameraView> cameraViews = new LinkedHashMap<>();
+    private transient Map<Camera, CameraView> cameraViews = new LinkedHashMap<>();
 
     private JComboBox camerasCombo;
     private JPanel camerasPanel;
@@ -59,7 +60,7 @@ public class CameraPanel extends JPanel {
 
 
     private static final String PREF_SELECTED_CAMERA_VIEW = "JobPanel.dividerPosition";
-    private Preferences prefs = Preferences.userNodeForPackage(CameraPanel.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(CameraPanel.class);
 
     public CameraPanel() {
 		SwingUtilities.invokeLater(() -> {
@@ -254,6 +255,8 @@ public class CameraPanel extends JPanel {
     }
 
     private AbstractAction cameraSelectedAction = new AbstractAction("") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent ev) {
             relayoutPanel();

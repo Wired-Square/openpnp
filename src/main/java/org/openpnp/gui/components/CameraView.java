@@ -89,8 +89,9 @@ import org.openpnp.util.VisionUtils;
 import org.openpnp.util.XmlSerialize;
 import org.pmw.tinylog.Logger;
 
-@SuppressWarnings("serial")
 public class CameraView extends JComponent implements CameraListener {
+    private static final long serialVersionUID = 1L;
+
     private static final String PREF_RETICLE = "CamerView.reticle";
     private static final String DEFAULT_RETICLE_KEY = "DEFAULT_RETICLE_KEY";
     private static final String PREF_ZOOM_INCREMENT = "CamerView.zoomIncrement";
@@ -135,12 +136,12 @@ public class CameraView extends JComponent implements CameraListener {
     /**
      * The Camera we are viewing.
      */
-    private Camera camera;
+    private transient Camera camera;
 
     /**
      * The last frame received, reported by the Camera.
      */
-    private BufferedImage lastFrame;
+    private transient BufferedImage lastFrame;
 
     private LinkedHashMap<Object, Reticle> reticles = new LinkedHashMap<>();
 
@@ -158,7 +159,7 @@ public class CameraView extends JComponent implements CameraListener {
      */
     private double lastSourceWidth, lastSourceHeight;
 
-    private Location lastUnitsPerPixel;
+    private transient Location lastUnitsPerPixel;
 
     /**
      * The width and height of the image after it has been scaled to fit the bounds of the
@@ -203,19 +204,19 @@ public class CameraView extends JComponent implements CameraListener {
     // 11 is the sum of the dash lengths minus 1.
     private static float selectionDashPhaseStart = 11f;
 
-    private CameraViewSelectionTextDelegate selectionTextDelegate;
+    private transient CameraViewSelectionTextDelegate selectionTextDelegate;
 
-    private ScheduledExecutorService scheduledExecutor;
+    private transient ScheduledExecutorService scheduledExecutor;
 
-    private Preferences prefs = Preferences.userNodeForPackage(CameraView.class);
+    private transient Preferences prefs = Preferences.userNodeForPackage(CameraView.class);
 
     private String text;
 
     private boolean showImageInfo;
 
-    private List<CameraViewActionListener> actionListeners = new ArrayList<>();
+    private transient List<CameraViewActionListener> actionListeners = new ArrayList<>();
 
-    private CameraViewFilter cameraViewFilter;
+    private transient CameraViewFilter cameraViewFilter;
 
     private long flashStartTimeMs;
     private long flashLengthMs = 250;
@@ -237,7 +238,7 @@ public class CameraView extends JComponent implements CameraListener {
     private int lightToggleSize = 40;
 
     long lastFrameReceivedTime = 0;
-    MovingAverage fpsAverage = new MovingAverage(24);
+    transient MovingAverage fpsAverage = new MovingAverage(24);
     double fps = 0;
     public enum RenderingQuality {
         Low, High, BestScale
@@ -1759,7 +1760,7 @@ public class CameraView extends JComponent implements CameraListener {
     }
 
 
-    private MouseListener mouseListener = new MouseAdapter() {
+    private transient MouseListener mouseListener = new MouseAdapter() {
  
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -1810,7 +1811,7 @@ public class CameraView extends JComponent implements CameraListener {
         }
     };
 
-    private MouseMotionListener mouseMotionListener = new MouseMotionAdapter() {
+    private transient MouseMotionListener mouseMotionListener = new MouseMotionAdapter() {
         @Override
         public void mouseMoved(MouseEvent e) {
             updateCursor();
@@ -1830,14 +1831,14 @@ public class CameraView extends JComponent implements CameraListener {
         }
     };
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private transient ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentResized(ComponentEvent e) {
             calculateScalingData();
         }
     };
 
-    private MouseWheelListener mouseWheelListener = new MouseWheelListener() {
+    private transient MouseWheelListener mouseWheelListener = new MouseWheelListener() {
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             int modifiers = e.getModifiersEx();
@@ -1855,7 +1856,7 @@ public class CameraView extends JComponent implements CameraListener {
         }
     };
 
-    public CameraViewSelectionTextDelegate pixelsAndUnitsTextSelectionDelegate =
+    public transient CameraViewSelectionTextDelegate pixelsAndUnitsTextSelectionDelegate =
             new CameraViewSelectionTextDelegate() {
                 @Override
                 public String getSelectionText(CameraView cameraView) {

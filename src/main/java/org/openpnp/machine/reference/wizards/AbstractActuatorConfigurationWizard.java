@@ -70,11 +70,11 @@ public abstract class AbstractActuatorConfigurationWizard extends AbstractConfig
     private JPanel generalPanel;
     private JLabel lblIndex;
     private JTextField indexTextField;
-    private JComboBox<AxesComboBoxModel> axisX;
-    private JComboBox<AxesComboBoxModel> axisY;
-    private JComboBox<AxesComboBoxModel> axisZ;
+    private JComboBox<String> axisX;
+    private JComboBox<String> axisY;
+    private JComboBox<String> axisZ;
     private JLabel lblRotation;
-    private JComboBox<AxesComboBoxModel> axisRotation;
+    private JComboBox<String> axisRotation;
     private JTextField locationRotation;
     private JLabel lblAxis;
     private JLabel lblOffset;
@@ -162,16 +162,16 @@ public abstract class AbstractActuatorConfigurationWizard extends AbstractConfig
                 "AbstractActuatorConfigurationWizard.CoordinateSystemPanel.AxisLabel.text")); //$NON-NLS-1$
         panelOffsets.add(lblAxis, "2, 4, right, default");
 
-        axisX = new JComboBox<AxesComboBoxModel>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.X, true));
+        axisX = new JComboBox<>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.X, true));
         panelOffsets.add(axisX, "4, 4, fill, default");
 
-        axisY = new JComboBox<AxesComboBoxModel>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.Y, true));
+        axisY = new JComboBox<>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.Y, true));
         panelOffsets.add(axisY, "6, 4, fill, default");
 
-        axisZ = new JComboBox<AxesComboBoxModel>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.Z, true));
+        axisZ = new JComboBox<>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.Z, true));
         panelOffsets.add(axisZ, "8, 4, fill, default");
 
-        axisRotation = new JComboBox<AxesComboBoxModel>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.Rotation, true));
+        axisRotation = new JComboBox<>(new AxesComboBoxModel(machine, AbstractAxis.class, Axis.Type.Rotation, true));
         panelOffsets.add(axisRotation, "10, 4, fill, default");
 
         lblOffset = new JLabel(Translations.getString(

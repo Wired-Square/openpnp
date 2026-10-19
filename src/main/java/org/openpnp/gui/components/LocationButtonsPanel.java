@@ -56,11 +56,12 @@ import org.openpnp.util.UiUtils;
  * If the actuatorId property is set, this causes the component to use the specified Actuator in
  * place of the tool.
  */
-@SuppressWarnings("serial")
 public class LocationButtonsPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     private JTextField textFieldX, textFieldY, textFieldZ, textFieldC;
     private String actuatorName;
-    private HeadMountable tool;     // this variable holds a spcific tool, if the tool-buttons shall react on that tool only, default is the selected nozzle
+    private transient HeadMountable tool;     // this variable holds a spcific tool, if the tool-buttons shall react on that tool only, default is the selected nozzle
 
     private JButton buttonCenterTool;
     private JButton buttonCaptureCamera;
@@ -70,7 +71,7 @@ public class LocationButtonsPanel extends JPanel {
     private JSeparator separator;
     private JButton buttonCenterCamera;
 
-    private Location baseLocation;
+    private transient Location baseLocation;
     private boolean baseLocationVectorial;
     private boolean contactProbeReference;
 
@@ -267,9 +268,11 @@ public class LocationButtonsPanel extends JPanel {
         return new Location(Configuration.get().getSystemUnits(), x, y, z, rotation);
     }
 
-    private Action captureCameraCoordinatesAction =
+    private transient Action captureCameraCoordinatesAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.CaptureCameraCoordinates"), //$NON-NLS-1$
                     Icons.captureCamera) {
+                private static final long serialVersionUID = 1L;
+
                 {
                     putValue(Action.SHORT_DESCRIPTION,Translations.getString(
                             "LocalButtonsPanel.Action.CaptureCameraCoordinates.Description")); //$NON-NLS-1$
@@ -301,9 +304,11 @@ public class LocationButtonsPanel extends JPanel {
                 }
             };
 
-    private Action captureToolCoordinatesAction =
+    private transient Action captureToolCoordinatesAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.CaptureToolCoordinates"), //$NON-NLS-1$
                     Icons.captureTool) {
+                private static final long serialVersionUID = 1L;
+
                 {
                     putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                             "LocalButtonsPanel.Action.CaptureToolCoordinates.Description")); //$NON-NLS-1$
@@ -328,9 +333,11 @@ public class LocationButtonsPanel extends JPanel {
                 }
             };
 
-    private Action captureActuatorCoordinatesAction =
+    private transient Action captureActuatorCoordinatesAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.CaptureActuatorCoordinates" //$NON-NLS-1$
             ), Icons.capturePin) {
+                private static final long serialVersionUID = 1L;
+
                 {
                     putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                             "LocalButtonsPanel.Action.CaptureActuatorCoordinates.Description")); //$NON-NLS-1$
@@ -360,9 +367,11 @@ public class LocationButtonsPanel extends JPanel {
                 }
             };
 
-    private Action positionCameraAction =
+    private transient Action positionCameraAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.PositionCamera"), //$NON-NLS-1$
                     Icons.centerCamera) {
+                private static final long serialVersionUID = 1L;
+
                 {
                     putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                             "LocalButtonsPanel.Action.PositionCamera.Description")); //$NON-NLS-1$
@@ -389,8 +398,10 @@ public class LocationButtonsPanel extends JPanel {
                 }
             };
 
-    private Action positionToolAction = new AbstractAction(Translations.getString(
+    private transient Action positionToolAction = new AbstractAction(Translations.getString(
             "LocalButtonsPanel.Action.PositionTool"), Icons.centerTool) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "LocalButtonsPanel.Action.PositionTool.Description")); //$NON-NLS-1$
@@ -413,9 +424,11 @@ public class LocationButtonsPanel extends JPanel {
         }
     };
 
-    private Action positionToolNoSafeZAction =
+    private transient Action positionToolNoSafeZAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.PositionToolNoSafeZ"), //$NON-NLS-1$
                     Icons.centerToolNoSafeZ) {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "LocalButtonsPanel.Action.PositionToolNoSafeZ.Description")); //$NON-NLS-1$
@@ -438,9 +451,11 @@ public class LocationButtonsPanel extends JPanel {
         }
     };
 
-    private Action contactProbeNozzleAction =
+    private transient Action contactProbeNozzleAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.ContactProbeNozzle"), //$NON-NLS-1$
                     Icons.contactProbeNozzle) {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                             "LocalButtonsPanel.Action.ContactProbeNozzle.Description")); //$NON-NLS-1$
@@ -489,9 +504,11 @@ public class LocationButtonsPanel extends JPanel {
         }
     };
 
-    private Action positionActuatorAction =
+    private transient Action positionActuatorAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.PositionActuator"), //$NON-NLS-1$
                     Icons.centerPin) {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "LocalButtonsPanel.Action.PositionActuator.Description")); //$NON-NLS-1$
@@ -514,9 +531,11 @@ public class LocationButtonsPanel extends JPanel {
         }
     };
 
-    private Action positionActuatorNoSafeZAction =
+    private transient Action positionActuatorNoSafeZAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.PositionActuatorNoSafeZ"), //$NON-NLS-1$
                     Icons.centerPinNoSafeZ) {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "LocalButtonsPanel.Action.PositionActuatorNoSafeZ.Description")); //$NON-NLS-1$

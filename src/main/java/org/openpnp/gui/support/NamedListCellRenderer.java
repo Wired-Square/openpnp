@@ -27,9 +27,10 @@ import javax.swing.JList;
 
 import org.openpnp.model.Named;
 
-@SuppressWarnings("serial")
 public class NamedListCellRenderer<T extends Named> extends DefaultListCellRenderer {
-    NamedObjectToStringConverter<T> converter = new NamedObjectToStringConverter<>();
+    private static final long serialVersionUID = 1L;
+
+    transient NamedObjectToStringConverter<T> converter = new NamedObjectToStringConverter<>();
 
     @Override
     public Component getListCellRendererComponent(JList arg0, Object arg1, int arg2, boolean arg3,

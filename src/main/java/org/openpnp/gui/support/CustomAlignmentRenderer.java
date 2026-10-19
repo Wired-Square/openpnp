@@ -31,10 +31,11 @@ import java.awt.*;
  * A TableCellRenderer that horizontally aligns the the contents of the cell
  * @param <T>
  */
-@SuppressWarnings("serial")
 public class CustomAlignmentRenderer<T extends TableCellRenderer> extends DefaultTableCellRenderer
 {
-    private T renderer;
+    private static final long serialVersionUID = 1L;
+
+    private transient T renderer;
     private int alignment;
     
     public CustomAlignmentRenderer(T renderer) {

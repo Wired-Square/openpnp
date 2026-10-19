@@ -26,8 +26,9 @@ import javax.swing.SwingConstants;
 /**
  * A popup menu with a label at the top
  */
-@SuppressWarnings("serial")
 public class LabeledPopupMenu extends JPopupMenu {
+    private static final long serialVersionUID = 1L;
+
     private String originalLabelText = null;
     private final JLabel label;
 

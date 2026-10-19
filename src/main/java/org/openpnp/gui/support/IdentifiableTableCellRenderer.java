@@ -23,10 +23,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.openpnp.model.Identifiable;
 
-@SuppressWarnings("serial")
 public class IdentifiableTableCellRenderer<T extends Identifiable>
         extends DefaultTableCellRenderer {
-    IdentifiableObjectToStringConverter<T> converter = new IdentifiableObjectToStringConverter<>();
+    private static final long serialVersionUID = 1L;
+
+    transient IdentifiableObjectToStringConverter<T> converter = new IdentifiableObjectToStringConverter<>();
 
     @Override
     protected void setValue(Object value) {

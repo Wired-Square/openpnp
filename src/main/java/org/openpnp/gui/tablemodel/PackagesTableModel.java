@@ -30,9 +30,10 @@ import org.openpnp.model.Configuration;
 import org.openpnp.model.FiducialVisionSettings;
 import org.openpnp.model.Package;
 
-@SuppressWarnings("serial")
 public class PackagesTableModel extends AbstractObjectTableModel implements PropertyChangeListener {
-    final private Configuration configuration;
+    private static final long serialVersionUID = 1L;
+
+    final private transient Configuration configuration;
 
     private String[] columnNames = new String[] {
             Translations.getString("PackagesTableModel.ColumnName.ID"), //$NON-NLS-1$
@@ -42,7 +43,7 @@ public class PackagesTableModel extends AbstractObjectTableModel implements Prop
             Translations.getString("PackagesTableModel.ColumnName.FiducialVision") //$NON-NLS-1$
     };
     private Class[] columnTypes = new Class[] {String.class, String.class, String.class, BottomVisionSettings.class, FiducialVisionSettings.class};
-    private List<Package> packages;
+    private transient List<Package> packages;
 
     public PackagesTableModel(Configuration configuration) {
         this.configuration = configuration;

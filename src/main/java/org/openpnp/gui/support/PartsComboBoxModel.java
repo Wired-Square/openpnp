@@ -31,10 +31,11 @@ import org.openpnp.model.Configuration;
 import org.openpnp.model.Part;
 import org.openpnp.util.Collect;
 
-@SuppressWarnings("serial")
-public class PartsComboBoxModel extends DefaultComboBoxModel implements PropertyChangeListener {
-    private IdentifiableComparator<Part> comparator = new IdentifiableComparator<>();
-    private List<Part> partsList;
+public class PartsComboBoxModel extends DefaultComboBoxModel<Part> implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
+
+    private transient IdentifiableComparator<Part> comparator = new IdentifiableComparator<>();
+    private transient List<Part> partsList;
     
     public PartsComboBoxModel() {
         addAllElements();
@@ -48,7 +49,6 @@ public class PartsComboBoxModel extends DefaultComboBoxModel implements Property
         Configuration.get().removePropertyChangeListener("parts", this);
     }
     
-    @SuppressWarnings("unchecked")
     private void addAllElements() {
         partsList = new ArrayList<>(Configuration.get().getParts());
         Collections.sort(partsList, comparator);
@@ -57,7 +57,6 @@ public class PartsComboBoxModel extends DefaultComboBoxModel implements Property
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         //Create a sorted list of parts that the parts combo box should have

@@ -20,7 +20,6 @@ import org.openpnp.Translations;
 
 import org.openpnp.model.Configuration;
 
-@SuppressWarnings("unused")
 public class ThemeDialog {
     private static final ThemeDialog instance = new ThemeDialog();
     private static final ThemeSettingsPanel themePanel = new ThemeSettingsPanel();

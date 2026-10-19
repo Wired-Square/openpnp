@@ -33,8 +33,9 @@ import javax.swing.text.JTextComponent;
  *
  * 2) reorderColumns - static convenience method for reodering table columns
  */
-@SuppressWarnings("serial")
 public class AutoSelectTextTable extends JTable {
+    private static final long serialVersionUID = 1L;
+
     private boolean isSelectAllForMouseEvent = true;
     private boolean isSelectAllForActionEvent = true;
     private boolean isSelectAllForKeyEvent = true;
@@ -292,6 +293,8 @@ public class AutoSelectTextTable extends JTable {
     @Override
     protected JTableHeader createDefaultTableHeader() {
         return new JTableHeader(columnModel) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void processMouseEvent(MouseEvent e) {
                 if (e.getID() == MouseEvent.MOUSE_CLICKED

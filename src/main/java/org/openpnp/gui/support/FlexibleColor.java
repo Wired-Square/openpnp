@@ -3,8 +3,9 @@ package org.openpnp.gui.support;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 
-@SuppressWarnings("unused")
 public class FlexibleColor extends Color {
+    private static final long serialVersionUID = 1L;
+
     public FlexibleColor(int r, int g, int b) {
         super(r, g, b);
     }

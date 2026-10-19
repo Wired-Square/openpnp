@@ -32,16 +32,17 @@ import org.openpnp.spi.Actuator;
 import org.openpnp.spi.Head;
 import org.openpnp.spi.Machine;
 
-@SuppressWarnings("serial")
 public class ActuatorsComboBoxModel extends DefaultComboBoxModel implements PropertyChangeListener {
-    private Comparator<Actuator> comparator = new Comparator<Actuator>() {
+    private static final long serialVersionUID = 1L;
+
+    private transient Comparator<Actuator> comparator = new Comparator<Actuator>() {
         @Override
         public int compare(Actuator o1, Actuator o2) {
             return o1.getName().compareTo(o2.getName());
         }
     };
-    private Machine actuatorsMachine;
-    private Head actuatorsHead;
+    private transient Machine actuatorsMachine;
+    private transient Head actuatorsHead;
     
     private void init() {
         addAllElements();
