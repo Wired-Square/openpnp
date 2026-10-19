@@ -146,8 +146,9 @@ public abstract class AbstractAxis extends AbstractModelObject implements Axis {
         return new Action[] { deleteAction, permutateUpAction, permutateDownAction };
     }
 
-    @SuppressWarnings("serial")
     public Action deleteAction = new AbstractAction("Delete Axis") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, "Delete Axis");
@@ -180,8 +181,9 @@ public abstract class AbstractAxis extends AbstractModelObject implements Axis {
         }
     };
 
-    @SuppressWarnings("serial")
     public Action permutateUpAction = new AbstractAction() {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.arrowUp);
             putValue(NAME, "Permutate Up");
@@ -194,8 +196,9 @@ public abstract class AbstractAxis extends AbstractModelObject implements Axis {
         }
     };
 
-    @SuppressWarnings("serial")
     public Action permutateDownAction = new AbstractAction() {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.arrowDown);
             putValue(NAME, "Permutate Down");

@@ -91,10 +91,9 @@ public abstract class Abstract2DLocatable<T extends Abstract2DLocatable<T>> exte
     /**
      * Default Abstract2DLocatable constructor
      */
-    @SuppressWarnings("unchecked")
     Abstract2DLocatable() {
         super();
-        setDefinition((T) this);
+        setDefinition(self());
     }
     
     /**
@@ -187,6 +186,12 @@ public abstract class Abstract2DLocatable<T extends Abstract2DLocatable<T>> exte
         this.id = id;
         firePropertyChange("id", oldValue, id); //$NON-NLS-1$
     }
+
+    /**
+     * Returns this object as its concrete type. Called from the constructor, so implementations
+     * must do nothing but return {@code this}.
+     */
+    protected abstract T self();
 
     public T getDefinition() {
         return definition;

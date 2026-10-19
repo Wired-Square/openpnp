@@ -153,7 +153,6 @@ public abstract class AbstractHead extends AbstractModelObject implements Head {
         });
     }
 
-    @SuppressWarnings("unused")
     @Commit
     private void commit() {
         for (HeadMountable hm : getHeadMountables()) {

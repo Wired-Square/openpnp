@@ -9,6 +9,7 @@ import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -301,7 +302,6 @@ public abstract class CvStage {
             return "";
         }
 
-        @SuppressWarnings("unchecked")
         public <T> T getExpectedModel(Class<T> expectedModelClass) throws Exception {
             // Due to type erasure we need to pass the class as well.
             T typedModel = null;
@@ -309,7 +309,7 @@ public abstract class CvStage {
                 throw new Exception("Pipeline stage \""+getName()+"\" returned no "+expectedModelClass.getSimpleName()+".");
             }
             if (expectedModelClass.isInstance(model)) {
-                typedModel = (T)model;
+                typedModel = expectedModelClass.cast(model);
             }
             if (typedModel == null) {
                 throw new Exception("Pipeline stage \""+getName()+"\" returned a "+model.getClass().getSimpleName()+" but expected a "+expectedModelClass.getSimpleName()+".");
@@ -317,20 +317,22 @@ public abstract class CvStage {
             return typedModel;
         }
 
-        @SuppressWarnings("unchecked")
         public <T> List<T> getExpectedListModel(Class<T> expectedElementClass, Exception emptyException) throws Exception {
-            @SuppressWarnings("rawtypes")
-            List list = getExpectedModel(List.class);
+            List<?> list = getExpectedModel(List.class);
             if (list.size() == 0) {
                 if (emptyException != null) {
                     throw emptyException;
                 }
-                return (List<T>)list;
+                return new ArrayList<>();
             }
-            if (!expectedElementClass.isInstance(list.get(0))) {
-                throw new Exception("Pipeline stage \""+getName()+"\" returned a "+list.get(0).getClass().getSimpleName()+" list but expected a "+expectedElementClass.getSimpleName()+" list.");
+            List<T> typedList = new ArrayList<>(list.size());
+            for (Object element : list) {
+                if (element != null && !expectedElementClass.isInstance(element)) {
+                    throw new Exception("Pipeline stage \""+getName()+"\" returned a "+element.getClass().getSimpleName()+" list but expected a "+expectedElementClass.getSimpleName()+" list.");
+                }
+                typedList.add(expectedElementClass.cast(element));
             }
-            return (List<T>)list;
+            return typedList;
         }
 
         public static class Circle {
@@ -482,7 +484,6 @@ public abstract class CvStage {
      * @throws Exception If a property is defined on the pipeline with the expected name but it 
      * could not be converted to the type of the input parameter
      */
-    @SuppressWarnings("unchecked")
     public <T> T getPossiblePipelinePropertyOverride(T parameter, String stagePropertyName, CvPipeline pipeline, 
             String pipelinePropertyName, Class<?>... acceptablePropertyTypes) throws Exception {
         Object pipelineProperty = pipeline.getProperty(pipelinePropertyName);

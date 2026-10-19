@@ -74,9 +74,8 @@ public abstract class PlacementsHolder<T extends PlacementsHolder<T>>
     /**
      * Constructs a new PlacementsHolder
      */
-    @SuppressWarnings("unchecked")
     public PlacementsHolder() {
-        definition = (T) this;
+        definition = self();
         addPropertyChangeListener(this);
     }
     
@@ -296,6 +295,12 @@ public abstract class PlacementsHolder<T extends PlacementsHolder<T>>
         this.file = file;
         firePropertyChange("file", oldValue, file);
     }
+
+    /**
+     * Returns this object as its concrete type. Called from the constructor, so implementations
+     * must do nothing but return {@code this}.
+     */
+    protected abstract T self();
 
     @Override
     public T getDefinition() {

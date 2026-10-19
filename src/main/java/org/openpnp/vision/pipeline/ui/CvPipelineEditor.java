@@ -96,8 +96,9 @@ import org.pmw.tinylog.Logger;
  * 
  * The core CvStage classes are automatically registered during startup.
  */
-@SuppressWarnings("serial")
 public class CvPipelineEditor extends JPanel {
+    private static final long serialVersionUID = 1L;
+
     static {
         stageClasses = new HashSet<>();
         // Parameter stages.
@@ -179,7 +180,7 @@ public class CvPipelineEditor extends JPanel {
 
     public static final String FROZEN_IMAGE_PROPERTY = "frozenImage";
 
-    private final CvPipeline pipeline;
+    private final transient CvPipeline pipeline;
     private PipelinePanel pipelinePanel;
     private ResultsPanel resultsPanel;
 

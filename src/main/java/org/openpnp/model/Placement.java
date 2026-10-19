@@ -78,7 +78,6 @@ public class Placement extends Abstract2DLocatable<Placement> {
     @Attribute(required = false)
     private int rank=defaultRank;
 
-    @SuppressWarnings("unused")
     private Placement() {
         super(new Location(LengthUnit.Millimeters));
     }
@@ -207,5 +206,10 @@ public class Placement extends Abstract2DLocatable<Placement> {
     public String toString() {
         return String.format("Placement %s @%08x defined by @%08x, location=%s, side=%s, part=%s, type=%s, rank=%s", id,
                 this.hashCode(), definition.hashCode(), getLocation(), side, part, type, rank);
+    }
+
+    @Override
+    protected Placement self() {
+        return this;
     }
 }

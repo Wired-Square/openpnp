@@ -772,4 +772,9 @@ public class Panel extends PlacementsHolder<Panel> implements PropertyChangeList
     public String toString() {
         return String.format("Panel @%08x defined by @%08x: file %s, dims: %sx%s, fiducial count: %d, children: %d", hashCode(), definition != null ? definition.hashCode() : 0, file, dimensions.getLengthX(), dimensions.getLengthY(), placements.size(), children.size());
     }
+
+    @Override
+    protected Panel self() {
+        return this;
+    }
 }

@@ -33,8 +33,9 @@ import org.simpleframework.xml.core.Persist;
 /**
  * Extends java.awt.geom.Path2D to be serializable and have length units
  */
-@SuppressWarnings("serial")
 public class GeometricPath2D extends Path2D.Double {
+    private static final long serialVersionUID = 1L;
+
     @Attribute
     protected LengthUnit units = LengthUnit.Millimeters;
     

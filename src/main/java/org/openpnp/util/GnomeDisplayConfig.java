@@ -115,12 +115,11 @@ public final class GnomeDisplayConfig {
      * Logical monitor struct: (x, y, scale, transform, primary,
      * monitors, properties).
      */
-    @SuppressWarnings("unchecked")
     private static double extractPrimaryScale(Object logicalMonitors) {
         if (!(logicalMonitors instanceof List)) {
             return 1.0;
         }
-        for (Object lm : (List<Object>) logicalMonitors) {
+        for (Object lm : (List<?>) logicalMonitors) {
             if (!(lm instanceof Object[])) {
                 continue;
             }
@@ -142,12 +141,11 @@ public final class GnomeDisplayConfig {
      * Mode struct: (name, width, height, rate, scale, scales[],
      * properties).
      */
-    @SuppressWarnings("unchecked")
     private static double extractCurrentModeWidth(Object monitors) {
         if (!(monitors instanceof List)) {
             return 0;
         }
-        for (Object mon : (List<Object>) monitors) {
+        for (Object mon : (List<?>) monitors) {
             if (!(mon instanceof Object[])) {
                 continue;
             }
@@ -156,7 +154,7 @@ public final class GnomeDisplayConfig {
             if (monFields.length <= 1 || !(monFields[1] instanceof List)) {
                 continue;
             }
-            for (Object mode : (List<Object>) monFields[1]) {
+            for (Object mode : (List<?>) monFields[1]) {
                 if (!(mode instanceof Object[])) {
                     continue;
                 }
@@ -164,12 +162,11 @@ public final class GnomeDisplayConfig {
                 // modeFields[1] = width, modeFields[6] = properties dict
                 if (modeFields.length > 6
                         && modeFields[6] instanceof Map) {
-                    Map<String, Variant<?>> props =
-                            (Map<String, Variant<?>>) modeFields[6];
-                    Variant<?> isCurrent =
+                    Map<?, ?> props = (Map<?, ?>) modeFields[6];
+                    Object isCurrent =
                             props.get("is-current"); //$NON-NLS-1$
-                    if (isCurrent != null
-                            && Boolean.TRUE.equals(isCurrent.getValue())
+                    if (isCurrent instanceof Variant
+                            && Boolean.TRUE.equals(((Variant<?>) isCurrent).getValue())
                             && modeFields[1] instanceof Number) {
                         return ((Number) modeFields[1]).doubleValue();
                     }

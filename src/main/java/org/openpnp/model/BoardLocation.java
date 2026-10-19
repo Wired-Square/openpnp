@@ -204,4 +204,8 @@ public class BoardLocation extends PlacementsHolderLocation<BoardLocation> {
                 getBoard() == null ? "Null" : getBoard().toString()));
     }
 
+    @Override
+    protected BoardLocation self() {
+        return this;
+    }
 }

@@ -138,4 +138,9 @@ public class Board extends PlacementsHolder<Board> implements PropertyChangeList
     public String toString() {
         return String.format("Board @%08x defined by @%08x: file %s, dims: %sx%s, placements: %d @%08x (@%08x)", hashCode(), definition.hashCode(), file, dimensions.getLengthX(), dimensions.getLengthY(), placements.size(), placements.hashCode(), definition.placements.hashCode());
     }
+
+    @Override
+    protected Board self() {
+        return this;
+    }
 }

@@ -111,7 +111,6 @@ public abstract class AbstractMachine extends AbstractModelObject implements Mac
 
     protected AbstractMachine() {}
 
-    @SuppressWarnings("unused")
     @Commit
     protected void commit() {
         for (Head head : heads) {

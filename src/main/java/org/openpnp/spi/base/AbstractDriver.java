@@ -189,8 +189,9 @@ public abstract class AbstractDriver extends AbstractModelObject implements Driv
         return new Action[] { deleteAction, permutateUpAction, permutateDownAction };
     }
 
-    @SuppressWarnings("serial")
     public Action deleteAction = new AbstractAction(Translations.getString("AbstractDriver.Action.DeleteDriver")) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.delete);
             putValue(NAME, Translations.getString("AbstractDriver.Action.DeleteDriver")); //$NON-NLS-1$
@@ -209,8 +210,9 @@ public abstract class AbstractDriver extends AbstractModelObject implements Driv
         }
     };
 
-    @SuppressWarnings("serial")
     public Action permutateUpAction = new AbstractAction() {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.arrowUp);
             putValue(NAME, Translations.getString("AbstractDriver.Action.PermutateUpDriver")); //$NON-NLS-1$
@@ -223,8 +225,9 @@ public abstract class AbstractDriver extends AbstractModelObject implements Driv
         }
     };
 
-    @SuppressWarnings("serial")
     public Action permutateDownAction = new AbstractAction() {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.arrowDown);
             putValue(NAME, Translations.getString("AbstractDriver.Action.PermutateDownDriver")); //$NON-NLS-1$

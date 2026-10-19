@@ -18,8 +18,14 @@
  */
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.openpnp.model.Area;
@@ -526,5 +532,27 @@ public class CvStageTest {
             assertEquals(overridingParameter, overriddenParameter);
         }
 
+    }
+
+    @Test
+    public void testExpectedListModel() throws Exception {
+        List<Object> model = new ArrayList<>(Arrays.asList("b", "a"));
+        CvStage.Result result = new CvStage.Result(null, model);
+
+        List<String> typedList = result.getExpectedListModel(String.class, null);
+        assertEquals(Arrays.asList("b", "a"), typedList);
+        typedList.sort(null);
+        assertEquals(Arrays.asList("b", "a"), model);
+
+        CvStage.Result mixedResult = new CvStage.Result(null, Arrays.asList("a", 1));
+        Exception mismatch = assertThrows(Exception.class,
+                () -> mixedResult.getExpectedListModel(String.class, null));
+        assertTrue(mismatch.getMessage().contains("returned a Integer list but expected a String list"));
+
+        CvStage.Result emptyResult = new CvStage.Result(null, new ArrayList<>());
+        assertTrue(emptyResult.getExpectedListModel(String.class, null).isEmpty());
+        Exception empty = new Exception("empty");
+        assertSame(empty, assertThrows(Exception.class,
+                () -> emptyResult.getExpectedListModel(String.class, empty)));
     }
 }

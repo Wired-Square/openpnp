@@ -205,4 +205,9 @@ public class PanelLocation extends PlacementsHolderLocation<PanelLocation> {
             }
         }
     }
+
+    @Override
+    protected PanelLocation self() {
+        return this;
+    }
 }

@@ -333,12 +333,11 @@ public class AxesLocation {
      * @param axisClass
      * @return
      */
-    @SuppressWarnings("unchecked")
     public <T extends Axis> LinkedHashSet<T> getAxes(Class<T> axisClass) {
         LinkedHashSet<T> axes = new LinkedHashSet<>();
         for (Axis axis : getAxes()) {
             if (axisClass.isInstance(axis)) {
-                axes.add((T) axis);
+                axes.add(axisClass.cast(axis));
             }
         }
         return axes;

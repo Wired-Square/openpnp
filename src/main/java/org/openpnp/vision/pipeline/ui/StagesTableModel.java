@@ -7,14 +7,15 @@ import javax.swing.table.AbstractTableModel;
 import org.openpnp.vision.pipeline.CvPipeline;
 import org.openpnp.vision.pipeline.CvStage;
 
-@SuppressWarnings("serial")
 public class StagesTableModel extends AbstractTableModel implements Reorderable {
+    private static final long serialVersionUID = 1L;
+
     private static String[] columnNames = {"Enabled", "Name", "Stage"};
 
     private static Class<?>[] columnClasses = {Boolean.class, String.class, String.class};
 
-    private final List<CvStage> stages;
-    private final CvPipeline pipeline;
+    private final transient List<CvStage> stages;
+    private final transient CvPipeline pipeline;
 
     public StagesTableModel(CvPipeline pipeline) {
         this.pipeline = pipeline;

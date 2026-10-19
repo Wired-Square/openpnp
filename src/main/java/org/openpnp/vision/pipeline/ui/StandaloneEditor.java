@@ -25,8 +25,9 @@ import org.openpnp.vision.pipeline.CvPipeline;
 import org.openpnp.vision.pipeline.CvStage;
 import org.openpnp.vision.pipeline.stages.ImageRead;
 
-@SuppressWarnings("serial")
 public class StandaloneEditor extends JFrame {
+    private static final long serialVersionUID = 1L;
+
     private JTextField textField;
     private File directory;
     private CvPipelineEditor editor;
