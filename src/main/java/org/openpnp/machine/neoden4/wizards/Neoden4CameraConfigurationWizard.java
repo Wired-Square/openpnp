@@ -39,9 +39,10 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.SwingConstants;
 
-@SuppressWarnings("serial")
 public class Neoden4CameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final Neoden4Camera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Neoden4Camera camera;
 
     private JPanel panelGeneral;
 

@@ -17,9 +17,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class Neoden4SwitcherCameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final Neoden4SwitcherCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Neoden4SwitcherCamera camera;
     private JLabel lblNewLabel;
     private JLabel lblNewLabel_1;
     private JComboBox sourceCamera;

@@ -46,8 +46,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class NeoDen4FeederActuatorConfigurationWizard extends AbstractActuatorConfigurationWizard {
+    private static final long serialVersionUID = 1L;
+
     private JPanel panelProperties;
     private JLabel lblName;
     private JTextField nameTf;
@@ -206,6 +207,8 @@ public class NeoDen4FeederActuatorConfigurationWizard extends AbstractActuatorCo
         panelProperties.add(newId, "8, 18, fill, default");
         
         btnChangeFeederIdAction = new JButton(new AbstractAction("Change") {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 NeoDen4Driver driver = getNeoden4Driver();

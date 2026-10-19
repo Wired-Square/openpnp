@@ -17,9 +17,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class Neoden4SignalerConfigurationWizard  extends AbstractConfigurationWizard {
-    private final Neoden4Signaler signaler;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Neoden4Signaler signaler;
     private JCheckBox chckbxError;
     private JCheckBox chckbxSuccess;
 
@@ -56,8 +57,10 @@ public class Neoden4SignalerConfigurationWizard  extends AbstractConfigurationWi
         contentPanel.add(testFinished, "4, 4");
     }
     
-    private Action testErrorAction = new AbstractAction(Translations.getString(
+    private transient Action testErrorAction = new AbstractAction(Translations.getString(
             "Neoden4SignalerConfigurationWizard.Action.TestErrorSound")) { //$NON-NLS-1$
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
         	signaler.signalJobProcessorState(State.ERROR);
@@ -65,8 +68,10 @@ public class Neoden4SignalerConfigurationWizard  extends AbstractConfigurationWi
     };
 
     
-    private Action testFinishedAction = new AbstractAction(Translations.getString(
+    private transient Action testFinishedAction = new AbstractAction(Translations.getString(
             "Neoden4SignalerConfigurationWizard.Action.TestFinishedSound")) { //$NON-NLS-1$
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
         	signaler.signalJobProcessorState(State.FINISHED);

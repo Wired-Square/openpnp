@@ -372,7 +372,6 @@ public class Neoden4Feeder extends ReferenceFeeder {
             });
         }
 
-        @SuppressWarnings("unused")
         @Persist
         private void persist() throws IOException {
             if (templateImageDirty) {

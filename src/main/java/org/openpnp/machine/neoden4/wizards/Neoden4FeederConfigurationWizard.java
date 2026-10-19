@@ -49,9 +49,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederConfigurationWizard {
-    private final Neoden4Feeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Neoden4Feeder feeder;
 
     private JLabel lblPartPitchInTape;
     private JTextField textFieldPartPitchInTape;
@@ -143,6 +144,8 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         textFieldFeedCount.setColumns(10);
 
         JButton btnResetFeedCount = new JButton(new AbstractAction("Reset") {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 textFieldFeedCount.setText("0");
@@ -302,7 +305,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         bind(UpdateStrategy.READ, feeder, "actuatorName", locationButtonsPanelFeedEnd, "actuatorName");
     }
 
-    private Action selectTemplateImageAction = new AbstractAction("Select") {
+    private transient Action selectTemplateImageAction = new AbstractAction("Select") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -327,7 +332,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action confirmSelectTemplateImageAction = new AbstractAction("Confirm") {
+    private transient Action confirmSelectTemplateImageAction = new AbstractAction("Confirm") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -351,7 +358,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action cancelSelectTemplateImageAction = new AbstractAction("Cancel") {
+    private transient Action cancelSelectTemplateImageAction = new AbstractAction("Cancel") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -366,7 +375,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-	private Action actuateFeederAction = new AbstractAction("Actuate") {
+	private transient Action actuateFeederAction = new AbstractAction("Actuate") {
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 
@@ -407,7 +418,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
 		}
 	};
 	
-    private Action selectAoiAction = new AbstractAction("Select") {
+    private transient Action selectAoiAction = new AbstractAction("Select") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -435,7 +448,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action confirmSelectAoiAction = new AbstractAction("Confirm") {
+    private transient Action confirmSelectAoiAction = new AbstractAction("Confirm") {
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			UiUtils.messageBoxOnException(() -> {
@@ -468,7 +483,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
 		}
     };
 
-    private Action cancelSelectAoiAction = new AbstractAction("Cancel") {
+    private transient Action cancelSelectAoiAction = new AbstractAction("Cancel") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -485,7 +502,9 @@ public class Neoden4FeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action resetVisionOffsets = new AbstractAction("Reset vision offsets") {
+    private transient Action resetVisionOffsets = new AbstractAction("Reset vision offsets") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {

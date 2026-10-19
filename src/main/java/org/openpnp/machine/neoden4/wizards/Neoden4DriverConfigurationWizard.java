@@ -36,9 +36,10 @@ import org.openpnp.gui.support.IntegerConverter;
 import org.openpnp.machine.neoden4.NeoDen4Driver;
 import javax.swing.JTextField;
 
-@SuppressWarnings("serial")
 public class Neoden4DriverConfigurationWizard extends AbstractConfigurationWizard {
-    private final NeoDen4Driver driver;
+    private static final long serialVersionUID = 1L;
+
+    private final transient NeoDen4Driver driver;
 
     private JPanel panelMachineDetails;
     private JTextField homeCoordinateXTextField;

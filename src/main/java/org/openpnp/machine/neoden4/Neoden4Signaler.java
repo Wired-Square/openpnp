@@ -109,7 +109,6 @@ public class Neoden4Signaler extends AbstractSignaler implements Runnable {
 		}
 	}
 
-    @SuppressWarnings("incomplete-switch")
     @Override
     public void signalJobProcessorState(AbstractJobProcessor.State state) {
         switch (state) {
@@ -120,6 +119,10 @@ public class Neoden4Signaler extends AbstractSignaler implements Runnable {
 
             case FINISHED: {
                 playSuccess = true;
+                break;
+            }
+
+            default: {
                 break;
             }
         }

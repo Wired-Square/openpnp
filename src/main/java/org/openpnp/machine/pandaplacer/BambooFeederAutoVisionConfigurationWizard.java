@@ -67,10 +67,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class BambooFeederAutoVisionConfigurationWizard
 extends AbstractReferenceFeederConfigurationWizard {
-    private final BambooFeederAutoVision feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient BambooFeederAutoVision feeder;
 
     public BambooFeederAutoVisionConfigurationWizard(BambooFeederAutoVision feeder) {
         super(feeder, false);
@@ -535,8 +536,10 @@ extends AbstractReferenceFeederConfigurationWizard {
         ComponentDecorators.decorateWithAutoSelect(postPickActuatorValue);
     }
 
-    private Action editPipelineAction =
+    private transient Action editPipelineAction =
             new AbstractAction("Edit Pipeline") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Edit the Pipeline to be used for all vision operations of this feeder.");
@@ -557,8 +560,10 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action resetPipelineAction =
+    private transient Action resetPipelineAction =
             new AbstractAction("Reset Pipeline") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Reset the Pipeline for this feeder to the selected type default.");
@@ -579,8 +584,10 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action resetStatisticsAction =
+    private transient Action resetStatisticsAction =
             new AbstractAction("Reset Statistics") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Reset the average obtained precision statistics.");
@@ -594,8 +601,10 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action resetFeedCountAction =
+    private transient Action resetFeedCountAction =
             new AbstractAction("Reset Feed Count") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Reset the feed count e.g. when a tape has been changed.");
@@ -616,8 +625,10 @@ extends AbstractReferenceFeederConfigurationWizard {
             }
         }
     };
-    private Action discardPartsAction =
+    private transient Action discardPartsAction =
             new AbstractAction("Discard Parts") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Discard parts that have been produced by the last tape transport.");
@@ -634,8 +645,10 @@ extends AbstractReferenceFeederConfigurationWizard {
             });
         }
     };
-    private Action showVisionFeaturesAction =
+    private transient Action showVisionFeaturesAction =
             new AbstractAction("Preview Vision Features") {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Preview the features recognized by Computer Vision.");
@@ -648,8 +661,10 @@ extends AbstractReferenceFeederConfigurationWizard {
             });
         }
     };
-    private Action autoSetupAction =
+    private transient Action autoSetupAction =
             new AbstractAction("Auto-Setup with Camera at Pick Location", Icons.captureCamera) {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "<html>Center the camera on the pick location and press this button to Auto-Setup <br/>"
@@ -687,7 +702,9 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action testFeedActuatorAction = new AbstractAction("Test feed") {
+    private transient Action testFeedActuatorAction = new AbstractAction("Test feed") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -705,7 +722,9 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action testPostPickActuatorAction = new AbstractAction("Test post pick") {
+    private transient Action testPostPickActuatorAction = new AbstractAction("Test post pick") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -798,5 +817,5 @@ extends AbstractReferenceFeederConfigurationWizard {
     private JCheckBox ckBoxMoveBeforeFeed;
     private JLabel lblPostPick;
     private JLabel lblMoveBeforeFeed;
-    private NamedConverter<Actuator> actuatorConverter;
+    private transient NamedConverter<Actuator> actuatorConverter;
 }
