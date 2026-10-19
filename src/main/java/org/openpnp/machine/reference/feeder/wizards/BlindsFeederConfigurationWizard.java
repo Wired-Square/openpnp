@@ -61,9 +61,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard {
-    private final BlindsFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient BlindsFeeder feeder;
 
     public BlindsFeederConfigurationWizard(BlindsFeeder feeder) {
         this.feeder = feeder;
@@ -430,7 +431,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         return MainFrame.get().getMachineControls().getSelectedNozzle();
     }
 
-    private Action performOcrAction =
+    private transient Action performOcrAction =
             new AbstractAction("OCR Detect") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -446,7 +447,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action captureToolCoordinatesAction =
+    private transient Action captureToolCoordinatesAction =
             new AbstractAction("Get Tool Z", Icons.captureTool) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -462,7 +463,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action showFeaturesAction =
+    private transient Action showFeaturesAction =
             new AbstractAction("Show Features") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -477,7 +478,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action calibrateEdgesAction =
+    private transient Action calibrateEdgesAction =
             new AbstractAction("Calibrate Cover Edges") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -493,7 +494,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         };
     };
 
-    private Action resetFeedCountAction =
+    private transient Action resetFeedCountAction =
             new AbstractAction("Reset") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -510,7 +511,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action autoSetup = new AbstractAction("Auto Setup", Icons.captureCamera) {
+    private transient Action autoSetup = new AbstractAction("Auto Setup", Icons.captureCamera) {
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Capture the blinds pitch, size and centerline from the current camera position.");
@@ -530,7 +531,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action openCover = new AbstractAction("Open Cover", Icons.lockOpenOutline) {
+    private transient Action openCover = new AbstractAction("Open Cover", Icons.lockOpenOutline) {
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Open this cover using the nozzle tip.");
@@ -545,7 +546,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action closeCover = new AbstractAction("Close Cover", Icons.lockOutline) {
+    private transient Action closeCover = new AbstractAction("Close Cover", Icons.lockOutline) {
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Close this cover using the nozzle tip.");
@@ -560,7 +561,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action openAllCovers = new AbstractAction("Open All Covers") {
+    private transient Action openAllCovers = new AbstractAction("Open All Covers") {
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Open the covers of all the enabled feeders of the machine.");
@@ -575,7 +576,7 @@ public class BlindsFeederConfigurationWizard extends AbstractConfigurationWizard
         }
     };
 
-    private Action closeAllCovers = new AbstractAction("Close All Covers") {
+    private transient Action closeAllCovers = new AbstractAction("Close All Covers") {
         {
             putValue(Action.SHORT_DESCRIPTION,
                     "Close the opened covers of all the feeders of the machine.");

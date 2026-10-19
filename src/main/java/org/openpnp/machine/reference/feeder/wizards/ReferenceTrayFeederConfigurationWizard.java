@@ -42,10 +42,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceTrayFeederConfigurationWizard
         extends AbstractReferenceFeederConfigurationWizard {
-    private final ReferenceTrayFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceTrayFeeder feeder;
 
     private JTextField textFieldOffsetsX;
     private JTextField textFieldOffsetsY;

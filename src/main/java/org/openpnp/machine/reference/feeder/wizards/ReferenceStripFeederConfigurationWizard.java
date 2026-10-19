@@ -91,9 +91,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceStripFeederConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferenceStripFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceStripFeeder feeder;
 
     private JPanel panelPart;
 
@@ -136,10 +137,10 @@ public class ReferenceStripFeederConfigurationWizard extends AbstractConfigurati
     private JComboBox comboBoxFeedOptions;
 
     private boolean logDebugInfo = false;
-    private Location firstPartLocation;
-    private Location secondPartLocation;
-    private List<Location> part1HoleLocations;
-    private Camera autoSetupCamera;
+    private transient Location firstPartLocation;
+    private transient Location secondPartLocation;
+    private transient List<Location> part1HoleLocations;
+    private transient Camera autoSetupCamera;
 
 
     public ReferenceStripFeederConfigurationWizard(ReferenceStripFeeder feeder) {
@@ -532,7 +533,7 @@ public class ReferenceStripFeederConfigurationWizard extends AbstractConfigurati
         }
     }
     
-    private Action autoSetup = new AbstractAction(Translations.getString(
+    private transient Action autoSetup = new AbstractAction(Translations.getString(
             "ReferenceStripFeederConfigurationWizard.Action.AutoSetup")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -595,7 +596,7 @@ public class ReferenceStripFeederConfigurationWizard extends AbstractConfigurati
         }
     };
 
-    private Action autoSetupCancel = new AbstractAction(Translations.getString(
+    private transient Action autoSetupCancel = new AbstractAction(Translations.getString(
             "ReferenceStripFeederConfigurationWizard.Action.AutoSetupCancel")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -610,7 +611,7 @@ public class ReferenceStripFeederConfigurationWizard extends AbstractConfigurati
         }
     };
 
-    private CameraViewActionListener autoSetupPart1Clicked = new CameraViewActionListener() {
+    private transient CameraViewActionListener autoSetupPart1Clicked = new CameraViewActionListener() {
         @Override
         public void actionPerformed(final CameraViewActionEvent action) {
             firstPartLocation = action.getLocation();
@@ -655,7 +656,7 @@ public class ReferenceStripFeederConfigurationWizard extends AbstractConfigurati
         }
     };
 
-    private CameraViewActionListener autoSetupPart2Clicked = new CameraViewActionListener() {
+    private transient CameraViewActionListener autoSetupPart2Clicked = new CameraViewActionListener() {
         @Override
         public void actionPerformed(final CameraViewActionEvent action) {
             secondPartLocation = action.getLocation();

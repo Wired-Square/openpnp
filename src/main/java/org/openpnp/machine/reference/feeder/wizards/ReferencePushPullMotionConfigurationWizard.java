@@ -68,10 +68,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferencePushPullMotionConfigurationWizard
 extends AbstractConfigurationWizard {
-    private final ReferencePushPullFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferencePushPullFeeder feeder;
     private JTextField textFieldFeedStartX;
     private JTextField textFieldFeedStartY;
     private JTextField textFieldFeedStartZ;
@@ -751,7 +752,7 @@ extends AbstractConfigurationWizard {
         }
     }
 
-    private final Action actionRotationReset = new AbstractAction() {
+    private final transient Action actionRotationReset = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.axisRotation);
             putValue(NAME, "Reset");
@@ -764,5 +765,5 @@ extends AbstractConfigurationWizard {
             resetRotation();
         }
     };
-    private NamedConverter<Actuator> actuatorConverter;
+    private transient NamedConverter<Actuator> actuatorConverter;
 }

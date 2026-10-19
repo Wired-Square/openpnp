@@ -60,13 +60,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceRotatedTrayFeederConfigurationWizard extends AbstractConfigurationWizard {
+    private static final long serialVersionUID = 1L;
+
     private static final double RIGHT_ANGLE_TOLERANCE = 2.5; //degrees
     private static final LengthUnit VALIDATION_UNITS = LengthUnit.Millimeters;
     private static final double VALIDATION_TOLERANCE = 0.03;
 
-    private final ReferenceRotatedTrayFeeder feeder;
+    private final transient ReferenceRotatedTrayFeeder feeder;
     private final boolean includePickLocation;
 
     private JTextField textFieldOffsetsX;
@@ -102,10 +103,10 @@ public class ReferenceRotatedTrayFeederConfigurationWizard extends AbstractConfi
     private JLabel lblPickRetryCount;
     private JTextField pickRetryCount;
 
-    private MutableLocationProxy firstRowFirstColumn = new MutableLocationProxy();
-    private MutableLocationProxy firstRowLastColumn = new MutableLocationProxy();
-    private MutableLocationProxy lastRowLastColumn = new MutableLocationProxy();
-    private MutableLocationProxy offsetsAndRotation = new MutableLocationProxy();
+    private transient MutableLocationProxy firstRowFirstColumn = new MutableLocationProxy();
+    private transient MutableLocationProxy firstRowLastColumn = new MutableLocationProxy();
+    private transient MutableLocationProxy lastRowLastColumn = new MutableLocationProxy();
+    private transient MutableLocationProxy offsetsAndRotation = new MutableLocationProxy();
     private int nRows;
     private int nCols;
     private int wizardFeedCount;
@@ -117,7 +118,6 @@ public class ReferenceRotatedTrayFeederConfigurationWizard extends AbstractConfi
         this(feeder, true);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public ReferenceRotatedTrayFeederConfigurationWizard(ReferenceRotatedTrayFeeder feeder,
             boolean includePickLocation) {
         this.feeder = feeder;

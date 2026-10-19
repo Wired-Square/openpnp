@@ -74,24 +74,25 @@ import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.SwingConstants;
 import javax.swing.JCheckBox;
 
-@SuppressWarnings("serial")
 public class ReferenceHeapFeederConfigurationWizard
         extends AbstractConfigurationWizard {
-    private final ReferenceHeapFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceHeapFeeder feeder;
     private JTextField dropBoxNameTf;
-    private MutableLocationProxy dropBoxLocation;
-    private MutableLocationProxy dropBoxDropLocation;
+    private transient MutableLocationProxy dropBoxLocation;
+    private transient MutableLocationProxy dropBoxDropLocation;
     
-    @SuppressWarnings("rawtypes")
-    public class PartsComboBoxModel extends DefaultComboBoxModel implements PropertyChangeListener {
-        private IdentifiableComparator<Part> comparator = new IdentifiableComparator<>();
+    public class PartsComboBoxModel extends DefaultComboBoxModel<Part> implements PropertyChangeListener {
+        private static final long serialVersionUID = 1L;
+
+        private transient IdentifiableComparator<Part> comparator = new IdentifiableComparator<>();
 
         public PartsComboBoxModel() {
             addAllElements();
             Configuration.get().addPropertyChangeListener("parts", this);
         }
 
-        @SuppressWarnings("unchecked")
         private void addAllElements() {
             ArrayList<Part> parts = new ArrayList<>(Configuration.get().getParts());
             Collections.sort(parts, comparator);
@@ -569,7 +570,7 @@ public class ReferenceHeapFeederConfigurationWizard
         dialog.setVisible(true);
 }
 
-    private Action actionPipelineEditFeeder = new AbstractAction("Edit") {
+    private transient Action actionPipelineEditFeeder = new AbstractAction("Edit") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -578,7 +579,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
     
-    private Action actionPipelineResetFeeder = new AbstractAction("Reset") {
+    private transient Action actionPipelineResetFeeder = new AbstractAction("Reset") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -597,7 +598,7 @@ public class ReferenceHeapFeederConfigurationWizard
         dialog.setVisible(true);
 }
 
-    private Action actionPipelineEditTraining= new AbstractAction("Edit") {
+    private transient Action actionPipelineEditTraining= new AbstractAction("Edit") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -606,7 +607,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
     
-    private Action actionPipelineResetTraining = new AbstractAction("Reset") {
+    private transient Action actionPipelineResetTraining = new AbstractAction("Reset") {
         @Override        public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
                 feeder.resetTrainingPipeline();
@@ -623,7 +624,7 @@ public class ReferenceHeapFeederConfigurationWizard
         dialog.setVisible(true);
 }
 
-    private Action actionPipelineEditDropBox = new AbstractAction("Edit") {
+    private transient Action actionPipelineEditDropBox = new AbstractAction("Edit") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -632,7 +633,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
     
-    private Action actionPipelineResetDropBox = new AbstractAction("Reset") {
+    private transient Action actionPipelineResetDropBox = new AbstractAction("Reset") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -641,7 +642,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
     
-    private Action actionLastFeedDepthReset = new AbstractAction("Reset") {
+    private transient Action actionLastFeedDepthReset = new AbstractAction("Reset") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.messageBoxOnException(() -> {
@@ -651,7 +652,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
 
-    private Action actionCleanDropbox = new AbstractAction("Clean DropBox") {
+    private transient Action actionCleanDropbox = new AbstractAction("Clean DropBox") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.submitUiMachineTask(() -> {
@@ -661,7 +662,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
 
-    private Action actionGetSamples = new AbstractAction("GetSamples") {
+    private transient Action actionGetSamples = new AbstractAction("GetSamples") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.submitUiMachineTask(() -> {
@@ -672,7 +673,7 @@ public class ReferenceHeapFeederConfigurationWizard
     };
 
     
-    private Action newDropBoxAction = new AbstractAction("New") {
+    private transient Action newDropBoxAction = new AbstractAction("New") {
         @Override
         public void actionPerformed(ActionEvent e) {
             DropBox box = new DropBox();
@@ -683,7 +684,7 @@ public class ReferenceHeapFeederConfigurationWizard
         }
     };
     
-    private Action deleteDropBoxAction = new AbstractAction("Delete") {
+    private transient Action deleteDropBoxAction = new AbstractAction("Delete") {
         @Override
         public void actionPerformed(ActionEvent e) {
             DropBox box = (DropBox) dropBoxCb.getSelectedItem();

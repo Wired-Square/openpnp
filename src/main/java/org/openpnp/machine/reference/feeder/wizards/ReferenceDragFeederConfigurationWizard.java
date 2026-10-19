@@ -67,10 +67,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceDragFeederConfigurationWizard
         extends AbstractReferenceFeederConfigurationWizard {
-    private final ReferenceDragFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceDragFeeder feeder;
 
     private JTextField textFieldFeedStartX;
     private JTextField textFieldFeedStartY;
@@ -430,8 +431,9 @@ public class ReferenceDragFeederConfigurationWizard
         bind(UpdateStrategy.READ, feeder, "actuatorName", locationButtonsPanelFeedEnd, "actuatorName");
     }
 
-    @SuppressWarnings("serial")
-    private Action selectTemplateImageAction = new AbstractAction("Select") {
+    private transient Action selectTemplateImageAction = new AbstractAction("Select") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -456,8 +458,9 @@ public class ReferenceDragFeederConfigurationWizard
         }
     };
 
-    @SuppressWarnings("serial")
-    private Action confirmSelectTemplateImageAction = new AbstractAction("Confirm") {
+    private transient Action confirmSelectTemplateImageAction = new AbstractAction("Confirm") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -481,8 +484,9 @@ public class ReferenceDragFeederConfigurationWizard
         }
     };
 
-    @SuppressWarnings("serial")
-    private Action cancelSelectTemplateImageAction = new AbstractAction("Cancel") {
+    private transient Action cancelSelectTemplateImageAction = new AbstractAction("Cancel") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -497,8 +501,9 @@ public class ReferenceDragFeederConfigurationWizard
         }
     };
 
-    @SuppressWarnings("serial")
-    private Action selectAoiAction = new AbstractAction("Select") {
+    private transient Action selectAoiAction = new AbstractAction("Select") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -521,8 +526,9 @@ public class ReferenceDragFeederConfigurationWizard
         }
     };
 
-    @SuppressWarnings("serial")
-    private Action confirmSelectAoiAction = new AbstractAction("Confirm") {
+    private transient Action confirmSelectAoiAction = new AbstractAction("Confirm") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -547,8 +553,9 @@ public class ReferenceDragFeederConfigurationWizard
         }
     };
 
-    @SuppressWarnings("serial")
-    private Action cancelSelectAoiAction = new AbstractAction("Cancel") {
+    private transient Action cancelSelectAoiAction = new AbstractAction("Cancel") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {
@@ -565,8 +572,9 @@ public class ReferenceDragFeederConfigurationWizard
         }
     };
 
-    @SuppressWarnings("serial")
-    private Action resetVisionOffsets = new AbstractAction("Reset vision offsets") {
+    private transient Action resetVisionOffsets = new AbstractAction("Reset vision offsets") {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.messageBoxOnException(() -> {

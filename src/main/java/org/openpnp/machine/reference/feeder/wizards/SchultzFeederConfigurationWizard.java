@@ -48,9 +48,10 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.JComboBox;
 
-@SuppressWarnings("serial")
 public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederConfigurationWizard {
-    private final SchultzFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient SchultzFeeder feeder;
 
     private JComboBox comboBoxFeedActuator;
     private JTextField actuatorValue;
@@ -271,7 +272,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         ComponentDecorators.decorateWithAutoSelect(actuatorValue);
     }
 
-    private Action getIdActuatorAction = new AbstractAction("Get ID") {
+    private transient Action getIdActuatorAction = new AbstractAction("Get ID") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -294,7 +295,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action testFeedActuatorAction = new AbstractAction("Test pre pick") {
+    private transient Action testFeedActuatorAction = new AbstractAction("Test pre pick") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -313,7 +314,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action testPostPickActuatorAction = new AbstractAction("Test post pick") {
+    private transient Action testPostPickActuatorAction = new AbstractAction("Test post pick") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -335,7 +336,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action getFeedCountActuatorAction = new AbstractAction("Get feed count") {
+    private transient Action getFeedCountActuatorAction = new AbstractAction("Get feed count") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -358,7 +359,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action clearCountActuatorAction = new AbstractAction("Clear feed count") {
+    private transient Action clearCountActuatorAction = new AbstractAction("Clear feed count") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -383,7 +384,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action pitchActuatorAction = new AbstractAction("Get pitch") {
+    private transient Action pitchActuatorAction = new AbstractAction("Get pitch") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -406,7 +407,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action togglePitchActuatorAction = new AbstractAction("Toggle pitch") {
+    private transient Action togglePitchActuatorAction = new AbstractAction("Toggle pitch") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {
@@ -428,7 +429,7 @@ public class SchultzFeederConfigurationWizard extends AbstractReferenceFeederCon
         }
     };
 
-    private Action statusActuatorAction = new AbstractAction("Get status") {
+    private transient Action statusActuatorAction = new AbstractAction("Get status") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             UiUtils.submitUiMachineTask(() -> {

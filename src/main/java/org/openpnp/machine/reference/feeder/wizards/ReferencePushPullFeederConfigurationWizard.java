@@ -75,10 +75,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferencePushPullFeederConfigurationWizard
 extends AbstractReferenceFeederConfigurationWizard {
-    private final ReferencePushPullFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferencePushPullFeeder feeder;
 
     public ReferencePushPullFeederConfigurationWizard(ReferencePushPullFeeder feeder) {
         super(feeder, false);
@@ -610,7 +611,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         ComponentDecorators.decorateWithAutoSelect(textFieldFontSizePt);
     }
 
-    private Action editPipelineAction =
+    private transient Action editPipelineAction =
             new AbstractAction("Edit Pipeline") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -632,7 +633,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action resetPipelineAction =
+    private transient Action resetPipelineAction =
             new AbstractAction("Reset Pipeline") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -654,7 +655,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action resetStatisticsAction =
+    private transient Action resetStatisticsAction =
             new AbstractAction("Reset Statistics") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -669,7 +670,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action resetFeedCountAction =
+    private transient Action resetFeedCountAction =
             new AbstractAction("Reset Feed Count") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -691,7 +692,7 @@ extends AbstractReferenceFeederConfigurationWizard {
             }
         }
     };
-    private Action discardPartsAction =
+    private transient Action discardPartsAction =
             new AbstractAction("Discard Parts") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -707,7 +708,7 @@ extends AbstractReferenceFeederConfigurationWizard {
             });
         }
     };
-    private Action showVisionFeaturesAction =
+    private transient Action showVisionFeaturesAction =
             new AbstractAction("Preview Vision Features") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -721,7 +722,7 @@ extends AbstractReferenceFeederConfigurationWizard {
             });
         }
     };
-    private Action autoSetupAction =
+    private transient Action autoSetupAction =
             new AbstractAction("Auto-Setup with Camera at Pick Location", Icons.captureCamera) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -756,7 +757,7 @@ extends AbstractReferenceFeederConfigurationWizard {
             });
         }
     };
-    private Action allFeederOcrAction =
+    private transient Action allFeederOcrAction =
             new AbstractAction("All Feeder OCR") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -779,7 +780,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action setupOcrRegionAction =
+    private transient Action setupOcrRegionAction =
             new AbstractAction("Setup OCR Region") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -806,7 +807,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action performOcrAction =
+    private transient Action performOcrAction =
             new AbstractAction("Part by OCR") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -829,7 +830,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action feederCloneFromTemplate =
+    private transient Action feederCloneFromTemplate =
             new AbstractAction("Clone from Template", Icons.importt) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -867,7 +868,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action feederCloneToAllAction =
+    private transient Action feederCloneToAllAction =
             new AbstractAction("Clone to Feeders", Icons.export) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -908,7 +909,7 @@ extends AbstractReferenceFeederConfigurationWizard {
         }
     };
 
-    private Action plusOneAction =
+    private transient Action plusOneAction =
             new AbstractAction("", Icons.add) {
         {
             putValue(Action.SHORT_DESCRIPTION,

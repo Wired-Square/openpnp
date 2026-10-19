@@ -67,9 +67,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationWizard {
-    private final BlindsFeeder feeder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient BlindsFeeder feeder;
 
     private JTextField textFieldFiducial1X;
     private JTextField textFieldFiducial1Y;
@@ -404,7 +405,7 @@ public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationW
         adaptDialog();
     }
 
-    private Action extract3DPrintingAction =
+    private transient Action extract3DPrintingAction =
             new AbstractAction("Extract 3D-Printing Files", Icons.openSCadIcon) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -447,7 +448,7 @@ public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationW
         }
     };
 
-    private Action calibrateFiducialsAction =
+    private transient Action calibrateFiducialsAction =
             new AbstractAction("Calibrate Fiducials") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -461,7 +462,7 @@ public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationW
         }
     };
 
-    private Action editPipelineAction =
+    private transient Action editPipelineAction =
             new AbstractAction("Edit Pipeline") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -476,7 +477,7 @@ public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationW
         }
     };
 
-    private Action resetPipelineAction =
+    private transient Action resetPipelineAction =
             new AbstractAction("Reset Pipeline") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -491,7 +492,7 @@ public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationW
         }
     };
 
-    private Action setOcrSettingsToAllAction =
+    private transient Action setOcrSettingsToAllAction =
             new AbstractAction("Set OCR Settings to all") {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -513,7 +514,7 @@ public class BlindsFeederArrayConfigurationWizard extends AbstractConfigurationW
         }
     };
 
-    private Action setPipelineToAllAction =
+    private transient Action setPipelineToAllAction =
             new AbstractAction("Set Pipeline to all") {
         {
             putValue(Action.SHORT_DESCRIPTION,
