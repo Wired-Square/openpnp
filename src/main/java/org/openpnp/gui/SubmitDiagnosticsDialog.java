@@ -2,59 +2,60 @@ package org.openpnp.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
 
-import org.apache.commons.io.FileUtils;
 import org.openpnp.Main;
-
 import org.openpnp.gui.support.MessageBoxes;
-import org.openpnp.imgur.Imgur;
-import org.openpnp.imgur.Imgur.Album;
-import org.openpnp.imgur.Imgur.Image;
 import org.openpnp.model.Board;
 import org.openpnp.model.BoardLocation;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Job;
+import org.openpnp.util.DiagnosticsBundle;
 import org.openpnp.util.UiUtils;
 import org.pmw.tinylog.Logger;
 
-import com.github.kennedyoliveira.pastebin4j.AccountCredentials;
-import com.github.kennedyoliveira.pastebin4j.Paste;
-import com.github.kennedyoliveira.pastebin4j.PasteBin;
-import com.github.kennedyoliveira.pastebin4j.PasteExpiration;
-import com.github.kennedyoliveira.pastebin4j.PasteVisibility;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class SubmitDiagnosticsDialog extends JDialog {
+    private static final int VISION_IMAGE_LIMIT = 10;
+    private static final String DIAGNOSTICS_DIRECTORY = "diagnostics";
+    private static final String NEW_ISSUE_URL = "https://github.com/Wired-Square/openpnp/issues/new";
+    private static final DateTimeFormatter ZIP_TIMESTAMP =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
     private final JPanel contentPanel = new JPanel();
     private JTextArea descriptionTa;
@@ -70,7 +71,7 @@ public class SubmitDiagnosticsDialog extends JDialog {
     private JProgressBar progressBar;
     private JButton okButton;
     private JButton cancelButton;
-    private Thread thread;
+    private SwingWorker<File, Integer> worker;
 
     private BufferedImage screenShot;
 
@@ -121,7 +122,7 @@ public class SubmitDiagnosticsDialog extends JDialog {
         fl_contentPanel.setColumnGroups(new int[][]{new int[]{4, 2}});
         contentPanel.setLayout(fl_contentPanel);
         {
-            lblSubmitAHelp = new JLabel("Submit Diagnostics");
+            lblSubmitAHelp = new JLabel("Save Diagnostics");
             lblSubmitAHelp.putClientProperty("FlatLaf.styleClass", "h1");
             contentPanel.add(lblSubmitAHelp, "2, 2, 3, 1");
         }
@@ -130,12 +131,12 @@ public class SubmitDiagnosticsDialog extends JDialog {
             txtpnToSubmitA.setBackground(UIManager.getColor("Label.background"));
             txtpnToSubmitA.setEditable(false);
             txtpnToSubmitA.setText(
-                    "Describe the problem you are experiencing below, select the checkboxes to include content that will help the developers resolve your issue, then click send.\n\nWhen the upload finishes your browser will open to Pastebin. You may be prompted to enter a captcha to complete the process - this is normal. You can then copy the URL to share it.\n\nBe aware that the information you send may be visible to the OpenPnP community, so you should not include private or proprietary information.");
+                    "Describe the problem you are experiencing below, select the checkboxes to include content that will help resolve your issue, then click Save.\n\nOpenPnP saves a zip file in the diagnostics folder of your configuration directory. Nothing is uploaded. To report the problem, open an issue at github.com/Wired-Square/openpnp and attach the zip.\n\nReview the zip before you share it: configuration files and the log can contain private or proprietary information.");
             contentPanel.add(txtpnToSubmitA, "2, 6, 3, 1, fill, fill");
         }
         {
             txtpnWarningIfYou = new JTextPane();
-            txtpnWarningIfYou.setText("Warning: If you include a screenshot or Vision Debug Images these images may include output from your machine's cameras. If these images contain content you don't want to share you should uncheck these options. You can review the images from the generated link before sharing it.");
+            txtpnWarningIfYou.setText("Warning: If you include a screenshot or Vision Debug Images these images may include output from your machine's cameras. If these images contain content you don't want to share you should uncheck these options.");
             txtpnWarningIfYou.setForeground(Color.RED);
             txtpnWarningIfYou.setBackground(UIManager.getColor("Label.background"));
             txtpnWarningIfYou.setEditable(false);
@@ -194,7 +195,7 @@ public class SubmitDiagnosticsDialog extends JDialog {
             contentPanel.add(includeScreenShotChk, "2, 26");
         }
         {
-            includeVisionChk = new JCheckBox("Vision Debug Images (10 Newest)");
+            includeVisionChk = new JCheckBox("Vision Debug Images (" + VISION_IMAGE_LIMIT + " Newest)");
             includeVisionChk.setSelected(true);
             contentPanel.add(includeVisionChk, "4, 26");
         }
@@ -230,162 +231,153 @@ public class SubmitDiagnosticsDialog extends JDialog {
     }
 
     @SuppressWarnings("serial")
-    public Action sendAction = new AbstractAction("Send") {
+    public Action sendAction = new AbstractAction("Save") {
         @Override
         public void actionPerformed(ActionEvent e) {
-            /**
-             * Hide the dialog Grab screenshot Show the dialog Start send Disable Send Cancel
-             * cancels... Update progress bar
-             */
             okButton.setEnabled(false);
-
-            // Saving can ask whether to save modified boards and panels, so it runs on the EDT.
+            DiagnosticsBundle bundle;
+            File zip;
+            // Saving can ask whether to save modified boards and panels, so it runs on the EDT,
+            // as does saving the job; only the zip is written in the background.
             try {
                 Configuration.get().save();
+                bundle = createBundle();
+                File directory = new File(Configuration.get().getConfigurationDirectory(),
+                        DIAGNOSTICS_DIRECTORY);
+                Files.createDirectories(directory.toPath());
+                zip = new File(directory, "OpenPnP-Diagnostics-"
+                        + LocalDateTime.now().format(ZIP_TIMESTAMP) + ".zip");
             }
             catch (Exception e1) {
-                MessageBoxes.errorBox(MainFrame.get(), "Submit Failed", e1);
+                MessageBoxes.errorBox(MainFrame.get(), "Save Diagnostics Failed", e1);
                 okButton.setEnabled(true);
                 return;
             }
+            progressBar.setMaximum(bundle.size());
+            progressBar.setValue(0);
+            worker = new SwingWorker<File, Integer>() {
+                @Override
+                protected File doInBackground() throws Exception {
+                    bundle.write(zip, written -> publish(written));
+                    return zip;
+                }
 
-            thread = new Thread(() -> {
-                try {
-                    List<File> images = new ArrayList<>();
-                    File configDir = Configuration.get().getConfigurationDirectory();
-                    File logDir = new File(configDir, "log");
-                    File visionDir = new File(logDir, "vision");
-                    String content = "";
-                    if (includeMachineXmlChk.isSelected()) {
-                        content += createPasteStringFromFile(new File(configDir, "machine.xml"));
-                    }
-                    if (includePartsXmlChk.isSelected()) {
-                        content += createPasteStringFromFile(new File(configDir, "parts.xml"));
-                    }
-                    if (includePackagesXmlChk.isSelected()) {
-                        content += createPasteStringFromFile(new File(configDir, "packages.xml"));
-                    }
-                    if (includeLogChk.isSelected()) {
-                        content += createPasteStringFromFile(new File(logDir, "OpenPnP.log"));
-                    }
-                    if (includeSystemInfoChk.isSelected()) {
-                        content += String.format("**** %s ****\n\n%s\n\n", "SystemInfo.txt", getSystemInfo());
-                    }
-                    if (includeJobChk.isSelected()) {
-                        File file = File.createTempFile("OpenPnp-Diagnostics", ".job.xml");
-                        Job job = MainFrame.get().getJobTab().getJob();
-                        Configuration.get().saveJob(job, file);
-                        content += createPasteStringFromFile(file);
-                        HashSet<Board> boards = new HashSet<>();
-                        for (BoardLocation bl : job.getBoardLocations()) {
-                            boards.add(bl.getBoard());
+                @Override
+                protected void process(List<Integer> written) {
+                    progressBar.setValue(written.get(written.size() - 1));
+                }
+
+                @Override
+                protected void done() {
+                    worker = null;
+                    if (isCancelled()) {
+                        // The write may have finished before it saw the cancel.
+                        try {
+                            Files.deleteIfExists(zip.toPath());
                         }
-                        for (Board board : boards) {
-                            content += createPasteStringFromFile(board.getFile());
+                        catch (IOException e1) {
+                            Logger.warn(e1, "Unable to delete cancelled diagnostics " + zip);
                         }
-                    }
-                    if (includeScreenShotChk.isSelected() && screenShot != null) {
-                        File file = File.createTempFile("OpenPnP-Screenshot", ".png");
-                        ImageIO.write(screenShot, "PNG", file);
-                        images.add(file);
-                    }
-                    if (includeVisionChk.isSelected()) {
-                        File[] visionFiles = visionDir.listFiles(new FilenameFilter() {
-                            @Override
-                            public boolean accept(File dir, String name) {
-                                return name.toLowerCase().endsWith(".png");
-                            }
-                        });
-
-                        if (visionFiles != null) {
-                            Arrays.sort(visionFiles, new Comparator<File>() {
-                                public int compare(File f1, File f2) {
-                                    return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
-                                }
-                            });
-
-                            for (int i = 0; i < Math.min(visionFiles.length, 10); i++) {
-                                images.add(visionFiles[i]);
-                            }
-                        }
-                    }
-
-                    // Image count + the album + the paste
-                    progressBar.setMaximum(images.size() + (images.isEmpty() ? 0 : 1) + 1);
-                    progressBar.setValue(1);
-
-                    Album album = null;
-                    if (!images.isEmpty()) {
-                        Imgur imgur = new Imgur(Configuration.get().getImgurClientId());
-                        List<Image> albumImages = new ArrayList<>();
-                        for (File file : images) {
-                            if (Thread.interrupted()) {
-                                return;
-                            }
-                            Image image = imgur.uploadImage(file);
-                            albumImages.add(image);
-                            progressBar.setValue(progressBar.getValue() + 1);
-                        }
-
-                        if (Thread.interrupted()) {
-                            return;
-                        }
-                        album = imgur.createAlbum("OpenPnP Diagnostics Images",
-                                albumImages.toArray(new Image[] {}));
-                        progressBar.setValue(progressBar.getValue() + 1);
-                    }
-                    
-                    final PasteBin pasteBin =
-                            new PasteBin(new AccountCredentials("37ccaf49071a6226ad8f96efdfa9e936"));
-
-                    // Basic creation
-                    final Paste paste = new Paste();
-
-                    paste.setTitle("OpenPnP Diagnostics");
-                    paste.setExpiration(PasteExpiration.ONE_MONTH);
-                    paste.setVisibility(PasteVisibility.UNLISTED);
-                    paste.setContent(String.format("OpenPnP Diagnostics\n\nImages: %s\n\nDescription: %s\n\nFiles:\n\n%s",
-                            album == null ? "None" : "http://imgur.com/a/" + album.id,
-                            descriptionTa.getText(),
-                            content));
-
-                    final String url = pasteBin.createPaste(paste);
-
-                    progressBar.setValue(progressBar.getValue() + 1);
-
-                    if (Thread.interrupted()) {
                         return;
                     }
-                    Logger.info("Created diagnostics package at: " + url);
-                    UiUtils.browseUri(url);
-                    setVisible(false);
+                    try {
+                        File saved = get();
+                        Logger.info("Saved diagnostics to " + saved);
+                        dispose();
+                        offerNextSteps(saved);
+                    }
+                    catch (InterruptedException | ExecutionException e1) {
+                        Throwable cause = e1.getCause() != null ? e1.getCause() : e1;
+                        Logger.error(cause, "Save diagnostics failed");
+                        MessageBoxes.errorBox(MainFrame.get(), "Save Diagnostics Failed", cause);
+                        okButton.setEnabled(true);
+                    }
                 }
-                catch (Exception e1) {
-                    e1.printStackTrace();
-                    MessageBoxes.errorBox(MainFrame.get(), "Submit Failed", e1);
-                    okButton.setEnabled(true);
-                }
-                thread = null;
-            });
-            thread.setDaemon(true);
-            thread.start();
+            };
+            worker.execute();
         }
     };
+
+    private DiagnosticsBundle createBundle() throws Exception {
+        DiagnosticsBundle bundle = new DiagnosticsBundle();
+        File configDir = Configuration.get().getConfigurationDirectory();
+        File logDir = new File(configDir, "log");
+        bundle.addText("description.txt", descriptionTa.getText());
+        if (includeMachineXmlChk.isSelected()) {
+            bundle.addFile("machine.xml", new File(configDir, "machine.xml"));
+        }
+        if (includePartsXmlChk.isSelected()) {
+            bundle.addFile("parts.xml", new File(configDir, "parts.xml"));
+        }
+        if (includePackagesXmlChk.isSelected()) {
+            bundle.addFile("packages.xml", new File(configDir, "packages.xml"));
+        }
+        if (includeLogChk.isSelected()) {
+            bundle.addFile("OpenPnP.log", new File(logDir, "OpenPnP.log"));
+        }
+        if (includeSystemInfoChk.isSelected()) {
+            bundle.addText("system-info.txt", getSystemInfo());
+        }
+        if (includeJobChk.isSelected()) {
+            Job job = MainFrame.get().getJobTab().getJob();
+            String jobName = job.getFile() == null ? "job.job.xml" : job.getFile().getName();
+            bundle.addBytes("job/" + jobName, Configuration.get().serializeJob(job));
+            HashSet<Board> boards = new HashSet<>();
+            for (BoardLocation bl : job.getBoardLocations()) {
+                boards.add(bl.getBoard());
+            }
+            for (Board board : boards) {
+                if (board.getFile() != null) {
+                    bundle.addFile("job/" + board.getFile().getName(), board.getFile());
+                }
+            }
+        }
+        if (includeScreenShotChk.isSelected() && screenShot != null) {
+            bundle.addPng("screenshot.png", screenShot);
+        }
+        if (includeVisionChk.isSelected()) {
+            File[] visionFiles = new File(logDir, "vision")
+                    .listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
+            if (visionFiles != null) {
+                Arrays.sort(visionFiles,
+                        Comparator.comparingLong(File::lastModified).reversed());
+                for (int i = 0; i < Math.min(visionFiles.length, VISION_IMAGE_LIMIT); i++) {
+                    bundle.addFile("vision/" + visionFiles[i].getName(), visionFiles[i]);
+                }
+            }
+        }
+        return bundle;
+    }
+
+    private static void offerNextSteps(File zip) {
+        String[] options = {"Open New Issue", "Show Folder", "Close"};
+        int choice = JOptionPane.showOptionDialog(MainFrame.get(),
+                "Saved diagnostics to\n" + zip.getAbsolutePath()
+                        + "\n\nTo report the problem, open a new issue and attach this file.",
+                "Diagnostics Saved", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+        if (choice == 0) {
+            UiUtils.browseUri(NEW_ISSUE_URL);
+        }
+        else if (choice == 1) {
+            try {
+                Desktop.getDesktop().open(zip.getParentFile());
+            }
+            catch (Exception e) {
+                MessageBoxes.errorBox(MainFrame.get(), "Unable to open the folder", e);
+            }
+        }
+    }
 
     @SuppressWarnings("serial")
     public Action cancelAction = new AbstractAction("Cancel") {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            try {
-                if (thread != null) {
-                    thread.interrupt();
-                    thread.join();
-                }
+            if (worker != null) {
+                // Interrupts the write, which deletes the partial zip.
+                worker.cancel(true);
             }
-            catch (Exception e) {
-
-            }
-            setVisible(false);
+            dispose();
         }
     };
     private JTextPane txtpnWarningIfYou;
@@ -406,13 +398,5 @@ public class SubmitDiagnosticsDialog extends JDialog {
                 Runtime.getRuntime().maxMemory() / 1024.0 / 1024.0));
         sb.append(String.format("OpenPnp Version: %s", Main.getVersion()));
         return sb.toString();
-    }
-
-    static String createPasteStringFromFile(File file) throws Exception {
-        return String.format("**** %s ****\n\n%s\n\n", file.getName(), FileUtils.readFileToString(file));
-    }
-
-    public static interface ProgressCallback {
-        public void progress(int total, int current, String status);
     }
 }

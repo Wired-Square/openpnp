@@ -9,15 +9,14 @@
 
 # Code Contributions and Pull Requests
 
-Before starting work on a pull request, please read: https://github.com/openpnp/openpnp/wiki/Developers-Guide#contributing
-
-Summary of guidelines:
+Pull requests target the `develop` branch of this repository.
 
 * One pull request per issue, bug or feature.
 * Describe the change in detail and why it is needed.
-* Follow the coding style.
+* Follow the coding style: Google Java Style, with braces on every `if`, `else`, `for` and
+  `while`. Do not reformat code you are not otherwise changing.
 * Include tests and documentation.
-* Run and pass the tests.
+* Run and pass the tests: `mvn test` on JDK 25.
 * Think of how this affects other users.
 
 

@@ -4,6 +4,9 @@
 
 Open Source SMT Pick and Place Hardware and Software
 
+This is Wired Square's independent fork of [OpenPnP](https://github.com/openpnp/openpnp). Issues
+and pull requests for this fork belong in this repository.
+
 ## Introduction
 
 OpenPnP is a project to create the plans, prototype and software for a completely Open Source SMT
@@ -13,25 +16,17 @@ to build and own a fully functional SMT pick and place machine for under $1000.
 
 ## Project Status
 
-OpenPnP is stable and in wide use. It is still under heavy development and new features are added continuously. See the [Downloads](http://openpnp.org/downloads) page to get started.
+OpenPnP is stable and in wide use. It is still under heavy development and new features are added continuously. Upstream builds, without this fork's changes, are on the OpenPnP [Downloads](http://openpnp.org/downloads) page.
 
-If you would like to keep up with our progress you can
-[Watch this project on GitHub](http://github.com/openpnp/openpnp), check out
-[our Twitter](http://twitter.com/openpnp), [join the discussion group](http://groups.google.com/group/openpnp),
-or come chat with us on [Discord](https://discord.gg/EmsrFVx).
+The upstream OpenPnP project is [on GitHub](http://github.com/openpnp/openpnp), on
+[Twitter](http://twitter.com/openpnp), has a [discussion group](http://groups.google.com/group/openpnp)
+and chats on [Discord](https://discord.gg/EmsrFVx).
 
 ## Contributing
 
 [![Test](https://github.com/Wired-Square/openpnp/actions/workflows/test.yml/badge.svg)](https://github.com/Wired-Square/openpnp/actions/workflows/test.yml)
-[![Help Wanted](https://img.shields.io/github/issues-raw/openpnp/openpnp/help-wanted.svg?label=help-wanted&colorB=5319e7)](https://github.com/openpnp/openpnp/labels/help-wanted)
-[![Bugs](https://img.shields.io/github/issues-raw/openpnp/openpnp/bug.svg?label=bugs&colorB=D9472F)](https://github.com/openpnp/openpnp/labels/bug)
-[![Feature Requests](https://img.shields.io/github/issues-raw/openpnp/openpnp/feature-request.svg?label=feature-requests&colorB=bfd4f2)](https://github.com/openpnp/openpnp/labels/feature-request)
-[![Enhancements](https://img.shields.io/github/issues-raw/openpnp/openpnp/enhancement.svg?label=enhancements&colorB=0052cc)](https://github.com/openpnp/openpnp/labels/enhancement)
 
-
-Before starting work on a pull request, please read: https://github.com/openpnp/openpnp/wiki/Developers-Guide#contributing
-
-Summary of guidelines:
+See [CONTRIBUTING.md](CONTRIBUTING.md). Summary of guidelines:
 
 * One pull request per issue.
 * Describe the change.

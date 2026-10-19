@@ -7,9 +7,9 @@
 	<version>0.0.1-alpha-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>openpnp-gui</name>
-	<url>http://openpnp.org</url>
+	<url>https://github.com/Wired-Square/openpnp</url>
 	<scm>
-		<connection>scm:git:https://github.com/openpnp/openpnp.git </connection>
+		<connection>scm:git:https://github.com/Wired-Square/openpnp.git</connection>
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -148,16 +148,6 @@
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
 			<version>3.3.0</version>
-		</dependency>
-		<dependency>
-    		<groupId>com.github.kennedyoliveira</groupId>
-    		<artifactId>pastebin4j</artifactId>
-    		<version>1.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.mashape.unirest</groupId>
-			<artifactId>unirest-java</artifactId>
-			<version>1.4.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>
@@ -486,8 +476,8 @@
 	</build>
 	<repositories>
 		<repository>
-			<id>openpnp</id>
-			<url>https://github.com/openpnp/openpnp-maven-repo/raw/develop</url>
+			<id>project-lib</id>
+			<url>${project.baseUri}lib/maven-repo</url>
 		</repository>
 	</repositories>
 </project>

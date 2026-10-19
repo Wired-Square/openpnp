@@ -109,7 +109,6 @@ public class Configuration extends AbstractModelObject {
     private static final String PREF_VERTICAL_SCROLL_UNIT_INCREMENT =
             "Configuration.verticalScrollUnitIncrement";
     private static final int PREF_VERTICAL_SCROLL_UNIT_INCREMENT_DEF = 16;
-    private static final String imgurClientId = "620fc1fa8ee0180";
 
     public enum TablesLinked {
         Unlinked,
@@ -1526,6 +1525,17 @@ public class Configuration extends AbstractModelObject {
      * @param file - the file into which the job is to be saved
      * @throws Exception if the file can't be written successfully
      */
+    /**
+     * Serialises the job as saveJob would, without making the result the job's file or marking
+     * the job saved, e.g. for a diagnostics report.
+     */
+    public byte[] serializeJob(Job job) throws Exception {
+        saveJobEnabledAndErrorHandlingSettings(job, job.getRootPanelLocation());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        createSerializer().write(job, out);
+        return out.toByteArray();
+    }
+
     public void saveJob(Job job, File file) throws Exception {
         saveJobEnabledAndErrorHandlingSettings(job, job.getRootPanelLocation());
         Serializer serializer = createSerializer();
@@ -1535,10 +1545,6 @@ public class Configuration extends AbstractModelObject {
         job.setDirty(false);
     }
     
-    public String getImgurClientId() {
-        return imgurClientId;
-    }
-
     /**
      * Saves the specified Panel into its file
      * @param panel - the Panel to save

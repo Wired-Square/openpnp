@@ -42,7 +42,6 @@ import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Method;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Locale;
@@ -553,9 +552,6 @@ public class MainFrame extends JFrame {
         mnHelp.add(changeLogAction);
         mnHelp.addSeparator();
         mnHelp.add(submitDiagnosticsAction);
-        if (isInstallerAvailable()) {
-            mnHelp.add(new JMenuItem(checkForUpdatesAction));
-        }
 
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -923,16 +919,6 @@ public class MainFrame extends JFrame {
         }
     }
     
-    public boolean isInstallerAvailable() {
-        try {
-            Class.forName("com.install4j.api.launcher.ApplicationLauncher"); //$NON-NLS-1$
-            return true;
-        }
-        catch (Throwable e) {
-            return false;
-        }
-    }
-
     public JLabel getDroLabel() {
         return droLbl;
     }
@@ -1321,25 +1307,6 @@ public class MainFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             about();
-        }
-    };
-    
-    private Action checkForUpdatesAction = new AbstractAction(Translations.getString("Menu.Help.CheckForUpdates")) { //$NON-NLS-1$
-        {
-            putValue(MNEMONIC_KEY, KeyEvent.VK_U);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent arg0) {
-            try {
-                Class applicationLauncher = Class.forName("com.install4j.api.launcher.ApplicationLauncher"); //$NON-NLS-1$
-                Class callback = Class.forName("com.install4j.api.launcher.ApplicationLauncher$Callback"); //$NON-NLS-1$
-                Method launchApplication = applicationLauncher.getMethod("launchApplication", String.class, String[].class, boolean.class, callback); //$NON-NLS-1$
-                launchApplication.invoke(null, "125", null, false, null); //$NON-NLS-1$
-            }
-            catch (Exception e) {
-                MessageBoxes.errorBox(MainFrame.this, "Unable to launch update application.", e); //$NON-NLS-1$
-            }
         }
     };
     

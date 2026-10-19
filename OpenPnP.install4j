@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.9" transformSequenceNumber="10">
-  <directoryPresets config="./.github/OpenPnP-Developer-ID-Application.p12" />
-  <application name="OpenPnP" applicationId="9204-4030-0867-1434" mediaDir="./installers" mediaFilePattern="${compiler:sys.fullName}-${compiler:sys.platform}-${compiler:mediaFileVersion}" shortName="openpnp" publisher="OpenPnP" publisherWeb="http://openpnp.org" version="develop" allPathsRelative="true" macVolumeId="2f75d25b539292d5" javaMinVersion="25">
+  <directoryPresets />
+  <application name="OpenPnP" applicationId="9204-4030-0867-1434" mediaDir="./installers" mediaFilePattern="${compiler:sys.fullName}-${compiler:sys.platform}-${compiler:mediaFileVersion}" shortName="openpnp" publisher="OpenPnP" publisherWeb="https://github.com/Wired-Square/openpnp" version="develop" allPathsRelative="true" macVolumeId="2f75d25b539292d5" javaMinVersion="25">
     <variables>
       <variable name="native_path" />
       <variable name="mediaFileVersion" value="${compiler:sys.version}" />
     </variables>
-    <codeSigning macEnabled="true" macPkcs12File=".github/OpenPnP-Developer-ID-Application.p12" macNotarize="true" appleId="jason@vonnieda.org">
+    <codeSigning macEnabled="false">
       <macSearchedJars>
         <entry>jna-*</entry>
         <entry>swt-*</entry>
@@ -71,7 +71,7 @@
     </entries>
   </files>
   <launchers>
-    <launcher name="OpenPnP" id="23" icnsFile="./src/main/resources/icons/OpenPnP-logo.icns" addMacEntitlements="true" macEntitlementsFile="./.github/entitlements.plist">
+    <launcher name="OpenPnP" id="23" icnsFile="./src/main/resources/icons/OpenPnP-logo.icns" addMacEntitlements="false">
       <executable name="OpenPnP" iconSet="true" executableMode="gui" singleInstance="true" dpiAware="false" />
       <splashScreen bitmapFile="./logo/OpenPnP-logo.iconset/icon_128x128.png" />
       <java mainClass="org.openpnp.Main" vmParameters="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.color=ALL-UNNAMED --enable-native-access=ALL-UNNAMED">
@@ -91,7 +91,7 @@
       </iconImageFiles>
     </launcher>
   </launchers>
-  <installerGui autoUpdateDescriptorUrl="https://s3-us-west-2.amazonaws.com/openpnp/updates-${compiler:mediaFileVersion}.xml">
+  <installerGui>
     <autoUpdate>
       <commentFiles>
         <file location="CHANGES.md" languageId="en" />
@@ -1000,7 +1000,7 @@ if (context.isUnattended()) {
     <linuxRPM name="Linux RPM" id="123" installDir="/opt/openpnp">
       <jreBundle jreBundleSource="none" />
     </linuxRPM>
-    <linuxDeb name="Linux Deb Archive" id="124" installDir="/opt/openpnp" bzip="true" description="Open Source SMT Pick and Place Software" maintainerEmail="jason@vonnieda.org">
+    <linuxDeb name="Linux Deb Archive" id="124" installDir="/opt/openpnp" bzip="true" description="Open Source SMT Pick and Place Software" maintainerEmail="garth@wiredsquare.com">
       <jreBundle jreBundleSource="none" />
     </linuxDeb>
   </mediaSets>
