@@ -49,9 +49,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferenceCamera referenceCamera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceCamera referenceCamera;
     private JPanel panelColorBalance;
 
     public ReferenceCameraWhiteBalanceConfigurationWizard(ReferenceCamera referenceCamera) {
@@ -218,7 +219,7 @@ public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConf
         bind(UpdateStrategy.READ, referenceCamera, "colorBalanceGraph", colorGraph, "graph");
     }
 
-    private final Action autoWhiteBalanceAction = new AbstractAction() {
+    private final transient Action autoWhiteBalanceAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString(
                     "ReferenceCameraWhiteBalanceConfigurationWizard.Action.AutoWhiteBalance")); //$NON-NLS-1$
@@ -234,7 +235,7 @@ public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConf
         }
     };
 
-    private final Action autoWhiteBalanceBrightAction = new AbstractAction() {
+    private final transient Action autoWhiteBalanceBrightAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString(
                     "ReferenceCameraWhiteBalanceConfigurationWizard.Action.Brightest")); //$NON-NLS-1$
@@ -250,7 +251,7 @@ public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConf
         }
     };
 
-    private final Action autoWhiteBalanceRoughMapAction = new AbstractAction() {
+    private final transient Action autoWhiteBalanceRoughMapAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString(
                     "ReferenceCameraWhiteBalanceConfigurationWizard.Action.MappedRoughly")); //$NON-NLS-1$
@@ -267,7 +268,7 @@ public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConf
 
     };
 
-    private final Action autoWhiteBalanceFineMapAction = new AbstractAction() {
+    private final transient Action autoWhiteBalanceFineMapAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString(
                     "ReferenceCameraWhiteBalanceConfigurationWizard.Action.MappedFinely")); //$NON-NLS-1$
@@ -283,7 +284,7 @@ public class ReferenceCameraWhiteBalanceConfigurationWizard extends AbstractConf
         }
     };
 
-    private final Action resetAction = new AbstractAction() {
+    private final transient Action resetAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString(
                     "ReferenceCameraWhiteBalanceConfigurationWizard.Action.Reset")); //$NON-NLS-1$

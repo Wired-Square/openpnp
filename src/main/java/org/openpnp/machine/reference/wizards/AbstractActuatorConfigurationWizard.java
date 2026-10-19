@@ -55,9 +55,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public abstract class AbstractActuatorConfigurationWizard extends AbstractConfigurationWizard {
-    protected final ReferenceActuator actuator;
+    private static final long serialVersionUID = 1L;
+
+    protected final transient ReferenceActuator actuator;
 
     private JTextField locationX;
     private JTextField locationY;

@@ -34,8 +34,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceNozzleCameraOffsetWizard extends AbstractConfigurationWizard {
+    private static final long serialVersionUID = 1L;
 
     private JComboBox<CameraItem> camerasComboBox;
 
@@ -45,8 +45,8 @@ public class ReferenceNozzleCameraOffsetWizard extends AbstractConfigurationWiza
     private JLabel nozzleMarkLocationZLabel;
     private JLabel nozzleOffsetZLabel;
 
-    private ReferenceNozzle nozzle;
-    private MutableLocationProxy nozzleMarkLocation, nozzleOffsetLocation;
+    private transient ReferenceNozzle nozzle;
+    private transient MutableLocationProxy nozzleMarkLocation, nozzleOffsetLocation;
 
     public ReferenceNozzleCameraOffsetWizard(ReferenceNozzle nozzle) {
     	
@@ -291,14 +291,14 @@ public class ReferenceNozzleCameraOffsetWizard extends AbstractConfigurationWiza
                         instructionPanel.add(step10Label, "2, 37");
     }
 
-    private Action openAdviceUrl = new AbstractAction("Open Advice Url") {
+    private transient Action openAdviceUrl = new AbstractAction("Open Advice Url") {
         @Override
         public void actionPerformed(ActionEvent e) {
             UiUtils.browseUri("https://github.com/openpnp/openpnp/wiki/Setup-and-Calibration_Nozzle-Setup#head-offsets");
         }
     };
 
-    private Action storePositionAction = new AbstractAction(Translations.getString(
+    private transient Action storePositionAction = new AbstractAction(Translations.getString(
             "ReferenceNozzleCameraOffsetWizard.Action.StorePosition")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -306,7 +306,7 @@ public class ReferenceNozzleCameraOffsetWizard extends AbstractConfigurationWiza
         }
     };
 
-    private Action applyNozzleOffsetAction = new AbstractAction(Translations.getString(
+    private transient Action applyNozzleOffsetAction = new AbstractAction(Translations.getString(
             "ReferenceNozzleCameraOffsetWizard.Action.ApplyNozzleOffset")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent e) {

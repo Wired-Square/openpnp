@@ -17,10 +17,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class MjpgCaptureCameraWizard extends AbstractConfigurationWizard {
+    private static final long serialVersionUID = 1L;
 
-    private final MjpgCaptureCamera camera;
+    private final transient MjpgCaptureCamera camera;
     private JPanel panelGeneral;
 
     public MjpgCaptureCameraWizard(MjpgCaptureCamera camera) {

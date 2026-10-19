@@ -35,9 +35,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ActuatorSignalerConfigurationWizard extends AbstractConfigurationWizard {
-    private final ActuatorSignaler signaler;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ActuatorSignaler signaler;
     private JLabel lblNewLabel;
     private JLabel lblNewLabel_1;
     private JComboBox<Actuator> actuator;

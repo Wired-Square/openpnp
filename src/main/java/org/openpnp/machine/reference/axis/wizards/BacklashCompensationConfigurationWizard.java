@@ -64,9 +64,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class BacklashCompensationConfigurationWizard extends AbstractConfigurationWizard {
-    protected NamedConverter<Driver> driverConverter;
+    private static final long serialVersionUID = 1L;
+
+    protected transient NamedConverter<Driver> driverConverter;
     private JLabel lblBacklashOffset;
     private JTextField backlashOffset;
     private JLabel lblBacklashCompensation;
@@ -86,7 +87,7 @@ public class BacklashCompensationConfigurationWizard extends AbstractConfigurati
     private JButton btnCalibrate;
     private JLabel lblAcceptableTolerance;
     private JTextField acceptableTolerance;
-    private ReferenceControllerAxis axis;
+    private transient ReferenceControllerAxis axis;
     protected Axis.Type type;
 
     public Axis.Type getType() {
@@ -97,7 +98,7 @@ public class BacklashCompensationConfigurationWizard extends AbstractConfigurati
         adaptDialog();
     }
 
-    private Action backlashCalibrateAction = new AbstractAction(Translations.getString(
+    private transient Action backlashCalibrateAction = new AbstractAction(Translations.getString(
             "BacklashCompensationConfigurationWizard.Action.Calibrate"), //$NON-NLS-1$
             Icons.axisCartesian) {
         {

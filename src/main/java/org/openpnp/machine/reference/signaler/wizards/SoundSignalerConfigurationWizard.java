@@ -30,9 +30,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class SoundSignalerConfigurationWizard extends AbstractConfigurationWizard {
-    private final SoundSignaler signaler;
+    private static final long serialVersionUID = 1L;
+
+    private final transient SoundSignaler signaler;
     private JCheckBox chckbxError;
     private JCheckBox chckbxSuccess;
 

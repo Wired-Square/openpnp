@@ -51,9 +51,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ImageCameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final ImageCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ImageCamera camera;
 
 
     public ImageCameraConfigurationWizard(ImageCamera camera) {
@@ -368,7 +369,7 @@ public class ImageCameraConfigurationWizard extends AbstractConfigurationWizard 
         ComponentDecorators.decorateWithAutoSelectAndLengthConversion(secondaryFiducialZ);
     }
 
-    private Action browseAction = new AbstractAction() {
+    private transient Action browseAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("ImageCameraConfigurationWizard.Action.Browse")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString(

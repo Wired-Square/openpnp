@@ -65,9 +65,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard {
-    private ReferenceActuator actuator;
+    private static final long serialVersionUID = 1L;
+
+    private transient ReferenceActuator actuator;
     private ReferenceActuatorProfiles actuatorProfiles;
     private JPanel panelInterlock;
     private JSeparator separator;
@@ -86,7 +87,7 @@ public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard
     private JComboBox actuator6;
     private JScrollPane scrollPane;
     private boolean reloadWizard;
-    private TableRowSorter tableSorter;
+    private transient TableRowSorter tableSorter;
     private AutoSelectTextTable table;
     private JButton btnAdd;
     private JLabel label;
@@ -318,7 +319,7 @@ public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard
         return selections;
     }
 
-    private Action addProfileAction =
+    private transient Action addProfileAction =
             new AbstractAction("", Icons.add) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -333,7 +334,7 @@ public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard
             });
         }
     };
-    private Action deleteProfileAction =
+    private transient Action deleteProfileAction =
             new AbstractAction("", Icons.delete) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -351,7 +352,7 @@ public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard
             });
         }
     };
-    private Action permutateUpAction =
+    private transient Action permutateUpAction =
             new AbstractAction("", Icons.arrowUp) {
         {
             putValue(Action.SHORT_DESCRIPTION,
@@ -379,7 +380,7 @@ public class ReferenceActuatorProfilesWizard extends AbstractConfigurationWizard
             });
         }
     };
-    private Action permutateDownAction =
+    private transient Action permutateDownAction =
             new AbstractAction("", Icons.arrowDown) {
         {
             putValue(Action.SHORT_DESCRIPTION,

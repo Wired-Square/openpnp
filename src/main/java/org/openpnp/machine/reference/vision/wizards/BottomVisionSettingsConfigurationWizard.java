@@ -50,11 +50,12 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.forms.layout.Sizes;
 
-@SuppressWarnings("serial")
 public class BottomVisionSettingsConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferenceBottomVision bottomVision;
-    private final BottomVisionSettings visionSettings;
-    private final PartSettingsHolder settingsHolder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceBottomVision bottomVision;
+    private final transient BottomVisionSettings visionSettings;
+    private final transient PartSettingsHolder settingsHolder;
 
 
     private JPanel panel;

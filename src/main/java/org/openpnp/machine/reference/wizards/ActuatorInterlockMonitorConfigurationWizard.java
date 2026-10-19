@@ -54,10 +54,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ActuatorInterlockMonitorConfigurationWizard extends AbstractConfigurationWizard {
-    private AbstractActuator actuator;
-    private ActuatorInterlockMonitor monitor;
+    private static final long serialVersionUID = 1L;
+
+    private transient AbstractActuator actuator;
+    private transient ActuatorInterlockMonitor monitor;
     
     private JLabel lblAxis1;
     private JComboBox interlockAxis1;

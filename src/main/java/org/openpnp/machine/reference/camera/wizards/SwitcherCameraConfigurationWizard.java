@@ -40,9 +40,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class SwitcherCameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final SwitcherCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient SwitcherCamera camera;
     private JLabel lblNewLabel;
     private JLabel lblNewLabel_1;
     private JLabel lblNewLabel_2;

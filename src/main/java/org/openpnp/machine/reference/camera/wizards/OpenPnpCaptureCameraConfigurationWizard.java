@@ -55,9 +55,10 @@ import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
-@SuppressWarnings("serial")
 public class OpenPnpCaptureCameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final OpenPnpCaptureCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient OpenPnpCaptureCamera camera;
 
     private JPanel panelProperties;
     private JComboBox deviceCb;
@@ -167,7 +168,7 @@ public class OpenPnpCaptureCameraConfigurationWizard extends AbstractConfigurati
     private JLabel lblFreezeProperties;
     private JCheckBox freezeProperties;
     private JButton btnReapplyToCamera;
-    private final Action reapplyPropertiesToCameraAction = new AbstractAction() {
+    private final transient Action reapplyPropertiesToCameraAction = new AbstractAction() {
         {
             putValue(NAME, Translations.getString("OpenPnpCaptureCameraConfigurationWizard.PropertiesPanel.ReapplyToCameraButton.text")); //$NON-NLS-1$
             putValue(SHORT_DESCRIPTION, Translations.getString("OpenPnpCaptureCameraConfigurationWizard.PropertiesPanel.ReapplyToCameraButton.toolTipText")); //$NON-NLS-1$

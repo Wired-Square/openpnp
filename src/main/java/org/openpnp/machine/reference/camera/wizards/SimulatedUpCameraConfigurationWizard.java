@@ -43,9 +43,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class SimulatedUpCameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final SimulatedUpCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient SimulatedUpCamera camera;
 
     private JPanel panelGeneral;
     private JButton btnBrowse;

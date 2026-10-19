@@ -39,11 +39,12 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.forms.layout.Sizes;
 
-@SuppressWarnings("serial")
 public class FiducialVisionSettingsConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferenceFiducialLocator fiducialLocator;
-    private final FiducialVisionSettings visionSettings;
-    private final PartSettingsHolder settingsHolder;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceFiducialLocator fiducialLocator;
+    private final transient FiducialVisionSettings visionSettings;
+    private final transient PartSettingsHolder settingsHolder;
 
 
     private JPanel panel;

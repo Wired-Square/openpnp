@@ -55,9 +55,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ContactProbeNozzleWizard extends AbstractConfigurationWizard {
-    private final ContactProbeNozzle nozzle;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ContactProbeNozzle nozzle;
 
     public ContactProbeNozzleWizard(ContactProbeNozzle nozzle) {
         this.nozzle = nozzle;
@@ -272,7 +273,7 @@ public class ContactProbeNozzleWizard extends AbstractConfigurationWizard {
         adaptDialog();
     }
 
-    private Action calibrateZAction = new AbstractAction("Calibrate now", Icons.contactProbeNozzle) {
+    private transient Action calibrateZAction = new AbstractAction("Calibrate now", Icons.contactProbeNozzle) {
         {
             putValue(Action.SHORT_DESCRIPTION, "<html>Calibrate the nozzle Z offset by contact-probing against the <strong>Touch Location</strong> defined in the Nozzle Tip.</html>");
         }

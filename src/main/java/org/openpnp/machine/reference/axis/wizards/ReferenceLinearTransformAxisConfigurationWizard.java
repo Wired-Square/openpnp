@@ -46,8 +46,9 @@ import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 
-@SuppressWarnings("serial")
 public class ReferenceLinearTransformAxisConfigurationWizard extends AbstractAxisConfigurationWizard {
+    private static final long serialVersionUID = 1L;
+
     protected JPanel panelTransformation;
     protected JComboBox inputAxisX;
     protected JLabel lblInputAxisY;

@@ -38,9 +38,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public abstract class AbstractAxisConfigurationWizard extends AbstractConfigurationWizard {
-    protected final AbstractAxis axis;
+    private static final long serialVersionUID = 1L;
+
+    protected final transient AbstractAxis axis;
     protected JPanel panelProperties;
     protected JLabel lblName;
     protected JTextField name;

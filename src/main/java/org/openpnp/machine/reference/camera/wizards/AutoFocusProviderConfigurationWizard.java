@@ -58,10 +58,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class AutoFocusProviderConfigurationWizard extends AbstractConfigurationWizard {
-    private AutoFocusProvider focusProvider;
-    private Camera camera;
+    private static final long serialVersionUID = 1L;
+
+    private transient AutoFocusProvider focusProvider;
+    private transient Camera camera;
 
     public AutoFocusProviderConfigurationWizard(Camera camera, FocusProvider focusProvider) {
         this.camera = camera;
@@ -167,7 +168,7 @@ public class AutoFocusProviderConfigurationWizard extends AbstractConfigurationW
         firePropertyChange("lastFocusDistance", null, lastFocusDistance);
     }
 
-    private Action testAutoFocusAction = new AbstractAction("", Icons.centerPin) {
+    private transient Action testAutoFocusAction = new AbstractAction("", Icons.centerPin) {
         {
             putValue(Action.SHORT_DESCRIPTION, "<html>Auto-Focus the selected nozzle in this camera.<br/>If a part is on the nozzle, its height will be determined.</html>");
         }
@@ -198,7 +199,7 @@ public class AutoFocusProviderConfigurationWizard extends AbstractConfigurationW
         }
     };
 
-    private Action adjustCameraZAction = new AbstractAction("Adjust Camera Z") {
+    private transient Action adjustCameraZAction = new AbstractAction("Adjust Camera Z") {
         {
             putValue(Action.SHORT_DESCRIPTION, "<html>After having auto-focused, adjust the camera Z coordinate<br/>to match the focal distance i.e. make sure the camera is focused.</html>");
         }
@@ -251,7 +252,7 @@ public class AutoFocusProviderConfigurationWizard extends AbstractConfigurationW
     private JLabel lblLastFocusDistance;
     private JTextField txtLastFocusDistance;
 
-    private Length lastFocusDistance;
+    private transient Length lastFocusDistance;
     private JLabel lblShowDiagnostics;
     private JCheckBox showDiagnostics;
     private JButton btnSetCameraZ;

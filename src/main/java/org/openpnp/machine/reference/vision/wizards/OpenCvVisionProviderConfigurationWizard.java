@@ -25,9 +25,10 @@ import javax.swing.JPanel;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.machine.reference.vision.OpenCvVisionProvider;
 
-@SuppressWarnings("serial")
 public class OpenCvVisionProviderConfigurationWizard extends AbstractConfigurationWizard {
-    private final OpenCvVisionProvider visionProvider;
+    private static final long serialVersionUID = 1L;
+
+    private final transient OpenCvVisionProvider visionProvider;
 
     private JPanel panelGeneral;
 

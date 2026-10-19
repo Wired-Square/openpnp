@@ -24,9 +24,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceCameraCalibrationConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferenceCamera referenceCamera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceCamera referenceCamera;
     private JPanel panelLensCalibration;
     private JLabel lblApplyCalibration;
     private JCheckBox calibrationEnabledChk;
@@ -105,7 +106,7 @@ public class ReferenceCameraCalibrationConfigurationWizard extends AbstractConfi
         // "selected");
     }
 
-    private Action startCalibration = new AbstractAction(Translations.getString(
+    private transient Action startCalibration = new AbstractAction(Translations.getString(
             "ReferenceCameraCalibrationConfigurationWizard.Action.StartCalibration")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -136,7 +137,7 @@ public class ReferenceCameraCalibrationConfigurationWizard extends AbstractConfi
         }
     };
 
-    private Action cancelCalibration = new AbstractAction(Translations.getString(
+    private transient Action cancelCalibration = new AbstractAction(Translations.getString(
             "ReferenceCameraCalibrationConfigurationWizard.Action.CancelCalibration")) { //$NON-NLS-1$
         @Override
         public void actionPerformed(ActionEvent e) {

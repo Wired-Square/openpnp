@@ -37,9 +37,10 @@ import org.openpnp.spi.NozzleTip;
 import org.openpnp.util.MovableUtils;
 import org.openpnp.util.UiUtils;
 
-@SuppressWarnings("serial")
 public class ReferenceNozzleCompatibleNozzleTipsWizard extends AbstractConfigurationWizard {
-    private final ReferenceNozzle nozzle;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceNozzle nozzle;
     private JTable table;
     private NozzleTipsTableModel tableModel;
     private JScrollPane scrollPane;
@@ -77,6 +78,8 @@ public class ReferenceNozzleCompatibleNozzleTipsWizard extends AbstractConfigura
     }
 
         class NozzleTipsTableModel extends AbstractTableModel {
+            private static final long serialVersionUID = 1L;
+
             private String[] columnNames = new String[]{
                     Translations.getString(
                             "ReferenceNozzleCompatibleNozzleTipsWizard.NozzleTipsTableModel.ColumnName.NozzleTip"), //$NON-NLS-1$
@@ -86,7 +89,7 @@ public class ReferenceNozzleCompatibleNozzleTipsWizard extends AbstractConfigura
                             "ReferenceNozzleCompatibleNozzleTipsWizard.NozzleTipsTableModel.ColumnName.Loaded" //$NON-NLS-1$
                     )};
         private Class[] columnClasses = new Class[] { String.class, Boolean.class, Boolean.class };
-        private List<NozzleTip> nozzleTips;
+        private transient List<NozzleTip> nozzleTips;
 
         public NozzleTipsTableModel() {
             refresh();

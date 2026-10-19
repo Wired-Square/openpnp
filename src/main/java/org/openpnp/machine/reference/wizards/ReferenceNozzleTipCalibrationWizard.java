@@ -76,7 +76,9 @@ import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class ReferenceNozzleTipCalibrationWizard extends AbstractConfigurationWizard {
-    private final ReferenceNozzleTip nozzleTip;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceNozzleTip nozzleTip;
 
     private JPanel panelCalibration;
     private JButton btnEditPipeline;
@@ -517,9 +519,10 @@ public class ReferenceNozzleTipCalibrationWizard extends AbstractConfigurationWi
         }
     }
 
-    @SuppressWarnings("serial")
-    private Action positionToolAction = new AbstractAction(Translations.getString(
+    private transient Action positionToolAction = new AbstractAction(Translations.getString(
             "ReferenceNozzleTipCalibrationWizard.Action.PositionTool"), Icons.centerTool) { //$NON-NLS-1$
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceNozzleTipCalibrationWizard.Action.PositionTool.Description")); //$NON-NLS-1$

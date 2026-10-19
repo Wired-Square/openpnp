@@ -41,9 +41,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferencePnpJobProcessorConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferencePnpJobProcessor jobProcessor;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferencePnpJobProcessor jobProcessor;
     private JComboBox<JobOrderHint> comboBoxJobOrder;
     private JComboBox<Strategy> comboBoxPlannerStrategy;
     private JTextField maxVisionRetriesTextField;

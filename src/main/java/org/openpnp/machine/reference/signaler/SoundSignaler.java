@@ -66,7 +66,6 @@ public class SoundSignaler extends AbstractSignaler {
         }
     }
 
-    @SuppressWarnings("incomplete-switch")
     @Override
     public void signalJobProcessorState(AbstractJobProcessor.State state) {
         switch (state) {
@@ -77,6 +76,11 @@ public class SoundSignaler extends AbstractSignaler {
 
             case FINISHED: {
                 playSuccessSound();
+                break;
+            }
+
+            case STOPPED:
+            case RUNNING: {
                 break;
             }
         }

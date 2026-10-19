@@ -52,13 +52,14 @@ import com.jgoodies.forms.layout.RowSpec;
 /*
  * TODO: newly added properties don't get set on first apply
  */
-@SuppressWarnings("serial")
 public class OpenCvCameraConfigurationWizard extends AbstractConfigurationWizard {
-    private final OpenCvCamera camera;
+    private static final long serialVersionUID = 1L;
+
+    private final transient OpenCvCamera camera;
 
     private JPanel panelGeneral;
     
-    private List<OpenCvCapturePropertyValue> properties = new ArrayList<>();
+    private transient List<OpenCvCapturePropertyValue> properties = new ArrayList<>();
     
     private boolean propertyChanging = false;
     private boolean dirty = false;
@@ -308,7 +309,7 @@ public class OpenCvCameraConfigurationWizard extends AbstractConfigurationWizard
         }
     }
     
-    public Action readPropertyValueAction = new AbstractAction() {
+    public transient Action readPropertyValueAction = new AbstractAction() {
         {
             putValue(SMALL_ICON, Icons.refresh);
             putValue(NAME, "Read Property Value");

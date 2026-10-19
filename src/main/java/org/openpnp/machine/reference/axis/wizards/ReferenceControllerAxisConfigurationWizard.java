@@ -61,8 +61,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConfigurationWizard {
+    private static final long serialVersionUID = 1L;
+
     private JPanel panelControllerSettings;
     private JTextField homeCoordinate;
     private JLabel lblDesignator;
@@ -76,7 +77,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
     private JLabel lblPremoveCommand;
     private JTextArea preMoveCommand;
     private JScrollPane scrollPane;
-    protected NamedConverter<Driver> driverConverter;
+    protected transient NamedConverter<Driver> driverConverter;
     private JPanel panelKinematics;
     private JLabel lblFeedrates;
     private JTextField feedRatePerSecond;
@@ -113,7 +114,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
 
     private boolean converting = false;
 
-    private Action captureSoftLimitLowAction = new AbstractAction(null, Icons.captureAxisLow) {
+    private transient Action captureSoftLimitLowAction = new AbstractAction(null, Icons.captureAxisLow) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.CaptureSoftLimitLow.Description")); //$NON-NLS-1$
@@ -131,7 +132,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
         }
     };
 
-    private Action captureSoftLimitHighAction = new AbstractAction(null, Icons.captureAxisHigh) {
+    private transient Action captureSoftLimitHighAction = new AbstractAction(null, Icons.captureAxisHigh) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.CaptureSoftLimitHigh.Description")); //$NON-NLS-1$
@@ -149,7 +150,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
         }
     };
 
-    private Action positionSoftLimitLowAction = new AbstractAction(null, Icons.positionAxisLow) {
+    private transient Action positionSoftLimitLowAction = new AbstractAction(null, Icons.positionAxisLow) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.PositionSoftLimitLow.Description")); //$NON-NLS-1$
@@ -165,7 +166,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
         }
     };
 
-    private Action positionSoftLimitHighAction = new AbstractAction(null, Icons.positionAxisHigh) {
+    private transient Action positionSoftLimitHighAction = new AbstractAction(null, Icons.positionAxisHigh) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.PositionSoftLimitHigh.Description")); //$NON-NLS-1$
@@ -182,7 +183,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
     };
 
 
-    private Action captureSafeZoneLowAction = new AbstractAction(null, Icons.captureAxisLow) {
+    private transient Action captureSafeZoneLowAction = new AbstractAction(null, Icons.captureAxisLow) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.CaptureSafeZoneLow.Description")); //$NON-NLS-1$
@@ -200,7 +201,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
         }
     };
 
-    private Action captureSafeZoneHighAction = new AbstractAction(null, Icons.captureAxisHigh) {
+    private transient Action captureSafeZoneHighAction = new AbstractAction(null, Icons.captureAxisHigh) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.CaptureSafeZoneHigh.Description")); //$NON-NLS-1$
@@ -218,7 +219,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
         }
     };
 
-    private Action positionSafeZoneLowAction = new AbstractAction(null, Icons.positionAxisLow) {
+    private transient Action positionSafeZoneLowAction = new AbstractAction(null, Icons.positionAxisLow) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.PositionSafeZoneLow.Description")); //$NON-NLS-1$
@@ -234,7 +235,7 @@ public class ReferenceControllerAxisConfigurationWizard extends AbstractAxisConf
         }
     };
 
-    private Action positionSafeZoneHighAction = new AbstractAction(null, Icons.positionAxisHigh) {
+    private transient Action positionSafeZoneHighAction = new AbstractAction(null, Icons.positionAxisHigh) {
         {
             putValue(Action.SHORT_DESCRIPTION, Translations.getString(
                     "ReferenceControllerAxisConfigurationWizard.Action.PositionSafeZoneHigh.Description")); //$NON-NLS-1$

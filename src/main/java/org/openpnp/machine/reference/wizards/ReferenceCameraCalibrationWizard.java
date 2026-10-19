@@ -82,15 +82,16 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizard {
-    private final ReferenceCamera referenceCamera;
-    private ReferenceHead referenceHead;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceCamera referenceCamera;
+    private transient ReferenceHead referenceHead;
     private final boolean isMovable;
     private JPanel panelCameraCalibration;
     private JButton startCameraCalibrationBtn;
-    private AdvancedCalibration advCal;
-    private List<Location> calibrationLocations;
+    private transient AdvancedCalibration advCal;
+    private transient List<Location> calibrationLocations;
     private SimpleGraphView modelErrorsTimeSequenceView;
     private SimpleGraphView modelErrorsScatterPlotView;
     private VerticalLabel lblNewLabel_11;
@@ -98,15 +99,15 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
     private VerticalLabel lblNewLabel_13;
     private JLabel lblNewLabel_16;
     private int heightIndex = 0;
-    private List<LengthCellValue> calibrationHeightSelections;
+    private transient List<LengthCellValue> calibrationHeightSelections;
     private SpinnerListModel spinnerModel;
     private LengthUnit displayUnits;
     private LengthUnit smallDisplayUnits;
-    private Location secondaryLocation;
+    private transient Location secondaryLocation;
     private double primaryDiameter;
     private double secondaryDiameter;
-    private Machine machine;
-    private CameraCalibrationProcessProperties props;
+    private transient Machine machine;
+    private transient CameraCalibrationProcessProperties props;
 
 
     /**
@@ -917,7 +918,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         }
     }
     
-    private Action overrideAction = new AbstractAction("Override Old Style") {
+    private transient Action overrideAction = new AbstractAction("Override Old Style") {
         @Override
         public void actionPerformed(ActionEvent e) {
             enableControls(chckbxAdvancedCalOverride.isSelected());
@@ -925,21 +926,21 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         }
     };
     
-    private Action enableAction = new AbstractAction("Enable Calibration") {
+    private transient Action enableAction = new AbstractAction("Enable Calibration") {
         @Override
         public void actionPerformed(ActionEvent e) {
             referenceCamera.setHeadOffsets(referenceCamera.getHeadOffsets());
         }
     };
     
-    private Action showOutliersActionListener = new AbstractAction("Show Outliers") {
+    private transient Action showOutliersActionListener = new AbstractAction("Show Outliers") {
         @Override
         public void actionPerformed(ActionEvent e) {
             updateDiagnosticsDisplay();
         }
     };
     
-    private Action startCalibration = new AbstractAction("Start Calibration Data Collection") {
+    private transient Action startCalibration = new AbstractAction("Start Calibration Data Collection") {
         @Override
         public void actionPerformed(ActionEvent e) {
             //Pre-calibration checks
@@ -1128,7 +1129,7 @@ public class ReferenceCameraCalibrationWizard extends AbstractConfigurationWizar
         }
     }
     
-    private ChangeListener sliderAlphaChanged = new ChangeListener() {
+    private transient ChangeListener sliderAlphaChanged = new ChangeListener() {
 
         @Override
         public void stateChanged(ChangeEvent e) {

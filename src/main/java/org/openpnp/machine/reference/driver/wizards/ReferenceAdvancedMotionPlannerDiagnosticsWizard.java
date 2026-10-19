@@ -55,15 +55,16 @@ import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-@SuppressWarnings("serial")
 public class ReferenceAdvancedMotionPlannerDiagnosticsWizard extends AbstractConfigurationWizard {
-    private final ReferenceAdvancedMotionPlanner motionPlanner;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceAdvancedMotionPlanner motionPlanner;
     private JLabel lblDiagnostics;
     private JCheckBox diagnosticsEnabled;
     private SimpleGraphView motionGraph;
     private JButton btnTest;
 
-    private Action testAction =
+    private transient Action testAction =
             new AbstractAction(Translations.getString("ReferenceAdvancedMotionPlannerDiagnosticsWizard.TestButton.text"), Icons.start) { //$NON-NLS-1$
         {
             putValue(Action.SHORT_DESCRIPTION,

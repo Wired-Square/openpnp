@@ -52,9 +52,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceHeadConfigurationWizard extends AbstractConfigurationWizard {
-    private final ReferenceHead head;
+    private static final long serialVersionUID = 1L;
+
+    private final transient ReferenceHead head;
 
     public ReferenceHeadConfigurationWizard(ReferenceHead head) {
         this.head = head;

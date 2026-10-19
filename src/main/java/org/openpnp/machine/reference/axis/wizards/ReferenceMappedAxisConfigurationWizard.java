@@ -43,8 +43,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
-@SuppressWarnings("serial")
 public class ReferenceMappedAxisConfigurationWizard extends AbstractAxisConfigurationWizard {
+    private static final long serialVersionUID = 1L;
+
     private JPanel panelTransformation;
     private JLabel lblInputAxis;
     private JComboBox inputAxis;

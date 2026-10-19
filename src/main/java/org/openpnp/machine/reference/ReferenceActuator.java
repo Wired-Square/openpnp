@@ -391,8 +391,9 @@ public class ReferenceActuator extends AbstractActuator implements HeadMountable
         }
     };
 
-    @SuppressWarnings("serial")
     public Action permutateUpAction = new AbstractAction() {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.arrowUp);
             putValue(NAME, Translations.getString("ReferenceActuator.Actions.PermutateUp")); //$NON-NLS-1$
@@ -410,8 +411,9 @@ public class ReferenceActuator extends AbstractActuator implements HeadMountable
         }
     };
 
-    @SuppressWarnings("serial")
     public Action permutateDownAction = new AbstractAction() {
+        private static final long serialVersionUID = 1L;
+
         {
             putValue(SMALL_ICON, Icons.arrowDown);
             putValue(NAME, Translations.getString("ReferenceActuator.Actions.PermutateDown")); //$NON-NLS-1$
