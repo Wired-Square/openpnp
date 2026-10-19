@@ -14,6 +14,11 @@ pick and place machine that anyone can afford. I believe that with the ubiquity 
 motion control hardware, some ingenuity and plenty of Open Source software it should be possible
 to build and own a fully functional SMT pick and place machine for under $1000.
 
+## Requirements
+
+OpenPnP needs 64-bit Java 25 or later to build and run. `openpnp.sh` and `openpnp.bat` start it
+from a build in `target`.
+
 ## Project Status
 
 OpenPnP is stable and in wide use. It is still under heavy development and new features are added continuously. Upstream builds, without this fork's changes, are on the OpenPnP [Downloads](http://openpnp.org/downloads) page.

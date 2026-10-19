@@ -979,12 +979,6 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <windows name="Windows_32" id="24" installDir="openpnp" architecture="32">
-      <variables>
-        <variable name="native_path" value="windows/x86" />
-      </variables>
-      <jreBundle jreBundleSource="none" manualJreEntry="true" />
-    </windows>
     <windows name="Windows_64" id="28" installDir="openpnp" architecture="64">
       <variables>
         <variable name="native_path" value="windows/x64" />

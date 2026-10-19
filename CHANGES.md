@@ -1,6 +1,14 @@
 This file lists major or notable changes to OpenPnP in chronological order. This is not
 a complete change list, only those that may directly interest or affect users.
 
+# Wired Square fork
+
+## Java 25
+
+OpenPnP now requires 64-bit Java 25 or later. There is no 32-bit Java 25, so the 32-bit Windows
+installer is gone. `openpnp.sh` and `openpnp.bat` say when the Java on the PATH is too old,
+instead of failing with `UnsupportedClassVersionError`.
+
 # Version 2.7
 
 ## New Features
