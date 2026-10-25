@@ -42,6 +42,7 @@ import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Locale;
@@ -93,6 +94,7 @@ import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.gui.support.OSXAdapter;
 import org.openpnp.gui.support.PropertySheetWizardAdapter;
 import org.openpnp.gui.support.RotationCellValue;
+import org.openpnp.mcp.McpService;
 import org.openpnp.model.Board;
 import org.openpnp.model.BoardLocation;
 import org.openpnp.model.Configuration;
@@ -657,6 +659,8 @@ public class MainFrame extends JFrame {
 
         mnCommands.add(new JMenuItem(machineControlsPanel.homeAction));
         mnCommands.add(new JMenuItem(machineControlsPanel.startStopMachineAction));
+        mnCommands.addSeparator();
+        mnCommands.add(new JMenuItem(mcpServerAction));
 
         int[] ctrl_shift_mask = {KeyEvent.CTRL_DOWN_MASK, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK};
         for (int mask : ctrl_shift_mask) {
@@ -852,6 +856,17 @@ public class MainFrame extends JFrame {
 	        }
 	    }
         splitWindows();
+        startMcpServer();
+    }
+
+    private void startMcpServer() {
+        McpService.initialise(jobPanel::getJob);
+        try {
+            McpService.get().applySettings();
+        }
+        catch (IOException e) {
+            Logger.warn(e, "Could not start the MCP server"); //$NON-NLS-1$
+        }
     }
 
     // 20161222 - ldpgh/lutz_dd
@@ -1272,6 +1287,13 @@ public class MainFrame extends JFrame {
             }
             MessageBoxes.infoBox(Translations.getString("CommonPhrases.windowsStyleChanged"), //$NON-NLS-1$
                     Translations.getString("CommonPhrases.windowsStyleChangedRestartToTakeEffect")); //$NON-NLS-1$
+        }
+    };
+
+    private transient Action mcpServerAction = new AbstractAction(Translations.getString("Menu.Machine.McpServer")) { //$NON-NLS-1$
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            new McpServerDialog(mainFrame, McpService.get()).setVisible(true);
         }
     };
 
