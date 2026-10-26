@@ -17,6 +17,7 @@ import org.openpnp.mcp.tools.GetJobTool;
 import org.openpnp.mcp.tools.ListFeedersTool;
 import org.openpnp.mcp.tools.ListPackagesTool;
 import org.openpnp.mcp.tools.ListPartsTool;
+import org.openpnp.mcp.tools.SetFeederNoteTool;
 import org.openpnp.mcp.tools.SetPhotonSlotRotationTool;
 import org.openpnp.mcp.tools.SuggestFeederRotationTool;
 import org.openpnp.model.Configuration;
@@ -59,7 +60,8 @@ public final class McpService {
                         () -> settings.isApplySuggestionsDirectly() && settings.isAllowWrite()),
                 new DismissFeederRotationSuggestionTool(machine),
                 new ApplyFeederRotationSuggestionTool(machine),
-                new SetPhotonSlotRotationTool(machine)));
+                new SetPhotonSlotRotationTool(machine),
+                new SetFeederNoteTool(machine)));
     }
 
     public static McpService get() {

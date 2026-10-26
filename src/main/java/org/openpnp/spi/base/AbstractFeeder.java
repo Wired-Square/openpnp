@@ -10,12 +10,16 @@ import org.openpnp.model.AbstractModelObject;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Part;
 import org.openpnp.model.RotationSuggestion;
+import org.openpnp.model.XmlText;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.Nozzle;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 
 public abstract class AbstractFeeder extends AbstractModelObject implements Feeder {
+    /** A note is for a convention or a caveat, not a document. */
+    public static final int MAX_NOTE_LENGTH = 2000;
+
     /**
      * History:
      * 
@@ -62,6 +66,10 @@ public abstract class AbstractFeeder extends AbstractModelObject implements Feed
     // Confined to the EDT: set by the Feeders panel and by MCP tools, which run on the EDT.
     @Element(required = false)
     private RotationSuggestion rotationSuggestion;
+
+    // Confined to the EDT: set by the Feeders panel and by MCP tools, which run on the EDT.
+    @Element(required = false)
+    private String note;
 
     public AbstractFeeder() {
         this.id = Configuration.createId("FDR");
@@ -132,6 +140,35 @@ public abstract class AbstractFeeder extends AbstractModelObject implements Feed
     public void setName(String name) {
         this.name = name;
         firePropertyChange("name", null, name);
+    }
+
+    @Override
+    public String getNote() {
+        return note;
+    }
+
+    /**
+     * A blank note is stored as none. Line endings are stored as \n, which is what XML reads back.
+     *
+     * @throws IllegalArgumentException if the note is too long or has characters XML can't hold.
+     */
+    @Override
+    public void setNote(String note) {
+        String normalised = note == null || note.isBlank() ? null : normaliseLineEndings(note);
+        if (normalised != null) {
+            if (normalised.length() > MAX_NOTE_LENGTH) {
+                throw new IllegalArgumentException(
+                        "A note must be at most " + MAX_NOTE_LENGTH + " characters");
+            }
+            XmlText.requireValid(normalised, "The note");
+        }
+        Object oldValue = this.note;
+        this.note = normalised;
+        firePropertyChange("note", oldValue, this.note);
+    }
+
+    public static String normaliseLineEndings(String text) {
+        return text.replace("\r\n", "\n").replace('\r', '\n');
     }
 
     @Override

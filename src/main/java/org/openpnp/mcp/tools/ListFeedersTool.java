@@ -88,6 +88,9 @@ public final class ListFeedersTool implements McpTool {
                 json.addProperty("packageId", part.getPackage().getId());
             }
         }
+        if (feeder.getNote() != null) {
+            json.addProperty("note", feeder.getNote());
+        }
         json.addProperty("canApplyPickRotation", feeder.canApplyPickRotation());
         RotationSuggestion suggestion = feeder.getRotationSuggestion();
         if (suggestion != null) {

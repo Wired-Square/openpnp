@@ -60,7 +60,7 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
 
     private List<Feeder> feeders;
 
-    private final PropertyChangeListener rotationSuggestionListener = event -> SwingUtilities
+    private final PropertyChangeListener rowListener = event -> SwingUtilities
             .invokeLater(() -> refresh((Feeder) event.getSource()));
 
     public FeedersTableModel(Configuration configuration) {
@@ -89,10 +89,10 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
                     SwingUtilities.invokeLater(() -> fireTableRowsUpdated(0, feeders.size()-1));
                 });
                 // Removed first, as refresh() runs again whenever the feeder list changes.
-                ((AbstractModelObject) f).removePropertyChangeListener("rotationSuggestion",
-                        rotationSuggestionListener);
-                ((AbstractModelObject) f).addPropertyChangeListener("rotationSuggestion",
-                        rotationSuggestionListener);
+                ((AbstractModelObject) f).removePropertyChangeListener("rotationSuggestion", //$NON-NLS-1$
+                        rowListener);
+                ((AbstractModelObject) f).addPropertyChangeListener("rotationSuggestion", //$NON-NLS-1$
+                        rowListener);
             }
             if ((f instanceof ReferenceFeeder) && ((ReferenceFeeder)f).supportsFeedOptions()) {
                 ((ReferenceFeeder)f).addPropertyChangeListener("feedOptions",  event-> {

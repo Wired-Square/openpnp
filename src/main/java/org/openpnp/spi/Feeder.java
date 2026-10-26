@@ -166,6 +166,19 @@ public interface Feeder extends Identifiable, Named, WizardConfigurable, Propert
     public default void deferredBottomVisionResult(Location pickError) {
     }
 
+    /**
+     * A free-text note for what the configuration can't express, such as the orientation
+     * convention for loose parts.
+     */
+    public default String getNote() {
+        return null;
+    }
+
+    public default void setNote(String note) {
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " does not keep notes");
+    }
+
     public default RotationSuggestion getRotationSuggestion() {
         return null;
     }

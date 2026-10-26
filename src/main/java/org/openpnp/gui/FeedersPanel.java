@@ -73,6 +73,7 @@ import org.openpnp.gui.support.Icons;
 import org.openpnp.gui.support.TableUtils;
 import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.support.MessageBoxes;
+import org.openpnp.gui.support.FeederNotePanel;
 import org.openpnp.gui.support.RotationSuggestionRenderer;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.gui.support.WizardContainer;
@@ -122,6 +123,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
     private transient Preferences prefs = Preferences.userNodeForPackage(FeedersPanel.class);
     
     private JTabbedPane configurationPanel;
+    private final FeederNotePanel notePanel = new FeederNotePanel();
     private int priorRowIndex = -1;
     private String priorFeederId;
     private HashMap<Class, Integer> lastSelectedTabIndex = new HashMap<>();
@@ -215,7 +217,10 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         TableUtils.installColumnWidthSavers(table, prefs, "FeedersPanel.table.columnWidth"); //$NON-NLS-1$
 
         configurationPanel = new JTabbedPane(JTabbedPane.TOP);
-        splitPane.setRightComponent(configurationPanel);
+        JPanel feederDetails = new JPanel(new BorderLayout());
+        feederDetails.add(notePanel, BorderLayout.NORTH);
+        feederDetails.add(configurationPanel, BorderLayout.CENTER);
+        splitPane.setRightComponent(feederDetails);
 
         singleSelectActionGroup = new ActionGroup(deleteFeederAction, feedFeederAction,
                 pickFeederAction, moveCameraToPickLocation, moveToolToPickLocation,
@@ -272,6 +277,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
                         }
                     }
                     configurationPanel.removeAll();
+                    notePanel.setFeeder(feeder);
                     if (feeder != null) {
                         priorFeederId = feeder.getId();
                         PropertySheet[] propertySheets = feeder.getPropertySheets();
