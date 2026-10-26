@@ -38,6 +38,7 @@ public class McpSettingsTest {
         assertTrue(settings.isTierEnabled(Tier.READ));
         assertTrue(settings.isTierEnabled(Tier.SUGGEST));
         assertFalse(settings.isTierEnabled(Tier.WRITE));
+        assertFalse(settings.isTierEnabled(Tier.MACHINE));
     }
 
     @Test

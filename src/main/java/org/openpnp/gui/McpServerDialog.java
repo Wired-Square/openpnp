@@ -39,6 +39,7 @@ public class McpServerDialog extends JDialog {
     private final JSpinner portSpinner;
     private final JCheckBox allowWriteChk;
     private final JCheckBox applyDirectlyChk;
+    private final JCheckBox allowMachineChk;
     private final JLabel statusLbl;
     private final JTextField commandTf;
 
@@ -52,7 +53,8 @@ public class McpServerDialog extends JDialog {
         JPanel form = new JPanel(new FormLayout(
                 "right:pref, $lcgap, pref:grow, $rgap, pref", //$NON-NLS-1$
                 "pref, $pgap, pref, $lgap, pref, $lgap, pref, $lgap, pref, $pgap, " //$NON-NLS-1$
-                        + "pref, $lgap, pref, $lgap, pref, $lgap, pref, $pgap, pref, $lgap, pref, " //$NON-NLS-1$
+                        + "pref, $lgap, pref, $lgap, pref, $lgap, pref, $lgap, pref, $pgap, pref, " //$NON-NLS-1$
+                        + "$lgap, pref, " //$NON-NLS-1$
                         + "$ugap, " //$NON-NLS-1$
                         + "pref")); //$NON-NLS-1$
         form.setBorder(Borders.DIALOG);
@@ -90,9 +92,13 @@ public class McpServerDialog extends JDialog {
         // Applying a suggestion changes configuration, so it needs write access too.
         applyDirectlyChk.setEnabled(allowWriteChk.isSelected());
         allowWriteChk.addItemListener(e -> applyDirectlyChk.setEnabled(allowWriteChk.isSelected()));
-        form.add(new JLabel(Translations.getString("McpServerDialog.Token")), "1, 17"); //$NON-NLS-1$ //$NON-NLS-2$
+        allowMachineChk = new JCheckBox(
+                Translations.getString("McpServerDialog.AllowMachine")); //$NON-NLS-1$
+        allowMachineChk.setSelected(settings.isAllowMachine());
+        form.add(allowMachineChk, "3, 17, 3, 1"); //$NON-NLS-1$
+        form.add(new JLabel(Translations.getString("McpServerDialog.Token")), "1, 19"); //$NON-NLS-1$ //$NON-NLS-2$
         JLabel tokenLbl = new JLabel(TOKEN_MASK);
-        form.add(tokenLbl, "3, 17"); //$NON-NLS-1$
+        form.add(tokenLbl, "3, 19"); //$NON-NLS-1$
         JButton regenerateButton = new JButton(
                 Translations.getString("McpServerDialog.RegenerateToken")); //$NON-NLS-1$
         regenerateButton.addActionListener(e -> {
@@ -101,27 +107,27 @@ public class McpServerDialog extends JDialog {
                 apply();
             }
         });
-        form.add(regenerateButton, "5, 17"); //$NON-NLS-1$
+        form.add(regenerateButton, "5, 19"); //$NON-NLS-1$
 
         form.add(factory.createSeparator(
-                Translations.getString("McpServerDialog.Section.ClaudeCode")), "1, 19, 5, 1"); //$NON-NLS-1$ //$NON-NLS-2$
-        form.add(new JLabel(Translations.getString("McpServerDialog.Command")), "1, 21"); //$NON-NLS-1$ //$NON-NLS-2$
+                Translations.getString("McpServerDialog.Section.ClaudeCode")), "1, 21, 5, 1"); //$NON-NLS-1$ //$NON-NLS-2$
+        form.add(new JLabel(Translations.getString("McpServerDialog.Command")), "1, 23"); //$NON-NLS-1$ //$NON-NLS-2$
         commandTf = new JTextField(COMMAND_COLUMNS);
         commandTf.setEditable(false);
         commandTf.setFont(UIManager.getFont("monospaced.font")); //$NON-NLS-1$
-        form.add(commandTf, "3, 21"); //$NON-NLS-1$
+        form.add(commandTf, "3, 23"); //$NON-NLS-1$
         JButton copyButton = new JButton(
                 Translations.getString("McpServerDialog.CopyCommand")); //$NON-NLS-1$
         copyButton.addActionListener(e -> Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new StringSelection(service.getClaudeCodeCommand()), null));
-        form.add(copyButton, "5, 21"); //$NON-NLS-1$
+        form.add(copyButton, "5, 23"); //$NON-NLS-1$
 
         JButton applyButton = new JButton(Translations.getString("McpServerDialog.Apply")); //$NON-NLS-1$
         applyButton.addActionListener(e -> apply());
         JButton closeButton = new JButton(Translations.getString("McpServerDialog.Close")); //$NON-NLS-1$
         closeButton.addActionListener(e -> dispose());
         form.add(new ButtonBarBuilder().addGlue().addButton(applyButton, closeButton).build(),
-                "1, 23, 5, 1"); //$NON-NLS-1$
+                "1, 25, 5, 1"); //$NON-NLS-1$
         setContentPane(form);
         getRootPane().setDefaultButton(applyButton);
 
@@ -153,6 +159,7 @@ public class McpServerDialog extends JDialog {
         settings.setPort((Integer) portSpinner.getValue());
         settings.setAllowWrite(allowWriteChk.isSelected());
         settings.setApplySuggestionsDirectly(applyDirectlyChk.isSelected());
+        settings.setAllowMachine(allowMachineChk.isSelected());
         try {
             service.applySettings();
             refresh(null);

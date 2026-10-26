@@ -34,6 +34,29 @@ public final class McpSchema {
         return property(name, "number", description);
     }
 
+    public McpSchema stringArray(String name, String description) {
+        JsonObject items = new JsonObject();
+        items.addProperty("type", "string");
+        property(name, "array", description);
+        properties.getAsJsonObject(name).add("items", items);
+        return this;
+    }
+
+    /** An array of objects, each described by a nested schema. */
+    public McpSchema objectArray(String name, String description, McpSchema items) {
+        property(name, "array", description);
+        properties.getAsJsonObject(name).add("items", items.build());
+        return this;
+    }
+
+    /** A property of any JSON type, described in words. */
+    public McpSchema any(String name, String description) {
+        JsonObject property = new JsonObject();
+        property.addProperty("description", description);
+        properties.add(name, property);
+        return this;
+    }
+
     public McpSchema required(String name) {
         if (!properties.has(name)) {
             throw new IllegalArgumentException("No property " + name);

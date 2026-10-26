@@ -12,12 +12,17 @@ import javax.swing.SwingUtilities;
 
 import org.openpnp.Main;
 import org.openpnp.mcp.tools.ApplyFeederRotationSuggestionTool;
+import org.openpnp.mcp.tools.CaptureCameraTool;
 import org.openpnp.mcp.tools.DismissFeederRotationSuggestionTool;
 import org.openpnp.mcp.tools.GetJobTool;
+import org.openpnp.mcp.tools.GetPipelineTool;
 import org.openpnp.mcp.tools.ListFeedersTool;
 import org.openpnp.mcp.tools.ListPackagesTool;
 import org.openpnp.mcp.tools.ListPartsTool;
+import org.openpnp.mcp.tools.MoveCameraToFeederTool;
+import org.openpnp.mcp.tools.RunPipelineTool;
 import org.openpnp.mcp.tools.SetFeederNoteTool;
+import org.openpnp.mcp.tools.SetPipelineStagePropertyTool;
 import org.openpnp.mcp.tools.SetPhotonSlotRotationTool;
 import org.openpnp.mcp.tools.SuggestFeederRotationTool;
 import org.openpnp.model.Configuration;
@@ -44,7 +49,7 @@ public final class McpService {
         this.tools = tools;
     }
 
-    public static void initialise(Supplier<Job> job) {
+    public static void initialise(Supplier<Job> job, MotionConfirmer confirmer) {
         if (instance != null) {
             throw new IllegalStateException("McpService already initialised");
         }
@@ -61,7 +66,12 @@ public final class McpService {
                 new DismissFeederRotationSuggestionTool(machine),
                 new ApplyFeederRotationSuggestionTool(machine),
                 new SetPhotonSlotRotationTool(machine),
-                new SetFeederNoteTool(machine)));
+                new SetFeederNoteTool(machine),
+                new GetPipelineTool(machine),
+                new RunPipelineTool(machine),
+                new CaptureCameraTool(machine),
+                new SetPipelineStagePropertyTool(machine),
+                new MoveCameraToFeederTool(machine, confirmer)));
     }
 
     public static McpService get() {
@@ -110,7 +120,7 @@ public final class McpService {
     }
 
     static McpToolResult invokeOnEdt(McpTool tool, JsonObject arguments) throws Exception {
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (!tool.runsOnEdt() || SwingUtilities.isEventDispatchThread()) {
             return tool.call(arguments);
         }
         FutureTask<McpToolResult> task = new FutureTask<>(() -> tool.call(arguments));

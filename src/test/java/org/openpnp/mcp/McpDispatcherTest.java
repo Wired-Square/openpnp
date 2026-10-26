@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.image.BufferedImage;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -188,6 +189,21 @@ public class McpDispatcherTest {
         assertTrue(result.get("isError").getAsBoolean());
         assertTrue(text(result).startsWith("echo failed: java.lang.IllegalStateException"),
                 text(result));
+    }
+
+    @Test
+    public void imagesFollowTheJsonAndAreScaledDown() {
+        BufferedImage large = new BufferedImage(McpToolResult.MAX_IMAGE_SIDE * 2,
+                McpToolResult.MAX_IMAGE_SIDE, BufferedImage.TYPE_INT_RGB);
+
+        JsonArray content = McpToolResult.json(new JsonObject()).withImage("frame", large)
+                .toJson().getAsJsonArray("content");
+
+        assertEquals("frame", content.get(1).getAsJsonObject().get("text").getAsString());
+        JsonObject image = content.get(2).getAsJsonObject();
+        assertEquals("image/png", image.get("mimeType").getAsString());
+        assertEquals(McpToolResult.MAX_IMAGE_SIDE,
+                McpToolResult.scaleDown(large).getWidth());
     }
 
     private static String text(JsonObject result) {

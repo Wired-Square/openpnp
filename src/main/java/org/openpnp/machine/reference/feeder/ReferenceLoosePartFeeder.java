@@ -30,17 +30,20 @@ import org.openpnp.gui.support.PropertySheetWizardAdapter;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.machine.reference.ReferenceFeeder;
 import org.openpnp.machine.reference.feeder.wizards.ReferenceLoosePartFeederConfigurationWizard;
+import org.openpnp.model.Configuration;
 import org.openpnp.model.Location;
 import org.openpnp.spi.Camera;
+import org.openpnp.spi.Head;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.PropertySheetHolder;
 import org.openpnp.util.MovableUtils;
 import org.openpnp.util.OpenCvUtils;
 import org.openpnp.util.VisionUtils;
 import org.openpnp.vision.pipeline.CvPipeline;
+import org.openpnp.vision.pipeline.PipelineHolder;
 import org.simpleframework.xml.Element;
 
-public class ReferenceLoosePartFeeder extends ReferenceFeeder {
+public class ReferenceLoosePartFeeder extends ReferenceFeeder implements PipelineHolder {
     @Element(required = false)
     private CvPipeline pipeline = createDefaultPipeline();
 
@@ -92,9 +95,7 @@ public class ReferenceLoosePartFeeder extends ReferenceFeeder {
     private Location getPickLocation(CvPipeline pipeline, Camera camera, Nozzle nozzle)
             throws Exception {
         // Process the pipeline to extract RotatedRect results
-        pipeline.setProperty("camera", camera);
-        pipeline.setProperty("nozzle", nozzle);
-        pipeline.setProperty("feeder", this);
+        preparePipeline(pipeline, camera, nozzle);
         pipeline.process();
         // Grab the results
         List<RotatedRect> results = pipeline.getExpectedResult(VisionUtils.PIPELINE_RESULTS_NAME)
@@ -138,8 +139,24 @@ public class ReferenceLoosePartFeeder extends ReferenceFeeder {
         pickLocation = null;
     }
     
+    @Override
     public CvPipeline getPipeline() {
         return pipeline;
+    }
+
+    /** Prepares as a feed with the head's default nozzle would. */
+    @Override
+    public void preparePipeline(CvPipeline pipeline, Camera camera) throws Exception {
+        Head head = camera.getHead() != null
+                ? camera.getHead()
+                : Configuration.get().getMachine().getDefaultHead();
+        preparePipeline(pipeline, camera, head.getDefaultNozzle());
+    }
+
+    private void preparePipeline(CvPipeline pipeline, Camera camera, Nozzle nozzle) {
+        pipeline.setProperty("camera", camera);
+        pipeline.setProperty("nozzle", nozzle);
+        pipeline.setProperty("feeder", this);
     }
 
     public void resetPipeline() {

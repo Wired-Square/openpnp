@@ -21,6 +21,7 @@ public final class McpSettings {
     private static final String TOKEN = "token";
     private static final String ALLOW_WRITE = "allowWrite";
     private static final String APPLY_SUGGESTIONS_DIRECTLY = "applySuggestionsDirectly";
+    private static final String ALLOW_MACHINE = "allowMachine";
 
     private final Preferences preferences;
 
@@ -86,6 +87,14 @@ public final class McpSettings {
         preferences.putBoolean(APPLY_SUGGESTIONS_DIRECTLY, applySuggestionsDirectly);
     }
 
+    public boolean isAllowMachine() {
+        return preferences.getBoolean(ALLOW_MACHINE, false);
+    }
+
+    public void setAllowMachine(boolean allowMachine) {
+        preferences.putBoolean(ALLOW_MACHINE, allowMachine);
+    }
+
     public boolean isTierEnabled(Tier tier) {
         switch (tier) {
             case READ:
@@ -93,6 +102,8 @@ public final class McpSettings {
                 return true;
             case WRITE:
                 return isAllowWrite();
+            case MACHINE:
+                return isAllowMachine();
             default:
                 throw new IllegalArgumentException("Unknown tier " + tier);
         }

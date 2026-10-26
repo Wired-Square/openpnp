@@ -15,7 +15,9 @@ public interface McpTool {
         /** Records advice on the model for the operator to review, without changing behaviour. */
         SUGGEST,
         /** Changes configuration. */
-        WRITE
+        WRITE,
+        /** Moves the machine; every move also needs the operator's confirmation in OpenPnP. */
+        MACHINE
     }
 
     String getName();
@@ -26,6 +28,14 @@ public interface McpTool {
     JsonObject getInputSchema();
 
     Tier getTier();
+
+    /**
+     * Whether the call runs on the EDT. A tool that waits for the operator or for the machine
+     * thread returns false and runs on the server thread, handing UI work to the EDT itself.
+     */
+    default boolean runsOnEdt() {
+        return true;
+    }
 
     /**
      * @throws IllegalArgumentException when the arguments are invalid; the message is returned to

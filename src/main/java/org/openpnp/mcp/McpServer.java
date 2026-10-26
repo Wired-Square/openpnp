@@ -29,7 +29,8 @@ public final class McpServer {
     public static final String PATH = "/mcp";
 
     private static final int MAX_REQUEST_BYTES = 1024 * 1024;
-    private static final int HANDLER_THREADS = 2;
+    /** Room for a move waiting on the operator plus ordinary requests. */
+    private static final int HANDLER_THREADS = 4;
     private static final int STOP_DELAY_SECONDS = 0;
     private static final Set<String> LOCAL_HOSTS = Set.of("localhost", "127.0.0.1", "[::1]");
     /** IPv4 explicitly: the advertised URL is 127.0.0.1 even when Java prefers IPv6. */
