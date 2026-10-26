@@ -5,13 +5,16 @@ import java.util.function.Supplier;
 import org.openpnp.machine.photon.PhotonFeeder;
 import org.openpnp.machine.photon.PhotonFeederSlots;
 import org.openpnp.machine.reference.ReferenceFeeder;
+import org.openpnp.machine.reference.feeder.ReferenceLoosePartFeeder;
 import org.openpnp.mcp.McpJson;
 import org.openpnp.mcp.McpSchema;
 import org.openpnp.mcp.McpTool;
 import org.openpnp.mcp.McpToolResult;
+import org.openpnp.model.Configuration;
 import org.openpnp.model.Part;
 import org.openpnp.model.PickOffsetCorrection;
 import org.openpnp.model.RotationSuggestion;
+import org.openpnp.spi.Camera;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.Machine;
 
@@ -111,6 +114,9 @@ public final class ListFeedersTool implements McpTool {
         if (feeder instanceof PhotonFeeder) {
             describePhoton((PhotonFeeder) feeder, json);
         }
+        else if (feeder instanceof ReferenceLoosePartFeeder) {
+            describeSearch((ReferenceLoosePartFeeder) feeder, json);
+        }
         else if (feeder instanceof ReferenceFeeder) {
             ReferenceFeeder referenceFeeder = (ReferenceFeeder) feeder;
             if (referenceFeeder.getLocation() != null) {
@@ -118,6 +124,21 @@ public final class ListFeedersTool implements McpTool {
             }
         }
         return json;
+    }
+
+    private static void describeSearch(ReferenceLoosePartFeeder feeder, JsonObject json) {
+        JsonObject search = new JsonObject();
+        search.addProperty("widthMm", McpJson.millimetres(feeder.getSearchWidth()));
+        search.addProperty("heightMm", McpJson.millimetres(feeder.getSearchHeight()));
+        search.addProperty("partSizeMm", McpJson.millimetres(feeder.getPartSize()));
+        try {
+            Camera camera = Configuration.get().getMachine().getDefaultHead().getDefaultCamera();
+            search.addProperty("frames", feeder.getSearchFrames(camera).size());
+        }
+        catch (Exception e) {
+            search.addProperty("framesError", e.getMessage() != null ? e.getMessage() : e.toString());
+        }
+        json.add("searchArea", search);
     }
 
     private static void describePhoton(PhotonFeeder feeder, JsonObject json) {

@@ -19,6 +19,7 @@
 
 package org.openpnp.machine.reference.feeder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
@@ -31,6 +32,8 @@ import org.openpnp.gui.support.Wizard;
 import org.openpnp.machine.reference.ReferenceFeeder;
 import org.openpnp.machine.reference.feeder.wizards.ReferenceLoosePartFeederConfigurationWizard;
 import org.openpnp.model.Configuration;
+import org.openpnp.model.Length;
+import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
 import org.openpnp.spi.Camera;
 import org.openpnp.spi.Head;
@@ -44,10 +47,46 @@ import org.openpnp.vision.pipeline.PipelineHolder;
 import org.simpleframework.xml.Element;
 
 public class ReferenceLoosePartFeeder extends ReferenceFeeder implements PipelineHolder {
+    /** Detections after the first, each from straight above the part found last. */
+    private static final int CENTRING_PASSES = 2;
+    /**
+     * Without a part size, neighbouring search frames are at most half a frame apart, so a part up
+     * to half a frame across lies wholly inside at least one of them.
+     */
+    private static final double DEFAULT_FRAME_STEP_FRACTION = 0.5;
+    /**
+     * A search that finds nothing is repeated once before the feeder reports itself empty, so one
+     * bad frame doesn't disable it.
+     */
+    private static final int SEARCH_PASSES = 2;
+    private static final double STEP_TOLERANCE = 1e-9;
+
     @Element(required = false)
     private CvPipeline pipeline = createDefaultPipeline();
 
+    // Volatile: set on the EDT by the wizard, read on the machine thread by feed().
+    /** Along machine X; zero searches one camera frame at the location. */
+    @Element(required = false)
+    private volatile Length searchWidth = new Length(0, LengthUnit.Millimeters);
+
+    // Volatile: set on the EDT by the wizard, read on the machine thread by feed().
+    /** Along machine Y. */
+    @Element(required = false)
+    private volatile Length searchHeight = new Length(0, LengthUnit.Millimeters);
+
+    // Volatile: set on the EDT by the wizard, read on the machine thread by feed().
+    /**
+     * The largest X or Y extent of a part as laid out; frames overlap by at least this much. Zero
+     * spaces frames half a frame apart.
+     */
+    @Element(required = false)
+    private volatile Length partSize = new Length(0, LengthUnit.Millimeters);
+
     private Location pickLocation;
+
+    // Machine thread only.
+    /** The search frame that last held a part, searched first next time. */
+    private int lastFoundFrame;
 
     @Override
     public Location getPickLocation() throws Exception {
@@ -58,13 +97,17 @@ public class ReferenceLoosePartFeeder extends ReferenceFeeder implements Pipelin
     public void feed(Nozzle nozzle) throws Exception {
         Camera camera = nozzle.getHead()
                               .getDefaultCamera();
-        // Move to the feeder pick location
-        MovableUtils.moveToLocationAtSafeZ(camera, location);
         try (CvPipeline pipeline = getPipeline()) {
-            for (int i = 0; i < 3; i++) {
-                pickLocation = getPickLocation(pipeline, camera, nozzle);
+            pickLocation = findPart(pipeline, camera, nozzle);
+            for (int i = 0; i < CENTRING_PASSES; i++) {
                 camera.moveTo(pickLocation.derive(null, null, null, 0.0));
+                Location centred = locatePart(pipeline, camera, nozzle);
+                if (centred == null) {
+                    throw new Exception("Feeder " + getName() + ": lost the part while centring on it.");
+                }
+                pickLocation = centred;
             }
+            camera.moveTo(pickLocation.derive(null, null, null, 0.0));
             MainFrame.get()
                      .getCameraViews()
                      .getCameraView(camera)
@@ -92,15 +135,85 @@ public class ReferenceLoosePartFeeder extends ReferenceFeeder implements Pipelin
         return true;
     }
 
-    private Location getPickLocation(CvPipeline pipeline, Camera camera, Nozzle nozzle)
+    /**
+     * Looks through the search frames, starting with the one that held a part last time.
+     *
+     * @throws FeederEmptyException if no frame holds a part.
+     */
+    private Location findPart(CvPipeline pipeline, Camera camera, Nozzle nozzle) throws Exception {
+        List<Location> frames = getSearchFrames(camera);
+        for (int pass = 0; pass < SEARCH_PASSES; pass++) {
+            for (int i = 0; i < frames.size(); i++) {
+                int frame = (lastFoundFrame + i) % frames.size();
+                MovableUtils.moveToLocationAtSafeZ(camera, frames.get(frame));
+                Location found = locatePart(pipeline, camera, nozzle);
+                if (found != null) {
+                    lastFoundFrame = frame;
+                    return found;
+                }
+            }
+        }
+        throw new FeederEmptyException("Feeder " + getName() + ": no parts found"
+                + (frames.size() > 1 ? " in its search area." : "."));
+    }
+
+    /**
+     * The camera positions that cover the search area, centred on the location, in rows along X.
+     */
+    public List<Location> getSearchFrames(Camera camera) {
+        Location unitsPerPixel = camera.getUnitsPerPixel(location.getLengthZ())
+                .convertToUnits(location.getUnits());
+        double frameWidth = camera.getWidth() * Math.abs(unitsPerPixel.getX());
+        double frameHeight = camera.getHeight() * Math.abs(unitsPerPixel.getY());
+        double part = partSize.convertToUnits(location.getUnits()).getValue();
+        List<Location> frames = new ArrayList<>();
+        for (double dy : frameOffsets(searchHeight.convertToUnits(location.getUnits()).getValue(),
+                frameHeight, part)) {
+            for (double dx : frameOffsets(
+                    searchWidth.convertToUnits(location.getUnits()).getValue(), frameWidth,
+                    part)) {
+                frames.add(location.add(new Location(location.getUnits(), dx, dy, 0, 0)));
+            }
+        }
+        return frames;
+    }
+
+    /**
+     * Offsets from the centre of evenly spaced frames that span the search length, overlapping by
+     * at least the part size so every part lies wholly inside some frame.
+     */
+    private static List<Double> frameOffsets(double search, double frame, double part) {
+        List<Double> offsets = new ArrayList<>();
+        if (search <= frame) {
+            offsets.add(0.0);
+            return offsets;
+        }
+        if (part >= frame) {
+            throw new IllegalStateException(String.format(
+                    "A part of %.2f must fit in a camera frame of %.2f to be found", part, frame));
+        }
+        double maxStep = part > 0 ? frame - part : frame * DEFAULT_FRAME_STEP_FRACTION;
+        double span = search - frame;
+        // The tolerance stops rounding error in an exact division adding a frame.
+        int steps = (int) Math.ceil(span / maxStep - STEP_TOLERANCE);
+        for (int i = 0; i <= steps; i++) {
+            offsets.add(-span / 2 + span * i / steps);
+        }
+        return offsets;
+    }
+
+    /**
+     * @return the part closest to the camera centre, or null when the frame holds none.
+     */
+    private Location locatePart(CvPipeline pipeline, Camera camera, Nozzle nozzle)
             throws Exception {
-        // Process the pipeline to extract RotatedRect results
         preparePipeline(pipeline, camera, nozzle);
         pipeline.process();
-        // Grab the results
         List<RotatedRect> results = pipeline.getExpectedResult(VisionUtils.PIPELINE_RESULTS_NAME)
-                .getExpectedListModel(RotatedRect.class, 
-                        new Exception("Feeder " + getName() + ": No parts found."));
+                .getExpectedListModel(RotatedRect.class, null);
+        if (results.isEmpty()) {
+            return null;
+        }
 
         // Find the closest result
         results.sort((a, b) -> {
@@ -119,6 +232,36 @@ public class ReferenceLoosePartFeeder extends ReferenceFeeder implements Pipelin
         double z = this.location.convertToUnits(location.getUnits()).getZ(); 
         location = location.derive(null, null, z, null);
         return location;
+    }
+
+    public Length getSearchWidth() {
+        return searchWidth;
+    }
+
+    public void setSearchWidth(Length searchWidth) {
+        Object oldValue = this.searchWidth;
+        this.searchWidth = searchWidth;
+        firePropertyChange("searchWidth", oldValue, searchWidth);
+    }
+
+    public Length getPartSize() {
+        return partSize;
+    }
+
+    public void setPartSize(Length partSize) {
+        Object oldValue = this.partSize;
+        this.partSize = partSize;
+        firePropertyChange("partSize", oldValue, partSize);
+    }
+
+    public Length getSearchHeight() {
+        return searchHeight;
+    }
+
+    public void setSearchHeight(Length searchHeight) {
+        Object oldValue = this.searchHeight;
+        this.searchHeight = searchHeight;
+        firePropertyChange("searchHeight", oldValue, searchHeight);
     }
 
     /**

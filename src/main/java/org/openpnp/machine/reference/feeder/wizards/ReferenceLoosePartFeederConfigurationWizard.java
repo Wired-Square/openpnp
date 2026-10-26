@@ -25,9 +25,13 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import org.openpnp.gui.MainFrame;
+import org.openpnp.gui.components.ComponentDecorators;
+import org.openpnp.gui.support.Icons;
+import org.openpnp.gui.support.LengthConverter;
 
 import org.openpnp.machine.reference.feeder.ReferenceLoosePartFeeder;
 import org.openpnp.model.Configuration;
@@ -49,6 +53,9 @@ import java.awt.FlowLayout;
 public class ReferenceLoosePartFeederConfigurationWizard
         extends AbstractReferenceFeederConfigurationWizard {
     private final ReferenceLoosePartFeeder feeder;
+    private final JTextField searchWidthTf;
+    private final JTextField searchHeightTf;
+    private final JTextField partSizeTf;
 
     public ReferenceLoosePartFeederConfigurationWizard(ReferenceLoosePartFeeder feeder) {
         super(feeder);
@@ -81,10 +88,50 @@ public class ReferenceLoosePartFeederConfigurationWizard
         });
         panel.add(btnResetPipeline, "4, 2");
         
+        JPanel searchPanel = new JPanel();
+        searchPanel.setBorder(new TitledBorder(null, "Search Area", TitledBorder.LEADING,
+                TitledBorder.TOP, null, null));
+        contentPanel.add(searchPanel);
+        searchPanel.setLayout(new FormLayout(
+                new ColumnSpec[] {FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC,
+                        FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC,
+                        FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC,
+                        FormSpecs.RELATED_GAP_COLSPEC, FormSpecs.DEFAULT_COLSPEC,},
+                new RowSpec[] {FormSpecs.RELATED_GAP_ROWSPEC, FormSpecs.DEFAULT_ROWSPEC,
+                        FormSpecs.RELATED_GAP_ROWSPEC, FormSpecs.DEFAULT_ROWSPEC,}));
+        searchPanel.add(new JLabel("Width (X)"), "2, 2, right, default");
+        searchWidthTf = new JTextField();
+        searchWidthTf.setColumns(8);
+        searchPanel.add(searchWidthTf, "4, 2");
+        searchPanel.add(new JLabel("Height (Y)"), "6, 2, right, default");
+        searchHeightTf = new JTextField();
+        searchHeightTf.setColumns(8);
+        searchPanel.add(searchHeightTf, "8, 2");
+        searchPanel.add(new JLabel("Largest part size"), "2, 4, right, default");
+        partSizeTf = new JTextField();
+        partSizeTf.setColumns(8);
+        searchPanel.add(partSizeTf, "4, 4");
+        JLabel searchHelp = new JLabel(Icons.info);
+        searchHelp.setToolTipText("<html>The full area, centred on the location; 0 searches one "
+                + "frame.<br>Frames overlap by the largest part size (0: half a frame).</html>");
+        searchPanel.add(searchHelp, "6, 4, left, default");
+
         JLabel lblWarningThisFeeder = new JLabel("Warning: This feeder is incomplete and experimental. Use at your own risk.");
         lblWarningThisFeeder.putClientProperty("FlatLaf.styleClass", "large");
         lblWarningThisFeeder.setForeground(Color.RED);
         lblWarningThisFeeder.setHorizontalAlignment(SwingConstants.LEFT);
+    }
+
+    @Override
+    public void createBindings() {
+        super.createBindings();
+        LengthConverter lengthConverter = new LengthConverter();
+        addWrappedBinding(feeder, "searchWidth", searchWidthTf, "text", lengthConverter);
+        addWrappedBinding(feeder, "searchHeight", searchHeightTf, "text", lengthConverter);
+        addWrappedBinding(feeder, "partSize", partSizeTf, "text", lengthConverter);
+        ComponentDecorators.decorateWithAutoSelectAndLengthConversion(searchWidthTf);
+        ComponentDecorators.decorateWithAutoSelectAndLengthConversion(searchHeightTf);
+        ComponentDecorators.decorateWithAutoSelectAndLengthConversion(partSizeTf);
     }
 
     private void editPipeline() throws Exception {

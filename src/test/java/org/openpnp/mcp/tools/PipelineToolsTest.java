@@ -16,6 +16,7 @@ import org.openpnp.machine.reference.feeder.ReferenceTrayFeeder;
 import org.openpnp.mcp.McpTool;
 import org.openpnp.mcp.McpToolResult;
 import org.openpnp.model.Configuration;
+import org.openpnp.model.Length;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
 import org.openpnp.spi.Camera;
@@ -26,6 +27,7 @@ import org.openpnp.vision.pipeline.stages.Threshold;
 
 import com.google.common.io.Files;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -62,6 +64,24 @@ public class PipelineToolsTest {
             }
         }
         throw new AssertionError("No stage " + name);
+    }
+
+    @Test
+    public void listFeedersReportsTheSearchArea() throws Exception {
+        feeder.setSearchWidth(new Length(16, LengthUnit.Millimeters));
+        feeder.setSearchHeight(new Length(32, LengthUnit.Millimeters));
+
+        JsonObject search = call(new ListFeedersTool(() -> machine),
+                "{\"partId\":null}").getStructuredContent().getAsJsonArray("feeders").asList()
+                .stream().map(JsonElement::getAsJsonObject)
+                .filter(f -> feeder.getId().equals(f.get("id").getAsString())).findFirst()
+                .orElseThrow().getAsJsonObject("searchArea");
+
+        assertEquals(16, search.get("widthMm").getAsDouble(), EPSILON);
+        assertEquals(32, search.get("heightMm").getAsDouble(), EPSILON);
+        assertEquals(0, search.get("partSizeMm").getAsDouble(), EPSILON);
+        assertEquals(feeder.getSearchFrames(machine.getDefaultHead().getDefaultCamera()).size(),
+                search.get("frames").getAsInt());
     }
 
     @Test
