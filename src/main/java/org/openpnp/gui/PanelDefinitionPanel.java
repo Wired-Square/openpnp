@@ -108,6 +108,8 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
 
     private static final String PREF_DIVIDER_POSITION = "PanelDefinitionPanel.dividerPosition"; //$NON-NLS-1$
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
+    private static final String[] FIDUCIAL_HIDDEN_COLUMNS = {"Type", "Placed", "Status", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            "ErrorHandling", "Rank", "Comments"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     
     private transient Preferences prefs = Preferences.userNodeForPackage(PanelDefinitionPanel.class);
     
@@ -415,11 +417,10 @@ public class PanelDefinitionPanel extends JPanel implements PropertyChangeListen
         
         fiducialTable = new AutoSelectTextTable(fiducialTableModel);
         tcm = fiducialTable.getColumnModel();
-        tcm.removeColumn(tcm.getColumn(11)); //remove Comments column
-        tcm.removeColumn(tcm.getColumn(10)); //remove Error Handling column
-        tcm.removeColumn(tcm.getColumn(9)); //remove Status column
-        tcm.removeColumn(tcm.getColumn(8)); //remove Placed column
-        tcm.removeColumn(tcm.getColumn(7)); //remove Type column
+        for (String column : FIDUCIAL_HIDDEN_COLUMNS) {
+            tcm.removeColumn(fiducialTable.getColumn(Translations.getString(
+                    "PlacementsHolderPlacementsTableModel.ColumnName." + column))); //$NON-NLS-1$
+        }
         
         fiducialTable.setRowSorter(fiducialTableSorter);
         fiducialTable.getTableHeader().setDefaultRenderer(new MultisortTableHeaderCellRenderer());
