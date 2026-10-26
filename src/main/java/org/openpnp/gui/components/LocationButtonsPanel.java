@@ -293,16 +293,20 @@ public class LocationButtonsPanel extends JPanel {
                             }
                         }
                         final Location lf = l;
-                        SwingUtilities.invokeAndWait(() -> {
-                            Helpers.copyLocationIntoTextFields(lf,
-                                    textFieldX,
-                                    textFieldY,
-                                    lz == null ? null : textFieldZ,
-                                    textFieldC);
-                        });
+                        SwingUtilities.invokeAndWait(
+                                () -> copyCameraCaptureIntoTextFields(lf, lz != null));
                     });
                 }
             };
+
+    /**
+     * The camera only measures position: its own rotation says nothing about the target's, so the
+     * rotation field keeps its value, and Z only changes when it was probed.
+     */
+    void copyCameraCaptureIntoTextFields(Location location, boolean zProbed) {
+        Helpers.copyLocationIntoTextFields(location, textFieldX, textFieldY,
+                zProbed ? textFieldZ : null, null);
+    }
 
     private transient Action captureToolCoordinatesAction =
             new AbstractAction(Translations.getString("LocalButtonsPanel.Action.CaptureToolCoordinates"), //$NON-NLS-1$

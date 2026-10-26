@@ -1388,7 +1388,9 @@ public class JobPanel extends JPanel {
                 HeadMountable tool = MainFrame.get().getMachineControls().getSelectedTool();
                 Camera camera = tool.getHead().getDefaultCamera();
                 double z = selectedLocation.getGlobalLocation().getZ();
-                selectedLocation.setLocation(camera.getLocation().derive(null, null, z, null));
+                // The camera only measures position; the board keeps its rotation.
+                selectedLocation.setLocation(camera.getLocation().derive(null, null, z,
+                        selectedLocation.getLocation().getRotation()));
                 refreshSelectedRow();
             });
         }

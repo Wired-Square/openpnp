@@ -708,7 +708,9 @@ public class JobPlacementsPanel extends JPanel {
                 Camera camera = tool.getHead().getDefaultCamera();
                 Location placementLocation = Utils2D.calculateBoardPlacementLocationInverse(
                         boardOrPanelLocation, camera.getLocation());
-                getSelection().getDefinition().setLocation(placementLocation.derive(null, null, 0.0, null));
+                // The camera only measures position; the placement keeps its rotation.
+                getSelection().getDefinition().setLocation(placementLocation.derive(null, null, 0.0,
+                        getSelection().getDefinition().getLocation().getRotation()));
                 table.repaint();
             });
         }
