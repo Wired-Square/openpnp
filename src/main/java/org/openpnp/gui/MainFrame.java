@@ -79,7 +79,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.undo.UndoManager;
 
 import org.openpnp.Main;
 import org.openpnp.Translations;
@@ -171,7 +170,6 @@ public class MainFrame extends JFrame {
     private JDialog frameMachineControls;
     private transient Map<KeyStroke, Action> hotkeyActionMap;
     private AbstractConfigurationWizard wizardWithActiveProcess = null;
-    private UndoManager undoManager = new UndoManager();
     private boolean windowStyleMultiple;
 
     public static MainFrame get() {
@@ -206,10 +204,6 @@ public class MainFrame extends JFrame {
         if (this.wizardWithActiveProcess == wizardWithActiveProcess) {
             this.wizardWithActiveProcess = null;
         }
-    }
-
-    public UndoManager getUndoManager() {
-        return undoManager;
     }
 
     public MachineControlsPanel getMachineControls() {
@@ -396,9 +390,6 @@ public class MainFrame extends JFrame {
         mnEdit.setMnemonic(KeyEvent.VK_E);
         menuBar.add(mnEdit);
 
-        mnEdit.add(new JMenuItem(undoAction));
-        mnEdit.add(new JMenuItem(redoAction));
-        mnEdit.addSeparator();
         mnEditAddBoard = new JMenu(jobPanel.addBoardAction);
         mnEditAddBoard.add(new JMenuItem(jobPanel.addNewBoardAction));
         mnEditAddBoard.add(new JMenuItem(jobPanel.addExistingBoardAction));
@@ -1369,42 +1360,6 @@ public class MainFrame extends JFrame {
             dialog.setSize(620, 720);
             dialog.setLocationRelativeTo(MainFrame.get());
             dialog.setVisible(true);
-        }
-    };
-    
-    public final transient Action undoAction = new AbstractAction(Translations.getString("Menu.Edit.Undo")) { //$NON-NLS-1$
-        {
-            putValue(MNEMONIC_KEY, KeyEvent.VK_Z);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z',
-                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent arg0) {
-            try {
-                undoManager.undo();
-            }
-            catch (Exception e) {
-                
-            }
-        }
-    };
-    
-    public final transient Action redoAction = new AbstractAction(Translations.getString("Menu.Edit.Redo")) { //$NON-NLS-1$
-        {
-//            putValue(MNEMONIC_KEY, KeyEvent.VK_Y);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke('Z',
-                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | KeyEvent.SHIFT_MASK));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent arg0) {
-            try {
-                undoManager.redo();
-            }
-            catch (Exception e) {
-                
-            }
         }
     };
     
