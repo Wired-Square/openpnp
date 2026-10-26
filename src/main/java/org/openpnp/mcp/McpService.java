@@ -11,12 +11,17 @@ import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
 
 import org.openpnp.Main;
+import org.openpnp.mcp.tools.ApplyFeederRotationSuggestionTool;
+import org.openpnp.mcp.tools.DismissFeederRotationSuggestionTool;
 import org.openpnp.mcp.tools.GetJobTool;
 import org.openpnp.mcp.tools.ListFeedersTool;
 import org.openpnp.mcp.tools.ListPackagesTool;
 import org.openpnp.mcp.tools.ListPartsTool;
+import org.openpnp.mcp.tools.SetPhotonSlotRotationTool;
+import org.openpnp.mcp.tools.SuggestFeederRotationTool;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Job;
+import org.openpnp.spi.Machine;
 
 import com.google.gson.JsonObject;
 
@@ -43,11 +48,18 @@ public final class McpService {
             throw new IllegalStateException("McpService already initialised");
         }
         Supplier<Configuration> configuration = Configuration::get;
-        instance = new McpService(McpSettings.forUser(), List.of(
-                new ListFeedersTool(() -> configuration.get().getMachine()),
+        Supplier<Machine> machine = () -> configuration.get().getMachine();
+        McpSettings settings = McpSettings.forUser();
+        instance = new McpService(settings, List.of(
+                new ListFeedersTool(machine),
                 new ListPartsTool(configuration),
                 new ListPackagesTool(configuration),
-                new GetJobTool(job)));
+                new GetJobTool(job),
+                new SuggestFeederRotationTool(machine,
+                        () -> settings.isApplySuggestionsDirectly() && settings.isAllowWrite()),
+                new DismissFeederRotationSuggestionTool(machine),
+                new ApplyFeederRotationSuggestionTool(machine),
+                new SetPhotonSlotRotationTool(machine)));
     }
 
     public static McpService get() {

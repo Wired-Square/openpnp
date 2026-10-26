@@ -71,6 +71,20 @@ public class ReferenceLoosePartFeeder extends ReferenceFeeder {
     }
 
     @Override
+    public boolean canApplyPickRotation() {
+        return true;
+    }
+
+    /**
+     * Vision finds each part's angle and adds the location rotation to it, so the location rotation
+     * is the pick rotation of a part found square: the convention for how parts are laid out.
+     */
+    @Override
+    public void applyPickRotation(double rotation) {
+        setLocation(location.derive(null, null, null, rotation));
+    }
+
+    @Override
     public boolean isPartHeightAbovePickLocation() {
         return true;
     }

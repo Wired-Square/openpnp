@@ -19,6 +19,7 @@
 
 package org.openpnp.gui.tablemodel;
 
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.openpnp.model.AbstractModelObject;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.JobUsageService.Usage;
 import org.openpnp.model.Part;
+import org.openpnp.model.RotationSuggestion;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.HardwareIdentifiable;
 import org.openpnp.util.BeanUtils;
@@ -47,14 +49,19 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
             Translations.getString("FeedersTableModel.ColumnName.Enabled"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.FeedOptions"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.HardwareId"), //$NON-NLS-1$
-            "" //$NON-NLS-1$
+            "", //$NON-NLS-1$
+            Translations.getString("FeedersTableModel.ColumnName.RotationSuggestion") //$NON-NLS-1$
     };
 
     public static final int NAME_COLUMN = 0;
     public static final int HARDWARE_ID_COLUMN = 7;
     public static final int USAGE_COLUMN = 8;
+    public static final int ROTATION_SUGGESTION_COLUMN = 9;
 
     private List<Feeder> feeders;
+
+    private final PropertyChangeListener rotationSuggestionListener = event -> SwingUtilities
+            .invokeLater(() -> refresh((Feeder) event.getSource()));
 
     public FeedersTableModel(Configuration configuration) {
         this.configuration = configuration;
@@ -81,6 +88,11 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
                 ((AbstractModelObject)f).addPropertyChangeListener("name",  event-> {
                     SwingUtilities.invokeLater(() -> fireTableRowsUpdated(0, feeders.size()-1));
                 });
+                // Removed first, as refresh() runs again whenever the feeder list changes.
+                ((AbstractModelObject) f).removePropertyChangeListener("rotationSuggestion",
+                        rotationSuggestionListener);
+                ((AbstractModelObject) f).addPropertyChangeListener("rotationSuggestion",
+                        rotationSuggestionListener);
             }
             if ((f instanceof ReferenceFeeder) && ((ReferenceFeeder)f).supportsFeedOptions()) {
                 ((ReferenceFeeder)f).addPropertyChangeListener("feedOptions",  event-> {
@@ -171,6 +183,9 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
         else if (columnIndex == USAGE_COLUMN) {
             return Usage.class;
         }
+        else if (columnIndex == ROTATION_SUGGESTION_COLUMN) {
+            return RotationSuggestion.class;
+        }
         return super.getColumnClass(columnIndex);
     }
 
@@ -216,6 +231,8 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
             }
             case USAGE_COLUMN:
                 return configuration.getJobUsageService().getSnapshot().getUsage(feeders.get(row));
+            case ROTATION_SUGGESTION_COLUMN:
+                return feeders.get(row).getRotationSuggestion();
             default:
                 return null;
         }

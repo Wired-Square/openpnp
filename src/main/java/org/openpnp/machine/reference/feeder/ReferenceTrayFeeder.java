@@ -84,6 +84,17 @@ public class ReferenceTrayFeeder extends ReferenceFeeder {
         return location.add(offsets.multiply(partX, partY, 0.0, 0.0));
     }
 
+    @Override
+    public boolean canApplyPickRotation() {
+        return true;
+    }
+
+    /** Every pocket is picked at the tray location's rotation. */
+    @Override
+    public void applyPickRotation(double rotation) {
+        setLocation(location.derive(null, null, null, rotation));
+    }
+
     public void feed(Nozzle nozzle) throws Exception {
         Logger.debug("{}.feed({})", getName(), nozzle);
 

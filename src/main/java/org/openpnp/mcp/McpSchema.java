@@ -12,8 +12,22 @@ public final class McpSchema {
         return property(name, "string", description);
     }
 
+    public McpSchema oneOf(String name, String description, String... values) {
+        property(name, "string", description);
+        JsonArray allowed = new JsonArray();
+        for (String value : values) {
+            allowed.add(value);
+        }
+        properties.getAsJsonObject(name).add("enum", allowed);
+        return this;
+    }
+
     public McpSchema bool(String name, String description) {
         return property(name, "boolean", description);
+    }
+
+    public McpSchema integer(String name, String description) {
+        return property(name, "integer", description);
     }
 
     public McpSchema number(String name, String description) {

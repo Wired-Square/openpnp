@@ -73,6 +73,7 @@ import org.openpnp.gui.support.Icons;
 import org.openpnp.gui.support.TableUtils;
 import org.openpnp.gui.support.TriStateTableRowSorter;
 import org.openpnp.gui.support.MessageBoxes;
+import org.openpnp.gui.support.RotationSuggestionRenderer;
 import org.openpnp.gui.support.Wizard;
 import org.openpnp.gui.support.WizardContainer;
 import org.openpnp.gui.tablemodel.FeedersTableModel;
@@ -85,6 +86,7 @@ import org.openpnp.model.Length;
 import org.openpnp.model.Location;
 import org.openpnp.model.Part;
 import org.openpnp.model.Placement.Type;
+import org.openpnp.model.RotationSuggestion;
 import org.openpnp.spi.Camera;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.JobProcessor.JobProcessorException;
@@ -191,6 +193,7 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         tableSorter.setComparator(FeedersTableModel.NAME_COLUMN, NaturalOrderComparator.INSTANCE);
         table.getColumnModel().moveColumn(1,  2);
         HardwareIdLabel.installTableColumn(table, FeedersTableModel.HARDWARE_ID_COLUMN);
+        table.setDefaultRenderer(RotationSuggestion.class, new RotationSuggestionRenderer());
 
         final JSplitPane splitPane = new JSplitPane();
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -216,10 +219,12 @@ public class FeedersPanel extends JPanel implements WizardContainer {
 
         singleSelectActionGroup = new ActionGroup(deleteFeederAction, feedFeederAction,
                 pickFeederAction, moveCameraToPickLocation, moveToolToPickLocation,
-                setEnabledAction, setFeedOptionsAction);
+                setEnabledAction, setFeedOptionsAction, applyRotationSuggestionAction,
+                dismissRotationSuggestionAction);
         singleSelectActionGroup.setEnabled(false);
         
-        multiSelectActionGroup = new ActionGroup(deleteFeederAction, setEnabledAction, setFeedOptionsAction);
+        multiSelectActionGroup = new ActionGroup(deleteFeederAction, setEnabledAction, setFeedOptionsAction,
+                applyRotationSuggestionAction, dismissRotationSuggestionAction);
         multiSelectActionGroup.setEnabled(false);
         
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -311,6 +316,9 @@ public class FeedersPanel extends JPanel implements WizardContainer {
             setFeedOptionsMenu.add(new SetFeedOptionsAction(opt));
         }
         popupMenu.add(setFeedOptionsMenu);
+        popupMenu.addSeparator();
+        popupMenu.add(applyRotationSuggestionAction);
+        popupMenu.add(dismissRotationSuggestionAction);
 
         table.setComponentPopupMenu(popupMenu);
     }
@@ -872,6 +880,48 @@ public class FeedersPanel extends JPanel implements WizardContainer {
             for (Feeder f : getSelections()) {
                 if (f instanceof ReferenceFeeder) {
                     ((ReferenceFeeder)f).setFeedOptions(value);
+                }
+            }
+            table.repaint();
+        }
+    };
+
+    public final transient Action applyRotationSuggestionAction = new AbstractAction() {
+        {
+            putValue(NAME, Translations.getString("FeedersPanel.Action.ApplyRotationSuggestion")); //$NON-NLS-1$
+            putValue(SHORT_DESCRIPTION,
+                    Translations.getString("FeedersPanel.Action.ApplyRotationSuggestion.Description")); //$NON-NLS-1$
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            for (Feeder feeder : getSelections()) {
+                if (feeder.getRotationSuggestion() == null) {
+                    continue;
+                }
+                try {
+                    feeder.applyRotationSuggestion();
+                }
+                catch (Exception e) {
+                    MessageBoxes.errorBox(FeedersPanel.this, feeder.getName(), e);
+                }
+            }
+            table.repaint();
+        }
+    };
+
+    public final transient Action dismissRotationSuggestionAction = new AbstractAction() {
+        {
+            putValue(NAME, Translations.getString("FeedersPanel.Action.DismissRotationSuggestion")); //$NON-NLS-1$
+            putValue(SHORT_DESCRIPTION,
+                    Translations.getString("FeedersPanel.Action.DismissRotationSuggestion.Description")); //$NON-NLS-1$
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            for (Feeder feeder : getSelections()) {
+                if (feeder.getRotationSuggestion() != null) {
+                    feeder.setRotationSuggestion(null);
                 }
             }
             table.repaint();

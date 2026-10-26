@@ -11,6 +11,7 @@ import org.openpnp.mcp.McpTool;
 import org.openpnp.mcp.McpToolResult;
 import org.openpnp.model.Part;
 import org.openpnp.model.PickOffsetCorrection;
+import org.openpnp.model.RotationSuggestion;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.Machine;
 
@@ -86,6 +87,15 @@ public final class ListFeedersTool implements McpTool {
             if (part.getPackage() != null) {
                 json.addProperty("packageId", part.getPackage().getId());
             }
+        }
+        json.addProperty("canApplyPickRotation", feeder.canApplyPickRotation());
+        RotationSuggestion suggestion = feeder.getRotationSuggestion();
+        if (suggestion != null) {
+            JsonObject suggestionJson = new JsonObject();
+            suggestionJson.addProperty("rotation", McpJson.round(suggestion.getRotation()));
+            suggestionJson.addProperty("confidence", suggestion.getConfidence().toString());
+            suggestionJson.addProperty("rationale", suggestion.getRationale());
+            json.add("rotationSuggestion", suggestionJson);
         }
         try {
             json.add("pickLocation", McpJson.location(feeder.getPickLocation()));

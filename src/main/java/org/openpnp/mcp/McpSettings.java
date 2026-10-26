@@ -20,6 +20,7 @@ public final class McpSettings {
     private static final String PORT = "port";
     private static final String TOKEN = "token";
     private static final String ALLOW_WRITE = "allowWrite";
+    private static final String APPLY_SUGGESTIONS_DIRECTLY = "applySuggestionsDirectly";
 
     private final Preferences preferences;
 
@@ -74,6 +75,15 @@ public final class McpSettings {
 
     public void setAllowWrite(boolean allowWrite) {
         preferences.putBoolean(ALLOW_WRITE, allowWrite);
+    }
+
+    /** Suggestion tools then apply their advice at once instead of leaving it for review. */
+    public boolean isApplySuggestionsDirectly() {
+        return preferences.getBoolean(APPLY_SUGGESTIONS_DIRECTLY, false);
+    }
+
+    public void setApplySuggestionsDirectly(boolean applySuggestionsDirectly) {
+        preferences.putBoolean(APPLY_SUGGESTIONS_DIRECTLY, applySuggestionsDirectly);
     }
 
     public boolean isTierEnabled(Tier tier) {

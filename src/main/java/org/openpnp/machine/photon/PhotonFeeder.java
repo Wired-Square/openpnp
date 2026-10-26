@@ -47,6 +47,7 @@ import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.PickOffsetCorrectableFeeder;
 import org.openpnp.spi.PropertySheetHolder;
 import org.openpnp.util.MovableUtils;
+import org.openpnp.util.Utils2D;
 import org.pmw.tinylog.Logger;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
@@ -229,16 +230,49 @@ public class PhotonFeeder extends ReferenceFeeder
     }
 
     public void setOffset(Location offsets) {
+        setOffset(offsets, false);
+    }
+
+    /**
+     * @param keepCorrection keeps the learned pick offset correction, for changes that leave the
+     *        pick position where it was, so the correction still applies.
+     */
+    void setOffset(Location offsets, boolean keepCorrection) {
         Object oldValue = this.offset;
         boolean wasEnabled = isEnabled();
         this.offset = offsets;
-        pickOffsetCorrection.reset();
+        if (!keepCorrection) {
+            pickOffsetCorrection.reset();
+        }
         firePropertyChange("offset", oldValue, offsets);
         fireEnabledChange(wasEnabled);
     }
 
     public Location getOffset() {
         return offset;
+    }
+
+    @Override
+    public boolean canApplyPickRotation() {
+        return offset != null;
+    }
+
+    /**
+     * The pick rotation is the slot rotation plus the offset rotation. Only the offset changes, so
+     * the slot keeps describing the rail.
+     */
+    @Override
+    public void applyPickRotation(double rotation) {
+        PhotonFeederSlots.Slot slot = getSlot();
+        if (slot == null || slot.getLocation() == null) {
+            throw new IllegalStateException(
+                    getName() + " is not in a slot with a location, so its pick rotation is unknown");
+        }
+        if (offset == null) {
+            throw new IllegalStateException(getName() + " has no offset from its slot yet");
+        }
+        setOffset(offset.derive(null, null, null,
+                Utils2D.normalizeAngle180(rotation - slot.getLocation().getRotation())), true);
     }
 
     @Override

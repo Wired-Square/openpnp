@@ -3,6 +3,7 @@ package org.openpnp.machine.photon;
 import org.openpnp.model.Identifiable;
 import org.openpnp.model.Location;
 import org.openpnp.util.IdentifiableList;
+import org.openpnp.util.Utils2D;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -10,6 +11,11 @@ import org.simpleframework.xml.ElementList;
 public class PhotonFeederSlots {
     @ElementList
     IdentifiableList<Slot> slots = new IdentifiableList<>();
+
+    /** Unlike {@link #getSlot(int)}, never adds a slot. */
+    public synchronized Slot findSlot(int address) {
+        return slots.get(Slot.getIdentifierFromAddress(address));
+    }
 
     // Synchronized because a lookup can add the slot, and the machine thread and EDT both look up.
     public synchronized Slot getSlot(int address) {
@@ -60,6 +66,24 @@ public class PhotonFeederSlots {
             this.location = location;
             if (feeder != null) {
                 feeder.fireEnabledChange(wasEnabled);
+            }
+        }
+
+        /**
+         * Changes the slot rotation without moving the pick of the feeder in it: its offset turns
+         * the other way, keeping both the pick position and the pick rotation.
+         */
+        public void setRotationKeepingPick(double rotation) {
+            if (location == null) {
+                throw new IllegalStateException("Slot " + address + " has no location");
+            }
+            double delta = location.getRotation() - rotation;
+            PhotonFeeder feeder = PhotonFeeder.findBySlotAddress(address);
+            setLocation(location.derive(null, null, null, rotation));
+            if (feeder != null && feeder.getOffset() != null) {
+                Location offset = feeder.getOffset();
+                feeder.setOffset(offset.rotateXy(delta).derive(null, null, null,
+                        Utils2D.normalizeAngle180(offset.getRotation() + delta)), true);
             }
         }
     }

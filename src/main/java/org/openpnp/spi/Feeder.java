@@ -23,6 +23,7 @@ import org.openpnp.model.Identifiable;
 import org.openpnp.model.Location;
 import org.openpnp.model.Named;
 import org.openpnp.model.Part;
+import org.openpnp.model.RotationSuggestion;
 import org.openpnp.model.Solutions;
 
 
@@ -163,5 +164,46 @@ public interface Feeder extends Identifiable, Named, WizardConfigurable, Propert
      *        with no rotation applied; rotate by the pick rotation to get machine coordinates.
      */
     public default void deferredBottomVisionResult(Location pickError) {
+    }
+
+    public default RotationSuggestion getRotationSuggestion() {
+        return null;
+    }
+
+    /**
+     * @param suggestion the suggestion to record for the operator, or null to dismiss it.
+     */
+    public default void setRotationSuggestion(RotationSuggestion suggestion) {
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " does not take rotation suggestions");
+    }
+
+    /**
+     * @return whether {@link #applyPickRotation(double)} is supported.
+     */
+    public default boolean canApplyPickRotation() {
+        return false;
+    }
+
+    /**
+     * Changes the feeder so its pick location has this rotation, in machine coordinates, writing
+     * it to whichever setting this feeder type derives its pick rotation from. For a feeder whose
+     * vision measures each part's angle, it is the pick rotation of a part found square.
+     */
+    public default void applyPickRotation(double rotation) throws Exception {
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " cannot apply a pick rotation");
+    }
+
+    /**
+     * Applies the pending rotation suggestion, then clears it.
+     */
+    public default void applyRotationSuggestion() throws Exception {
+        RotationSuggestion suggestion = getRotationSuggestion();
+        if (suggestion == null) {
+            throw new IllegalStateException(getName() + " has no rotation suggestion");
+        }
+        applyPickRotation(suggestion.getRotation());
+        setRotationSuggestion(null);
     }
 }

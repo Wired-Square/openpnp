@@ -9,9 +9,11 @@ import org.openpnp.gui.support.PropertySheetWizardAdapter;
 import org.openpnp.model.AbstractModelObject;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.Part;
+import org.openpnp.model.RotationSuggestion;
 import org.openpnp.spi.Feeder;
 import org.openpnp.spi.Nozzle;
 import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Element;
 
 public abstract class AbstractFeeder extends AbstractModelObject implements Feeder {
     /**
@@ -56,6 +58,10 @@ public abstract class AbstractFeeder extends AbstractModelObject implements Feed
     protected int pickRetryCount = 3;
 
     protected Part part;
+
+    // Confined to the EDT: set by the Feeders panel and by MCP tools, which run on the EDT.
+    @Element(required = false)
+    private RotationSuggestion rotationSuggestion;
 
     public AbstractFeeder() {
         this.id = Configuration.createId("FDR");
@@ -126,6 +132,18 @@ public abstract class AbstractFeeder extends AbstractModelObject implements Feed
     public void setName(String name) {
         this.name = name;
         firePropertyChange("name", null, name);
+    }
+
+    @Override
+    public RotationSuggestion getRotationSuggestion() {
+        return rotationSuggestion;
+    }
+
+    @Override
+    public void setRotationSuggestion(RotationSuggestion rotationSuggestion) {
+        Object oldValue = this.rotationSuggestion;
+        this.rotationSuggestion = rotationSuggestion;
+        firePropertyChange("rotationSuggestion", oldValue, rotationSuggestion);
     }
 
     @Override
