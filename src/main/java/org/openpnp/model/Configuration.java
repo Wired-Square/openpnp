@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.Locale;
@@ -55,7 +56,10 @@ import org.openpnp.gui.components.ThemeSettingsPanel;
 import org.openpnp.gui.support.MessageBoxes;
 import org.openpnp.model.Abstract2DLocatable.Side;
 import org.openpnp.scripting.Scripting;
+import org.openpnp.spi.Feeder;
+import org.openpnp.spi.Head;
 import org.openpnp.spi.Machine;
+import org.openpnp.spi.Nozzle;
 import org.openpnp.util.NanosecondTime;
 import org.pmw.tinylog.Logger;
 import org.simpleframework.xml.Element;
@@ -734,6 +738,35 @@ public class Configuration extends AbstractModelObject {
             parts.remove(part.getId().toUpperCase());
         }
         fireCollectionChange("parts", parts);
+    }
+
+    /**
+     * Names what uses the part: feeders (see {@link Feeder#getPartUsers(Part)}), a nozzle holding
+     * it, and each loaded board or panel with a placement of it. Board and panel files not loaded
+     * in the configuration are not checked. EDT only, as boards and panels are EDT-confined.
+     */
+    public List<String> getPartUsers(Part part) {
+        Set<String> users = new LinkedHashSet<>();
+        if (machine != null) {
+            for (Feeder feeder : machine.getFeeders()) {
+                users.addAll(feeder.getPartUsers(part));
+            }
+            for (Head head : machine.getHeads()) {
+                for (Nozzle nozzle : head.getNozzles()) {
+                    if (nozzle.getPart() == part) {
+                        users.add(nozzle.getName());
+                    }
+                }
+            }
+        }
+        List<PlacementsHolder<?>> holders = new ArrayList<>(getBoards());
+        holders.addAll(getPanels());
+        for (PlacementsHolder<?> holder : holders) {
+            if (holder.getPlacements().stream().anyMatch(placement -> placement.getPart() == part)) {
+                users.add(holder.getName());
+            }
+        }
+        return new ArrayList<>(users);
     }
 
     public void addVisionSettings(AbstractVisionSettings visionSettings) {

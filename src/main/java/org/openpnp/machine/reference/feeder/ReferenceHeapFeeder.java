@@ -1,5 +1,6 @@
 package org.openpnp.machine.reference.feeder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
@@ -156,6 +157,17 @@ public class ReferenceHeapFeeder extends ReferenceFeeder {
      * Get all defined DropBoxes.
      * @return List of DropBoxes
      */
+    @Override
+    public List<String> getPartUsers(Part part) {
+        List<String> users = new ArrayList<>(super.getPartUsers(part));
+        for (DropBox dropBox : getDropBoxes()) {
+            if (dropBox.getDummyPartForUnknown() == part) {
+                users.add(dropBox.getName());
+            }
+        }
+        return users;
+    }
+
     public static synchronized IdentifiableList<DropBox> getDropBoxes() {
         DropBoxProperty dropBoxProperty = (DropBoxProperty) Configuration.get().getMachine().getProperty("ReferenceHeapFeeder.dropBoxes");
         if (dropBoxProperty == null) {

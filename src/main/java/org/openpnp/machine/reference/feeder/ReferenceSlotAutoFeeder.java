@@ -1,5 +1,6 @@
 package org.openpnp.machine.reference.feeder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.openpnp.ConfigurationListener;
@@ -159,6 +160,19 @@ public class ReferenceSlotAutoFeeder extends ReferenceAutoFeeder {
         firePropertyChange("enabled", wasEnabled, isEnabled());
     }
     
+    @Override
+    public List<String> getPartUsers(Part part) {
+        List<String> users = new ArrayList<>(super.getPartUsers(part));
+        for (Bank bank : getBanks()) {
+            for (Feeder feeder : bank.getFeeders()) {
+                if (feeder.getPart() == part) {
+                    users.add(bank.getName() + " / " + feeder.getName()); //$NON-NLS-1$
+                }
+            }
+        }
+        return users;
+    }
+
     public static synchronized IdentifiableList<Bank> getBanks() {
         BanksProperty bp = (BanksProperty) Configuration.get().getMachine().getProperty("ReferenceAutoFeederSlot.banks");
         if (bp == null) {

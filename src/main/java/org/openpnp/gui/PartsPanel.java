@@ -354,6 +354,19 @@ public class PartsPanel extends JPanel implements WizardContainer {
         @Override
         public void actionPerformed(ActionEvent arg0) {
             List<Part> selections = getSelections();
+            List<String> usedParts = new ArrayList<>();
+            for (Part part : selections) {
+                List<String> users = Configuration.get().getPartUsers(part);
+                if (!users.isEmpty()) {
+                    usedParts.add(part.getId() + ": " + String.join(", ", users)); //$NON-NLS-1$ //$NON-NLS-2$
+                }
+            }
+            if (!usedParts.isEmpty()) {
+                MessageBoxes.errorBox(getTopLevelAncestor(), Translations.getString("CommonWords.error"), //$NON-NLS-1$
+                        Translations.getString("PartsPanel.Action.DeletePart.InUse") //$NON-NLS-1$
+                                + "\n" + String.join("\n", usedParts)); //$NON-NLS-1$ //$NON-NLS-2$
+                return;
+            }
             List<String> ids = selections.stream().map(Part::getId).collect(Collectors.toList());
             String formattedIds;
             if (ids.size() <= 3) {

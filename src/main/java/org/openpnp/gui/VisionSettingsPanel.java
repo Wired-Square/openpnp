@@ -240,7 +240,9 @@ public class VisionSettingsPanel extends JPanel implements WizardContainer {
 
             List<PartSettingsHolder> usedIn = new ArrayList<>();
             for (AbstractVisionSettings settings : selections) {
-                usedIn.addAll(settings.getUsedBottomVisionIn());
+                usedIn.addAll(settings instanceof FiducialVisionSettings
+                        ? settings.getUsedFiducialVisionIn()
+                        : settings.getUsedBottomVisionIn());
             }
 
             if (!usedIn.isEmpty()) {

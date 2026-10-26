@@ -19,6 +19,8 @@
 
 package org.openpnp.spi;
 
+import java.util.List;
+
 import org.openpnp.model.Identifiable;
 import org.openpnp.model.Location;
 import org.openpnp.model.Named;
@@ -177,6 +179,15 @@ public interface Feeder extends Identifiable, Named, WizardConfigurable, Propert
     public default void setNote(String note) {
         throw new UnsupportedOperationException(
                 getClass().getSimpleName() + " does not keep notes");
+    }
+
+    /**
+     * Names what in this feeder uses the part, so the part isn't deleted from under it. Feeders
+     * that keep parts outside {@link #getPart()}, such as bank feeders not loaded in a slot, add
+     * those.
+     */
+    public default List<String> getPartUsers(Part part) {
+        return getPart() == part ? List.of(getName()) : List.of();
     }
 
     public default RotationSuggestion getRotationSuggestion() {
