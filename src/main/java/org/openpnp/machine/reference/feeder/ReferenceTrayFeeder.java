@@ -19,6 +19,8 @@
 
 package org.openpnp.machine.reference.feeder;
 
+import java.util.OptionalInt;
+
 import javax.swing.Action;
 
 import org.openpnp.gui.support.Wizard;
@@ -136,7 +138,9 @@ public class ReferenceTrayFeeder extends ReferenceFeeder {
     }
 
     public void setTrayCountX(int trayCountX) {
+        OptionalInt oldRemaining = getRemainingParts();
         this.trayCountX = trayCountX;
+        firePropertyChange("remainingParts", oldRemaining, getRemainingParts()); //$NON-NLS-1$
     }
 
     public int getTrayCountY() {
@@ -144,7 +148,9 @@ public class ReferenceTrayFeeder extends ReferenceFeeder {
     }
 
     public void setTrayCountY(int trayCountY) {
+        OptionalInt oldRemaining = getRemainingParts();
         this.trayCountY = trayCountY;
+        firePropertyChange("remainingParts", oldRemaining, getRemainingParts()); //$NON-NLS-1$
     }
 
     public int getEffectiveTrayCountX() {
@@ -153,6 +159,12 @@ public class ReferenceTrayFeeder extends ReferenceFeeder {
 
     public int getEffectiveTrayCountY() {
         return Math.max(trayCountY,1);
+    }
+
+    @Override
+    public OptionalInt getRemainingParts() {
+        return OptionalInt.of(Math.max(0,
+                getEffectiveTrayCountX() * getEffectiveTrayCountY() - feedCount));
     }
 
     public Location getOffsets() {
@@ -169,8 +181,10 @@ public class ReferenceTrayFeeder extends ReferenceFeeder {
 
     public void setFeedCount(int feedCount) {
         int oldValue = this.feedCount;
+        OptionalInt oldRemaining = getRemainingParts();
         this.feedCount = feedCount;
         firePropertyChange("feedCount", oldValue, feedCount);
+        firePropertyChange("remainingParts", oldRemaining, getRemainingParts()); //$NON-NLS-1$
         Logger.debug("{}.setFeedCount(): feedCount {}, pickLocation {}", getName(), feedCount, getPickLocation());
     }
 

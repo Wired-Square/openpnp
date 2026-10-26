@@ -22,6 +22,7 @@ package org.openpnp.gui.tablemodel;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 
 import javax.swing.SwingUtilities;
 
@@ -50,13 +51,15 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
             Translations.getString("FeedersTableModel.ColumnName.FeedOptions"), //$NON-NLS-1$
             Translations.getString("FeedersTableModel.ColumnName.HardwareId"), //$NON-NLS-1$
             "", //$NON-NLS-1$
-            Translations.getString("FeedersTableModel.ColumnName.RotationSuggestion") //$NON-NLS-1$
+            Translations.getString("FeedersTableModel.ColumnName.RotationSuggestion"), //$NON-NLS-1$
+            Translations.getString("FeedersTableModel.ColumnName.Remaining") //$NON-NLS-1$
     };
 
     public static final int NAME_COLUMN = 0;
     public static final int HARDWARE_ID_COLUMN = 7;
     public static final int USAGE_COLUMN = 8;
     public static final int ROTATION_SUGGESTION_COLUMN = 9;
+    public static final int REMAINING_COLUMN = 10;
 
     private List<Feeder> feeders;
 
@@ -92,6 +95,10 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
                 ((AbstractModelObject) f).removePropertyChangeListener("rotationSuggestion", //$NON-NLS-1$
                         rowListener);
                 ((AbstractModelObject) f).addPropertyChangeListener("rotationSuggestion", //$NON-NLS-1$
+                        rowListener);
+                ((AbstractModelObject) f).removePropertyChangeListener("remainingParts", //$NON-NLS-1$
+                        rowListener);
+                ((AbstractModelObject) f).addPropertyChangeListener("remainingParts", //$NON-NLS-1$
                         rowListener);
             }
             if ((f instanceof ReferenceFeeder) && ((ReferenceFeeder)f).supportsFeedOptions()) {
@@ -186,6 +193,9 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
         else if (columnIndex == ROTATION_SUGGESTION_COLUMN) {
             return RotationSuggestion.class;
         }
+        else if (columnIndex == REMAINING_COLUMN) {
+            return Integer.class;
+        }
         return super.getColumnClass(columnIndex);
     }
 
@@ -233,6 +243,10 @@ public final class FeedersTableModel extends AbstractObjectTableModel {
                 return configuration.getJobUsageService().getSnapshot().getUsage(feeders.get(row));
             case ROTATION_SUGGESTION_COLUMN:
                 return feeders.get(row).getRotationSuggestion();
+            case REMAINING_COLUMN: {
+                OptionalInt remaining = feeders.get(row).getRemainingParts();
+                return remaining.isPresent() ? remaining.getAsInt() : null;
+            }
             default:
                 return null;
         }

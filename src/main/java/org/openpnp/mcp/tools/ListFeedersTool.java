@@ -1,5 +1,6 @@
 package org.openpnp.mcp.tools;
 
+import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.openpnp.machine.photon.PhotonFeeder;
@@ -41,7 +42,9 @@ public final class ListFeedersTool implements McpTool {
                 + "coordinates. For a Photon feeder pickLocation is offset applied in the frame of "
                 + "slot.location, plus pickOffsetCorrection.offset in X and Y, so its rotation is "
                 + "slot.location.rotation + offset.rotation. location, where present, is the feeder's stored location, "
-                + "which for strip, tray and other geometric feeders is not the pick pose.";
+                + "which for strip, tray and other geometric feeders is not the pick pose. "
+                + "remainingParts, where present, is how many parts the feeder has left; feeders "
+                + "that can't count omit it.";
     }
 
     @Override
@@ -95,6 +98,10 @@ public final class ListFeedersTool implements McpTool {
             json.addProperty("note", feeder.getNote());
         }
         json.addProperty("canApplyPickRotation", feeder.canApplyPickRotation());
+        OptionalInt remaining = feeder.getRemainingParts();
+        if (remaining.isPresent()) {
+            json.addProperty("remainingParts", remaining.getAsInt());
+        }
         RotationSuggestion suggestion = feeder.getRotationSuggestion();
         if (suggestion != null) {
             JsonObject suggestionJson = new JsonObject();

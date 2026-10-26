@@ -458,7 +458,8 @@ public class FeedersPanel extends JPanel implements WizardContainer {
         // If current expression doesn't parse, don't update.
         try {
             rf = TableUtils.createVisibleColumnsSearchFilter(table, searchTextField.getText(),
-                    FeedersTableModel.HARDWARE_ID_COLUMN, FeedersTableModel.USAGE_COLUMN);
+                    FeedersTableModel.HARDWARE_ID_COLUMN, FeedersTableModel.USAGE_COLUMN,
+                    FeedersTableModel.REMAINING_COLUMN);
         }
         catch (PatternSyntaxException e) {
             Logger.warn(e, "Search failed");

@@ -20,6 +20,7 @@
 package org.openpnp.spi;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 import org.openpnp.model.Identifiable;
 import org.openpnp.model.Location;
@@ -188,6 +189,14 @@ public interface Feeder extends Identifiable, Named, WizardConfigurable, Propert
      */
     public default List<String> getPartUsers(Part part) {
         return getPart() == part ? List.of(getName()) : List.of();
+    }
+
+    /**
+     * @return the parts left to feed, or empty if the feeder can't count them. Feeders that count
+     *         fire a "remainingParts" property change when it changes.
+     */
+    public default OptionalInt getRemainingParts() {
+        return OptionalInt.empty();
     }
 
     public default RotationSuggestion getRotationSuggestion() {
