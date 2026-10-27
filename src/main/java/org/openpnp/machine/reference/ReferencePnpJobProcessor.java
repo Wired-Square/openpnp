@@ -67,6 +67,7 @@ import org.openpnp.spi.PnpJobProcessor.JobPlacement.Status;
 import org.openpnp.spi.base.AbstractJobProcessor;
 import org.openpnp.spi.base.AbstractPnpJobProcessor;
 import org.openpnp.spi.MotionPlanner.CompletionType;
+import org.openpnp.util.Cycles;
 import org.openpnp.util.MovableUtils;
 import org.openpnp.util.TravelCost;
 import org.openpnp.util.TravellingSalesman;
@@ -189,6 +190,11 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
 
     private boolean cameraBatchOperationStarted;
 
+    // Guarded by this processor's lock: set on the machine thread, read from the EDT.
+    /** The planned placement whose error stopped the job, until the job steps again. */
+    private PlannedPlacement failedPlacement;
+    private JobProcessorException failedPlacementException;
+
     long startTime;
     int totalPartsPlaced;
     
@@ -201,18 +207,26 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
         }
         this.job = job;
         currentStep = new PreFlight();
+        clearFailedPlacement();
         this.fireJobState(Configuration.get().getMachine().getSignalers(), AbstractJobProcessor.State.STOPPED);
     }
 
     @Override
     public synchronized boolean next() throws JobProcessorException {
         this.fireJobState(Configuration.get().getMachine().getSignalers(), AbstractJobProcessor.State.RUNNING);
+        clearFailedPlacement();
         try {
             currentStep = currentStep.step();
         }
         catch (Exception e) {
             this.fireJobState(Configuration.get().getMachine().getSignalers(), AbstractJobProcessor.State.ERROR);
-            scriptJobError(e);
+            try {
+                scriptJobError(e);
+            }
+            catch (JobProcessorException scriptError) {
+                clearFailedPlacement();
+                throw scriptError;
+            }
             throw e;
         }
         if (currentStep == null) {
@@ -231,6 +245,60 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
         }
         catch (Exception e) {
             throw new JobProcessorException(null, e);
+        }
+    }
+
+    @Override
+    public synchronized Placement getFailedPlacement() {
+        return failedPlacement == null ? null : failedPlacement.jobPlacement.getPlacement();
+    }
+
+    @Override
+    public synchronized void skipFailedPlacement() throws JobProcessorException {
+        if (failedPlacement == null) {
+            throw new IllegalStateException("No failed placement to skip.");
+        }
+        Nozzle nozzle = failedPlacement.nozzle;
+        // A part the nozzle reported stuck after placing isn't on the nozzle's books.
+        if (nozzle.getPart() != null || failedPlacementException.getSource() == nozzle) {
+            try {
+                Cycles.discardAlways(nozzle);
+            }
+            catch (Exception e) {
+                throw new JobProcessorException(nozzle, e);
+            }
+        }
+        recordFeederFault(failedPlacementException);
+        failedPlacement.jobPlacement.setError(failedPlacementException);
+        clearFailedPlacement();
+    }
+
+    private void clearFailedPlacement() {
+        failedPlacement = null;
+        failedPlacementException = null;
+    }
+
+    /**
+     * Placement errors that carry a continuation, such as a manual nozzle tip change, and errors
+     * after the placement completed are handled by the operator, not skipped.
+     */
+    private boolean isSkippable(PlannedPlacement plannedPlacement, JobProcessorException e) {
+        if (e.isInterrupting() || plannedPlacement.jobPlacement.getStatus() != Status.Processing) {
+            return false;
+        }
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof UiUtils.ExceptionWithContinuation) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void recordFeederFault(JobProcessorException e) throws JobProcessorException {
+        ReferenceFeeder feeder = getFeederFromException(e);
+        if (feeder != null) {
+            feeder.recordJobFault(getFeederFaultLimit(), getFeederFaultWindowSize(), e);
+            scriptFeederFault(feeder, e);
         }
     }
 
@@ -257,6 +325,7 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
         }
         this.fireJobState(Configuration.get().getMachine().getSignalers(), AbstractJobProcessor.State.STOPPED);
         currentStep = null;
+        clearFailedPlacement();
     }
 
     /**
@@ -1280,6 +1349,9 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
             // return the wrong angle.
             Location otherFeederLocation = previousPickPlanStartLocation;
             for (PlannedPlacement p : plannedPlacements) {
+                if (p.jobPlacement.getStatus() != Status.Processing) {
+                    continue;
+                }
                 JobPlacement jobPlacement = p.jobPlacement;
                 Placement placement = jobPlacement.getPlacement();
                 Part part = placement.getPart();
@@ -2012,9 +2084,19 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
                 throw new JobProcessorException(null, e);
             }
 
+            // Errored placements hold back higher ranks, so these were never planned.
+            List<JobPlacement> unplannedPlacements = jobPlacements
+                    .stream()
+                    .filter(jp -> jp.getStatus() == JobPlacement.Status.Pending)
+                    .collect(Collectors.toList());
+            for (JobPlacement jobPlacement : unplannedPlacements) {
+                Logger.info("Not placed: {}", jobPlacement);
+            }
+
             if (!erroredPlacements.isEmpty()) {
-                fireTextStatus("Job finished with %d errors, placed %s parts in %s sec. (%s CPH)",
+                fireTextStatus("Job finished with %d errors and %d placements not reached, placed %s parts in %s sec. (%s CPH)",
                         erroredPlacements.size(),
+                        unplannedPlacements.size(),
                         totalPartsPlaced,
                         df.format(dtSec), 
                         df.format(totalPartsPlaced / (dtSec / 3600.0)));
@@ -2405,6 +2487,9 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
             }
 
             for (PlannedPlacement p : plannedPlacements) {
+                if (p.jobPlacement.getStatus() != Status.Processing) {
+                    continue;
+                }
                 Location l = locator.getLocation(p);
                 if (l != null) {
                     double speed = p.nozzle.getHead().getMachine().getSpeed();
@@ -2605,6 +2690,10 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
             catch (JobProcessorException e) {
                 switch (plannedPlacement.jobPlacement.getPlacement().getEffectiveErrorHandling(job)) {
                     case Alert:
+                        if (isSkippable(plannedPlacement, e)) {
+                            failedPlacement = plannedPlacement;
+                            failedPlacementException = e;
+                        }
                         throw e;
                     case Defer:
                         if (e.isInterrupting()) {
@@ -2615,11 +2704,8 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
                         if (plannedPlacement.nozzle.getPart() != null) {
                             discard(plannedPlacement.nozzle);
                         }
+                        recordFeederFault(e);
                         ReferenceFeeder feeder = getFeederFromException(e);
-                        if (feeder!=null) {
-                            feeder.recordJobFault(getFeederFaultLimit(),getFeederFaultWindowSize(),e);
-                            scriptFeederFault(feeder,e);
-                        }
                         if (feeder!=null && plannedPlacement.jobPlacement.getProcessingCount()<getMaxPlacementRetries()) {
                             // We should have another attempt at this placement.
                             // This can be quite a large number of retries because the feeder will

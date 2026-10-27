@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.openpnp.model.Job;
+import org.openpnp.model.Placement;
 
 public interface JobProcessor extends PropertySheetHolder, WizardConfigurable {
     public interface TextStatusListener {
@@ -17,6 +18,23 @@ public interface JobProcessor extends PropertySheetHolder, WizardConfigurable {
     boolean isSteppingToNextMotion();
 
     public void abort() throws JobProcessorException;    
+
+    /**
+     * @return the placement whose error stopped the job, which {@link #skipFailedPlacement()} can
+     *         skip, or null. Calling {@link #next()} again retries it.
+     */
+    public default Placement getFailedPlacement() {
+        return null;
+    }
+
+    /**
+     * Marks the failed placement as errored, discarding any part picked for it, so the next call
+     * to {@link #next()} continues the job without it. Runs on the machine thread.
+     */
+    public default void skipFailedPlacement() throws JobProcessorException {
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " can't skip a failed placement");
+    }
 
     public void addTextStatusListener(TextStatusListener listener);
 

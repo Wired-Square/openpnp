@@ -141,6 +141,9 @@ public class JobPanel extends JPanel {
     private static final int PREF_DIVIDER_POSITION_DEF = -1;
 
     private static final String UNTITLED_JOB_FILENAME = "Untitled.job.xml"; //$NON-NLS-1$
+    private static final int PLACEMENT_ERROR_RETRY = 0;
+    private static final int PLACEMENT_ERROR_SKIP = 1;
+    private static final int PLACEMENT_ERROR_PAUSE = 2;
 
     private static final String PREF_RECENT_FILES = "JobPanel.recentFiles"; //$NON-NLS-1$
     private static final int PREF_RECENT_FILES_MAX = 10;
@@ -968,19 +971,13 @@ public class JobPanel extends JPanel {
         }, (e) -> {
 
         }, (t) -> {
-            /**
-             * TODO It would be nice to give the user the ability to single click suppress errors
-             * on the currently processing placement, but that requires knowledge of the currently
-             * processing placement. With the current model where JobProcessor is available for
-             * both dispense and PnP this is not possible. Once dispense is removed we can include
-             * the current placement in the thrown error and add this feature.
-             */
             if (t instanceof JobProcessorException) {
                 JobProcessorException jpe = (JobProcessorException)t;
                 selectJobProcessorExceptionSource(jpe.getSecondarySource(),false);
                 selectJobProcessorExceptionSource(jpe.getSource(),true);
             }
             
+            boolean stepping = state == State.Pausing;
             // update the state before showing the error to allow exceptions with continuations to change it
             if (state == State.Running || state == State.Pausing) {
                 setState(State.Paused);
@@ -989,9 +986,49 @@ public class JobPanel extends JPanel {
                 setState(State.Stopped);
             }
             
+            Placement failedPlacement = jobProcessor.getFailedPlacement();
+            if (failedPlacement != null && state == State.Paused) {
+                offerPlacementRecovery(failedPlacement, t, stepping);
+                return;
+            }
             // call showError() to support exceptions with continuation
             UiUtils.showError(getTopLevelAncestor(), Translations.getString("JobPanel.JobRun.Error.ErrorBox.Title"), t); //$NON-NLS-1$
         });
+    }
+
+    private void offerPlacementRecovery(Placement placement, Throwable t, boolean stepping) {
+        String[] options = {Translations.getString("JobPanel.PlacementError.Retry"), //$NON-NLS-1$
+                Translations.getString("JobPanel.PlacementError.Skip"), //$NON-NLS-1$
+                Translations.getString("JobPanel.PlacementError.Pause")}; //$NON-NLS-1$
+        int choice = JOptionPane.showOptionDialog(getTopLevelAncestor(),
+                String.format(Translations.getString("JobPanel.PlacementError.Message"), //$NON-NLS-1$
+                        placement.getId(), t.getMessage() != null ? t.getMessage() : t.toString()),
+                Translations.getString("JobPanel.JobRun.Error.ErrorBox.Title"), //$NON-NLS-1$
+                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options,
+                options[PLACEMENT_ERROR_PAUSE]);
+        if (choice == PLACEMENT_ERROR_RETRY) {
+            resumeAfterPlacementError(stepping);
+        }
+        else if (choice == PLACEMENT_ERROR_SKIP) {
+            UiUtils.submitUiMachineTask(() -> {
+                jobProcessor.skipFailedPlacement();
+                return null;
+            }, result -> resumeAfterPlacementError(stepping),
+                    error -> UiUtils.showError(getTopLevelAncestor(),
+                            Translations.getString("JobPanel.JobRun.Error.ErrorBox.Title"), error)); //$NON-NLS-1$
+        }
+    }
+
+    /**
+     * Continues the job as it was going, one step or running, unless the operator stopped or
+     * restarted it meanwhile.
+     */
+    private void resumeAfterPlacementError(boolean stepping) {
+        if (state != State.Paused) {
+            return;
+        }
+        setState(stepping ? State.Pausing : State.Running);
+        jobRun();
     }
 
     private void selectJobProcessorExceptionSource(Object source,boolean primary) {
