@@ -21,18 +21,22 @@ package org.openpnp.gui.components;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -63,9 +67,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 
 import org.openpnp.CameraListener;
 import org.openpnp.gui.MainFrame;
@@ -186,6 +193,11 @@ public class CameraView extends JComponent implements CameraListener {
     private int imageX, imageY;
 
     private boolean selectionEnabled;
+
+    private boolean measuring;
+    /** Whether the gesture under way began in ruler mode; it ends in the mode it began in. */
+    private boolean measuringGesture;
+    private transient RulerMeasurement ruler;
     /**
      * Rectangle describing the bounds of the selection in image coordinates.
      */
@@ -235,6 +247,9 @@ public class CameraView extends JComponent implements CameraListener {
     private int dragJogHandleSize = 50;
 
     private static final int overlayInset = 10;
+    private static final float RULER_STROKE_WIDTH = 2f;
+    private static final String TOGGLE_MEASURING = "toggleMeasuring"; //$NON-NLS-1$
+    private static final String STOP_MEASURING = "stopMeasuring"; //$NON-NLS-1$
     private int lightToggleSize = 40;
 
     long lastFrameReceivedTime = 0;
@@ -251,6 +266,27 @@ public class CameraView extends JComponent implements CameraListener {
 
         addMouseListener(mouseListener);
         addMouseMotionListener(mouseMotionListener);
+        setFocusable(true);
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_M, 0, true),
+                TOGGLE_MEASURING);
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), STOP_MEASURING);
+        getActionMap().put(TOGGLE_MEASURING, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setMeasuring(!measuring);
+            }
+        });
+        getActionMap().put(STOP_MEASURING, new AbstractAction() {
+            @Override
+            public boolean isEnabled() {
+                return measuring;
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setMeasuring(false);
+            }
+        });
         addComponentListener(componentListener);
         addMouseWheelListener(mouseWheelListener);
 
@@ -699,9 +735,13 @@ public class CameraView extends JComponent implements CameraListener {
                 paintSelection(g2d);
             }
 
-            if (!selectionEnabled) {
+            if (!selectionEnabled && !measuring) {
                 paintDragJogging(g2d);
                 paintLightToggle(g2d);
+            }
+
+            if (measuring && ruler != null) {
+                paintRuler(g2d);
             }
 
             if (camera.isUnitsPerPixelAtZCalibrated()) {
@@ -1411,6 +1451,10 @@ public class CameraView extends JComponent implements CameraListener {
      * Updates the Cursor to reflect the current state of the component.
      */
     private void updateCursor() {
+        if (measuring) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            return;
+        }
         if (selectionEnabled) {
             if (selectionMode == SelectionMode.Moving) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
@@ -1523,25 +1567,116 @@ public class CameraView extends JComponent implements CameraListener {
     }
 
     public Location getCameraViewCenterOffsetsFromXy(int x, int y) {
-        // Find the difference in X and Y from the center of the image
-        // to the mouse click.
-        double offsetX = (scaledWidth / 2.0D) - (x - imageX);
-        double offsetY = (scaledHeight / 2.0D) - (y - imageY) + 1;
+        return getViewGeometry().offsetsFromXy(x, y);
+    }
 
-        // Invert the X so that the offsets represent a bottom left to
-        // top right coordinate system.
-        offsetX = -offsetX;
+    private ViewGeometry getViewGeometry() {
+        return new ViewGeometry(imageX, imageY, scaledWidth, scaledHeight, scaledUnitsPerPixelX,
+                scaledUnitsPerPixelY, camera.getUnitsPerPixel().getUnits());
+    }
 
-        // Scale the offsets by the units per pixel for the camera.
-        offsetX *= scaledUnitsPerPixelX;
-        offsetY *= scaledUnitsPerPixelY;
+    /**
+     * Converts between component coordinates and offsets from the image centre in the camera's
+     * units, in a bottom left to top right coordinate system. The camera's rotation and flips are
+     * already applied to the frame shown, so these offsets are along the machine axes.
+     */
+    static final class ViewGeometry {
+        /** Long-standing one-pixel Y bias of click-to-move, kept so offsets don't change. */
+        private static final int CENTRE_Y_BIAS_PIXELS = 1;
 
-        // The offsets now represent the distance in the Camera's units per pixel's units.
+        private final int imageX;
+        private final int imageY;
+        private final int scaledWidth;
+        private final int scaledHeight;
+        private final double unitsPerPixelX;
+        private final double unitsPerPixelY;
+        private final LengthUnit units;
 
-        // Create a location in the Camera's units per pixel's units
-        // and with the values of the offsets.
-        Location offsets = new Location(camera.getUnitsPerPixel().getUnits(), offsetX, offsetY, 0.0, 0.0);
-        return offsets;
+        ViewGeometry(int imageX, int imageY, int scaledWidth, int scaledHeight,
+                double unitsPerPixelX, double unitsPerPixelY, LengthUnit units) {
+            this.imageX = imageX;
+            this.imageY = imageY;
+            this.scaledWidth = scaledWidth;
+            this.scaledHeight = scaledHeight;
+            this.unitsPerPixelX = unitsPerPixelX;
+            this.unitsPerPixelY = unitsPerPixelY;
+            this.units = units;
+        }
+
+        Location offsetsFromXy(int x, int y) {
+            double offsetX = (x - imageX) - (scaledWidth / 2.0D);
+            double offsetY = (scaledHeight / 2.0D) - (y - imageY) + CENTRE_Y_BIAS_PIXELS;
+            return new Location(units, offsetX * unitsPerPixelX, offsetY * unitsPerPixelY, 0.0,
+                    0.0);
+        }
+
+        Point xyFromOffsets(Location offsets) {
+            Location o = offsets.convertToUnits(units);
+            double x = imageX + (scaledWidth / 2.0D) + o.getX() / unitsPerPixelX;
+            double y = imageY + (scaledHeight / 2.0D) + CENTRE_Y_BIAS_PIXELS
+                    - o.getY() / unitsPerPixelY;
+            return new Point((int) Math.round(x), (int) Math.round(y));
+        }
+    }
+
+    public boolean isMeasuring() {
+        return measuring;
+    }
+
+    /**
+     * Ruler mode: dragging measures between two points instead of jogging, and clicks don't move
+     * the machine.
+     */
+    public void setMeasuring(boolean measuring) {
+        this.measuring = measuring;
+        ruler = null;
+        // A jog, light toggle or selection begun before the switch must not complete after it.
+        dragJogging = false;
+        dragJoggingStart = null;
+        dragJoggingTarget = null;
+        endTogglingLight();
+        endSelection();
+        if (measuring) {
+            requestFocusInWindow();
+        }
+        updateCursor();
+        repaint();
+    }
+
+    /**
+     * Takes keyboard focus for the M and Esc shortcuts, unless a text field is being edited.
+     */
+    private void takeFocusUnlessEditingText() {
+        Component focusOwner =
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (!(focusOwner instanceof JTextComponent)) {
+            requestFocusInWindow();
+        }
+    }
+
+    private Location machineLocationAt(int x, int y) {
+        return camera.getLocation().add(getCameraViewCenterOffsetsFromXy(x, y));
+    }
+
+    private void measureTo(MouseEvent e, Location start) {
+        Location end = machineLocationAt(e.getX(), e.getY());
+        ruler = e.isShiftDown() ? RulerMeasurement.snapped(start, end)
+                : new RulerMeasurement(start, end);
+        repaint();
+    }
+
+    private void paintRuler(Graphics2D g2d) {
+        if (ruler.getLength() == 0) {
+            return;
+        }
+        ViewGeometry geometry = getViewGeometry();
+        Location cameraLocation = camera.getLocation();
+        Point start = geometry.xyFromOffsets(ruler.getStart().subtract(cameraLocation));
+        Point end = geometry.xyFromOffsets(ruler.getEnd().subtract(cameraLocation));
+        g2d.setStroke(new BasicStroke(RULER_STROKE_WIDTH));
+        g2d.setColor(UIColors.cameraRuler());
+        g2d.drawLine(start.x, start.y, end.x, end.y);
+        drawTextOverlay(g2d, end.x + overlayInset, end.y + overlayInset, ruler.getLabel());
     }
 
     private void moveToClick(MouseEvent e) {
@@ -1764,7 +1899,8 @@ public class CameraView extends JComponent implements CameraListener {
  
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (e.isPopupTrigger() || e.isShiftDown() || SwingUtilities.isRightMouseButton(e)) {
+            if (measuring || e.isPopupTrigger() || e.isShiftDown()
+                    || SwingUtilities.isRightMouseButton(e)) {
                 return;
             }
             // double click captures an image from the camera and writes it to disk.
@@ -1782,6 +1918,15 @@ public class CameraView extends JComponent implements CameraListener {
                 new CameraViewPopupMenu(CameraView.this).show(e.getComponent(), e.getX(), e.getY());
                 return;
             }
+            takeFocusUnlessEditingText();
+            measuringGesture = measuring;
+            if (measuring) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    Location start = machineLocationAt(e.getX(), e.getY());
+                    ruler = new RulerMeasurement(start, start);
+                    repaint();
+                }
+            }
             else if (e.isShiftDown()) {
                 moveToClick(e);
             }
@@ -1796,6 +1941,9 @@ public class CameraView extends JComponent implements CameraListener {
         public void mouseReleased(MouseEvent e) {
             if (e.isPopupTrigger() && !isDragJogging()) {
                 new CameraViewPopupMenu(CameraView.this).show(e.getComponent(), e.getX(), e.getY());
+                return;
+            }
+            else if (measuringGesture) {
                 return;
             }
             else if (isDragJogging()) {
@@ -1819,7 +1967,12 @@ public class CameraView extends JComponent implements CameraListener {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            if (selectionEnabled) {
+            if (measuringGesture) {
+                if (measuring && ruler != null && SwingUtilities.isLeftMouseButton(e)) {
+                    measureTo(e, ruler.getStart());
+                }
+            }
+            else if (selectionEnabled) {
                 continueSelection(e);
             }
             else if (!isDragJogging()) {

@@ -215,6 +215,7 @@ public final class UIColors {
     private static final Color CAMERA_LIGHT_TOGGLE_ACTIVE = new Color(255, 255, 125, 200);
     private static final Color CAMERA_SELECTION_HANDLE = new Color(153, 153, 187);
     private static final Color CAMERA_HISTOGRAM_BG = new Color(1, 1, 1, 0.20f);
+    private static final Color CAMERA_RULER = Color.yellow;
 
     public static Color cameraOverlayBg() {
         return CAMERA_OVERLAY_BG;
@@ -250,5 +251,9 @@ public final class UIColors {
 
     public static Color cameraHistogramBg() {
         return CAMERA_HISTOGRAM_BG;
+    }
+
+    public static Color cameraRuler() {
+        return CAMERA_RULER;
     }
 }

@@ -93,6 +93,10 @@ public class CameraViewPopupMenu extends JPopupMenu {
         chkShowImageInfo.setSelected(cameraView.isShowImageInfo());
         add(chkShowImageInfo);
 
+        JCheckBoxMenuItem chkMeasure = new JCheckBoxMenuItem(measureAction);
+        chkMeasure.setSelected(cameraView.isMeasuring());
+        add(chkMeasure);
+
 
         if (cameraView.getDefaultReticle() != null) {
             if (cameraView.getDefaultReticle() instanceof RulerReticle) {
@@ -562,6 +566,15 @@ public class CameraViewPopupMenu extends JPopupMenu {
         @Override
         public void actionPerformed(ActionEvent e) {
             cameraView.setShowImageInfo(((JCheckBoxMenuItem) e.getSource()).isSelected());
+        }
+    };
+
+    private transient Action measureAction = new AbstractAction("Measure (M)") {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            cameraView.setMeasuring(((JCheckBoxMenuItem) e.getSource()).isSelected());
         }
     };
 
