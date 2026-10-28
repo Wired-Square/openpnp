@@ -204,9 +204,12 @@ public class JobUsageServiceTest {
         assertEquals(Set.of(Issue.PART_HEIGHT_UNKNOWN), partUsage().getIssues());
 
         feeder.setEnabled(false);
-        machine.removeFeeder(feeder);
         flushEdt();
         assertEquals(2, notifications.get());
+
+        machine.removeFeeder(feeder);
+        flushEdt();
+        assertEquals(3, notifications.get());
         assertFalse(feederUsage().isInUse());
         assertEquals(0, offEdtNotifications.get());
     }
