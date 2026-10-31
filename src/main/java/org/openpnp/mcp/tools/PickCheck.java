@@ -49,6 +49,19 @@ final class PickCheck {
             double measuredX, double measuredY, double measuredLongAxis, double bodyWidth,
             double bodyHeight, double okFraction, double marginalFraction,
             double maxPickTolerance) {
+        return evaluate(expectedX, expectedY, expectedRotation, measuredX, measuredY,
+                measuredLongAxis, bodyWidth, bodyHeight, okFraction, marginalFraction,
+                maxPickTolerance, false);
+    }
+
+    /**
+     * @param quarterTurn the measured outline only gives its angle to a quarter turn, as for a
+     *        tape pocket or a hull of leads, which can be longest across the body
+     */
+    static PickCheck evaluate(double expectedX, double expectedY, double expectedRotation,
+            double measuredX, double measuredY, double measuredLongAxis, double bodyWidth,
+            double bodyHeight, double okFraction, double marginalFraction,
+            double maxPickTolerance, boolean quarterTurn) {
         double dx = measuredX - expectedX;
         double dy = measuredY - expectedY;
         double distance = Math.hypot(dx, dy);
@@ -58,7 +71,7 @@ final class PickCheck {
         boolean square = Math.max(bodyWidth, bodyHeight)
                 < SQUARE_ASPECT * Math.min(bodyWidth, bodyHeight);
         double angleError = fold(measuredLongAxis - expectedLongAxis,
-                square ? QUARTER_TURN : HALF_TURN);
+                square || quarterTurn ? QUARTER_TURN : HALF_TURN);
 
         double shorter = Math.min(bodyWidth, bodyHeight);
         Flag flag = Flag.OK;

@@ -27,6 +27,7 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 import org.openpnp.machine.reference.ReferenceNozzleTip;
+import org.openpnp.machine.reference.feeder.ReferenceTrayFeeder;
 import org.openpnp.mcp.McpJson;
 import org.openpnp.mcp.McpSchema;
 import org.openpnp.mcp.McpTool;
@@ -65,6 +66,17 @@ public final class CheckJobPicksTool implements McpTool {
     static final String STATUS_NO_SIZE = "noBodySize";
     static final String STATUS_NOT_FOUND = "notFound";
     static final String STATUS_ERROR = "error";
+    static final String STATUS_LARGER_THAN_VIEW = "largerThanView";
+    static final String STATUS_UNCERTAIN = "uncertain";
+
+    /** Only outlines within this many body lengths of the pick point are judged. */
+    static final double NEAR_BODY_LENGTHS = 0.5;
+    /** A body longer than this fraction of the frame's shorter side can't be seen whole. */
+    static final double LARGER_THAN_VIEW = 0.9;
+
+    static final String MEASURED_BY_POCKET = "pocket";
+    static final String MEASURED_BY_BODY = "body";
+    static final String MEASURED_BY_FEATURES = "features";
 
     private static final int MIN_CROP_PX = 200;
     private static final DateTimeFormatter TIMESTAMP =
@@ -97,9 +109,14 @@ public final class CheckJobPicksTool implements McpTool {
                 + "job's enabled placements (or of the given feeders): the top camera visits "
                 + "each feeder's next part at safe Z (for tray and strip feeders the cell or part "
                 + "the next feed presents), captures with its light, saves the frame to snapshots "
-                + "and finds the part body nearest the centre, sized from the package's "
-                + "footprint body (see resolve_part_sizes). Reports each body's X/Y offset and "
-                + "angle from where the feeder says the part is, flagged ok, marginal or off "
+                + "and finds the tape pocket and the part nearest the centre, sized from the "
+                + "package's footprint body (see resolve_part_sizes). The part is found by its "
+                + "outline or, for two-tone chips and dark bodies, by the hull of its "
+                + "terminations or leads. The pocket, where shown, is the reference: the part "
+                + "rattles in it. Reports the X/Y offset (measuredBy pocket, body or features) "
+                + "and angle from where the feeder says the part is, a suggestedLocation for "
+                + "tray feeders, and the part's position in the pocket, flagged ok, marginal or "
+                + "off "
                 + "(defaults 15% and 30% of the body's shorter side, or beyond the nozzle tip's "
                 + "Max Pick Tolerance; 5° and 15°), with cropped frames of flagged picks. The "
                 + "operator allows the whole planned route once in OpenPnP and can pause or "
@@ -401,28 +418,102 @@ public final class CheckJobPicksTool implements McpTool {
         double longPx = Math.max(stop.bodyWidth / pixelX, stop.bodyHeight / pixelY);
         double shortPx = Math.min(stop.bodyWidth / pixelX, stop.bodyHeight / pixelY);
         cropHalf = Math.max(MIN_CROP_PX / 2.0, PickDetector.searchHalfWidth(longPx));
+        if (longPx > LARGER_THAN_VIEW * Math.min(shot.image.getWidth(),
+                shot.image.getHeight())) {
+            result.addProperty("status", STATUS_LARGER_THAN_VIEW);
+            result.addProperty("reason", "The body is larger than the camera view; check it "
+                    + "by eye");
+            return crop(PickDetector.annotate(shot.image, expected, null), expectedPx, cropHalf);
+        }
 
-        PickDetector.Detection found = PickDetector.detect(shot.image, longPx, shortPx);
+        // Only an outline at the pick point is judged. An empty embossed pocket looks much like
+        // a part, so a match further off is likely the next pocket: reported, never acted on.
+        PickDetector.Result found = PickDetector.detect(shot.image, longPx, shortPx,
+                NEAR_BODY_LENGTHS * longPx);
         BufferedImage annotated = PickDetector.annotate(shot.image, expected, found);
-        if (found == null) {
+        PickDetector.Detection pocket = found.pocket;
+        PickDetector.Detection part = found.part;
+        // The pocket is where the feeder location should point; the part rattles inside it.
+        PickDetector.Detection reference = pocket != null ? pocket : part;
+        if (reference == null) {
             result.addProperty("status", STATUS_NOT_FOUND);
-            result.addProperty("reason", "No outline the size of the body near the centre; "
-                    + "the part may be missing or the background too like it"
-                    + (stop.feeder instanceof NextPickLocatable || stop.feed
-                            ? ""
-                            : ". This feeder presents a part when fed, so its pocket is empty "
-                                    + "after a pick; ask to feed it"));
+            String reason = "Neither a pocket nor a part the size of the body at the pick point; "
+                    + "the part may be missing or the background too like it";
+            PickDetector.Detection far = found.far;
+            if (far != null) {
+                Point at = toMachine(far, cameraAt, centreX, centreY, uppX, uppY);
+                JsonObject farJson = describe(far, at, pixelX, pixelY);
+                farJson.addProperty("distance", McpJson.round(
+                        Math.hypot(at.x - pick.getX(), at.y - pick.getY())));
+                result.add("farMatch", farJson);
+                reason += ". Something the right size is further off (farMatch), possibly the "
+                        + "next pocket: check the location by eye before feeding";
+            }
+            else if (!(stop.feeder instanceof NextPickLocatable) && !stop.feed) {
+                reason += ". This feeder presents a part when fed, so its pocket is empty after "
+                        + "a pick; ask to feed it";
+            }
+            result.addProperty("reason", reason);
             return crop(annotated, expectedPx, cropHalf);
         }
-        double measuredX = cameraAt.getX() + (found.x - centreX) * uppX;
-        double measuredY = cameraAt.getY() - (found.y - centreY) * uppY;
+        Point measured = toMachine(reference, cameraAt, centreX, centreY, uppX, uppY);
+        // The angle comes from the outline that shows the body's long side most surely.
+        // A part can sit turned in its pocket, so the pocket's angle is preferred.
+        PickDetector.Detection angled;
+        boolean quarterTurn;
+        if (pocket != null && PickDetector.alignsOneWay(pocket, longPx, shortPx,
+                PickDetector.POCKET_MIN, PickDetector.POCKET_MAX)) {
+            angled = pocket;
+            quarterTurn = false;
+        }
+        else if (part != null && !part.fromFeatures) {
+            angled = part;
+            quarterTurn = false;
+        }
+        else if (pocket != null) {
+            angled = pocket;
+            quarterTurn = true;
+        }
+        else {
+            angled = part;
+            quarterTurn = !PickDetector.alignsOneWay(part, longPx, shortPx,
+                    1 / PickDetector.FEATURE_MATCH, PickDetector.FEATURE_MATCH);
+        }
         PickCheck check = PickCheck.evaluate(pick.getX(), pick.getY(), pick.getRotation(),
-                measuredX, measuredY, machineAngle(found.longAxisImageDegrees, uppX, uppY),
-                stop.bodyWidth,
-                stop.bodyHeight, okFraction, marginalFraction, stop.maxPickTolerance);
-        result.addProperty("status", check.flag.name().toLowerCase(Locale.ROOT));
-        if (check.reason != null) {
-            result.addProperty("reason", check.reason);
+                measured.x, measured.y,
+                machineAngle(angled.longAxisImageDegrees, uppX, uppY), stop.bodyWidth,
+                stop.bodyHeight, okFraction, marginalFraction, stop.maxPickTolerance,
+                quarterTurn);
+        result.addProperty("rotationCheckedTo", quarterTurn ? "quarterTurn" : "halfTurn");
+        // An outline that may be an empty pocket or a dark part isn't judged or corrected.
+        boolean ambiguous = found.pocketMayBePart
+                || (reference == part && !part.fromFeatures && !part.light);
+        result.addProperty("status", ambiguous
+                ? STATUS_UNCERTAIN
+                : check.flag.name().toLowerCase(Locale.ROOT));
+        result.addProperty("measuredBy", reference == pocket
+                ? MEASURED_BY_POCKET
+                : reference.fromFeatures ? MEASURED_BY_FEATURES : MEASURED_BY_BODY);
+        String reason = check.reason;
+        if (pocket != null && part == null) {
+            String empty = found.pocketMayBePart
+                    ? "nothing found inside the outline, which is also the size of the body: it "
+                            + "may be a dark part filling the pocket or an empty pocket"
+                    : "the pocket looks empty";
+            reason = reason == null ? empty : reason + "; " + empty;
+        }
+        if (reference == pocket && part != null && !part.fromFeatures && !part.light) {
+            String floor = "the part inside is a dark outline, which a pocket floor can also be";
+            reason = reason == null ? floor : reason + "; " + floor;
+        }
+        if (reference == part && !part.fromFeatures && !part.light) {
+            // An empty pocket in light tape is a dark outline about the body's size too.
+            String dark = "a dark outline the size of the body: a dark-topped part or an empty "
+                    + "pocket; check by eye";
+            reason = reason == null ? dark : reason + "; " + dark;
+        }
+        if (reason != null) {
+            result.addProperty("reason", reason);
         }
         JsonObject offset = new JsonObject();
         offset.addProperty("x", McpJson.round(check.dx));
@@ -430,14 +521,50 @@ public final class CheckJobPicksTool implements McpTool {
         offset.addProperty("distance", McpJson.round(check.distance));
         offset.addProperty("rotation", McpJson.round(check.angleError));
         result.add("offset", offset);
-        JsonObject body = new JsonObject();
-        body.addProperty("x", McpJson.round(measuredX));
-        body.addProperty("y", McpJson.round(measuredY));
-        body.addProperty("longSide", McpJson.round(found.longPx * pixelX));
-        body.addProperty("shortSide", McpJson.round(found.shortPx * pixelY));
-        body.addProperty("lightOnDark", found.light);
-        result.add("foundBody", body);
+        if (stop.feeder instanceof ReferenceTrayFeeder && !ambiguous) {
+            // Every cell is relative to the location, so moving it by the offset fixes them all.
+            Location location = ((ReferenceTrayFeeder) stop.feeder).getLocation()
+                    .convertToUnits(LengthUnit.Millimeters);
+            JsonObject suggested = new JsonObject();
+            suggested.addProperty("x", McpJson.round(location.getX() + check.dx));
+            suggested.addProperty("y", McpJson.round(location.getY() + check.dy));
+            result.add("suggestedLocation", suggested);
+        }
+        if (pocket != null) {
+            result.add("pocket", describe(pocket, measured, pixelX, pixelY));
+        }
+        if (part != null) {
+            Point partAt = toMachine(part, cameraAt, centreX, centreY, uppX, uppY);
+            JsonObject partJson = describe(part, partAt, pixelX, pixelY);
+            partJson.addProperty("fromFeatures", part.fromFeatures);
+            if (pocket != null) {
+                JsonObject inPocket = new JsonObject();
+                inPocket.addProperty("x", McpJson.round(partAt.x - measured.x));
+                inPocket.addProperty("y", McpJson.round(partAt.y - measured.y));
+                partJson.add("inPocket", inPocket);
+            }
+            result.add("part", partJson);
+        }
+        else {
+            result.addProperty("partFound", false);
+        }
         return crop(annotated, expectedPx, cropHalf);
+    }
+
+    private static Point toMachine(PickDetector.Detection found, Location cameraAt,
+            double centreX, double centreY, double uppX, double uppY) {
+        return new Point(cameraAt.getX() + (found.x - centreX) * uppX,
+                cameraAt.getY() - (found.y - centreY) * uppY);
+    }
+
+    private static JsonObject describe(PickDetector.Detection found, Point at, double pixelX,
+            double pixelY) {
+        JsonObject json = new JsonObject();
+        json.addProperty("x", McpJson.round(at.x));
+        json.addProperty("y", McpJson.round(at.y));
+        json.addProperty("longSide", McpJson.round(found.longPx * pixelX));
+        json.addProperty("shortSide", McpJson.round(found.shortPx * pixelY));
+        return json;
     }
 
     /** An image direction (Y down) as a machine angle, through each axis' signed scale. */

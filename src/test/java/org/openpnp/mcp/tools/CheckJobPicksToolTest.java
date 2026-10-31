@@ -335,13 +335,13 @@ public class CheckJobPicksToolTest {
     @Test
     public void theOffsetAndTurnAreMeasuredInMachineCoordinates() throws Exception {
         double mmPerPixel = 0.02;
-        Mat frame = new Mat(480, 640, CvType.CV_8UC3, new Scalar(200, 200, 200));
+        Mat frame = new Mat(480, 640, CvType.CV_8UC3, new Scalar(40, 40, 40));
         // 0.5 mm right and 0.3 mm up of the expected body, turned 10° counter-clockwise: Y and
         // the turn are mirrored in the image.
         Point[] corners = new Point[4];
         new RotatedRect(new Point(320 + 0.5 / mmPerPixel, 240 - 0.3 / mmPerPixel),
                 new Size(1.6 / mmPerPixel, 0.8 / mmPerPixel), -10).points(corners);
-        Imgproc.fillPoly(frame, List.of(new MatOfPoint(corners)), new Scalar(40, 40, 40));
+        Imgproc.fillPoly(frame, List.of(new MatOfPoint(corners)), new Scalar(200, 200, 200));
         Location pick = new Location(LengthUnit.Millimeters, 100, 50, 0, 0);
         CheckJobPicksTool.Stop stop = new CheckJobPicksTool.Stop(near, near.getPart(), false,
                 pick, 1.6, 0.8, 0);
@@ -358,7 +358,9 @@ public class CheckJobPicksToolTest {
         assertEquals(0.3, offset.get("y").getAsDouble(), 2 * mmPerPixel);
         assertEquals(10, offset.get("rotation").getAsDouble(), 1);
         assertEquals("off", result.get("status").getAsString());
-        assertEquals(1.6, result.getAsJsonObject("foundBody").get("longSide").getAsDouble(),
+        // A bare body with no pocket around it is measured as the body.
+        assertEquals(CheckJobPicksTool.MEASURED_BY_BODY, result.get("measuredBy").getAsString());
+        assertEquals(1.6, result.getAsJsonObject("part").get("longSide").getAsDouble(),
                 2 * mmPerPixel);
     }
 
@@ -428,6 +430,81 @@ public class CheckJobPicksToolTest {
 
         assertEquals(List.of(stops.get(1), stops.get(2), stops.get(0)),
                 CheckJobPicksTool.nearestNeighbourRoute(origin, stops, stop -> stop));
+    }
+
+    @Test
+    public void aPocketIsTheReferenceAndTheTrayGetsACorrectedLocation() throws Exception {
+        double mmPerPixel = 0.02;
+        Mat frame = new Mat(480, 640, CvType.CV_8UC3, new Scalar(220, 220, 220));
+        // A 2.1 × 1.2 mm pocket 0.2 mm left and 0.1 mm up of the pick, holding a two-tone
+        // 1.6 × 0.8 mm chip (dark body, bright ends) a further 0.1 mm left.
+        Point pocket = new Point(320 - 0.2 / mmPerPixel, 240 - 0.1 / mmPerPixel);
+        fill(frame, pocket, 2.1 / mmPerPixel, 1.2 / mmPerPixel, 30);
+        double partX = pocket.x - 0.1 / mmPerPixel;
+        fill(frame, new Point(partX, pocket.y), 1.6 / mmPerPixel, 0.8 / mmPerPixel, 90);
+        for (int side : new int[] {-1, 1}) {
+            fill(frame, new Point(partX + side * 0.6 / mmPerPixel, pocket.y), 0.4 / mmPerPixel,
+                    0.8 / mmPerPixel, 250);
+        }
+        near.setLocation(new Location(LengthUnit.Millimeters, 100, 50, 0, 0));
+        Location pick = near.getPickLocation();
+        CheckJobPicksTool.Stop stop = new CheckJobPicksTool.Stop(near, near.getPart(), false,
+                pick, 1.6, 0.8, 0);
+        CheckJobPicksTool.Shot shot = new CheckJobPicksTool.Shot(
+                OpenCvUtils.toBufferedImage(frame), pick, pick,
+                new Location(LengthUnit.Millimeters, mmPerPixel, mmPerPixel, 0, 0));
+        JsonObject result = new JsonObject();
+
+        CheckJobPicksTool.judge(stop, shot, PickCheck.DEFAULT_OK_FRACTION,
+                PickCheck.DEFAULT_MARGINAL_FRACTION, result);
+
+        assertEquals(CheckJobPicksTool.MEASURED_BY_POCKET, result.get("measuredBy").getAsString());
+        JsonObject offset = result.getAsJsonObject("offset");
+        assertEquals(-0.2, offset.get("x").getAsDouble(), 2 * mmPerPixel);
+        assertEquals(0.1, offset.get("y").getAsDouble(), 2 * mmPerPixel);
+        JsonObject suggested = result.getAsJsonObject("suggestedLocation");
+        assertEquals(99.8, suggested.get("x").getAsDouble(), 2 * mmPerPixel);
+        assertEquals(50.1, suggested.get("y").getAsDouble(), 2 * mmPerPixel);
+        JsonObject part = result.getAsJsonObject("part");
+        assertTrue(part.get("fromFeatures").getAsBoolean());
+        assertEquals(-0.1, part.getAsJsonObject("inPocket").get("x").getAsDouble(),
+                2 * mmPerPixel);
+    }
+
+    @Test
+    public void aTrayTurnedAQuarterTurnIsOff() throws Exception {
+        double mmPerPixel = 0.02;
+        Mat frame = new Mat(480, 640, CvType.CV_8UC3, new Scalar(220, 220, 220));
+        // The pocket and its chip lie along Y, where a tray at rotation 0 expects them along X.
+        Point centre = new Point(320, 240);
+        fill(frame, centre, 1.2 / mmPerPixel, 2.1 / mmPerPixel, 30);
+        fill(frame, centre, 0.8 / mmPerPixel, 1.6 / mmPerPixel, 90);
+        for (int side : new int[] {-1, 1}) {
+            fill(frame, new Point(centre.x, centre.y + side * 0.6 / mmPerPixel),
+                    0.8 / mmPerPixel, 0.4 / mmPerPixel, 250);
+        }
+        near.setLocation(new Location(LengthUnit.Millimeters, 100, 50, 0, 0));
+        Location pick = near.getPickLocation();
+        CheckJobPicksTool.Stop stop = new CheckJobPicksTool.Stop(near, near.getPart(), false,
+                pick, 1.6, 0.8, 0);
+        CheckJobPicksTool.Shot shot = new CheckJobPicksTool.Shot(
+                OpenCvUtils.toBufferedImage(frame), pick, pick,
+                new Location(LengthUnit.Millimeters, mmPerPixel, mmPerPixel, 0, 0));
+        JsonObject result = new JsonObject();
+
+        CheckJobPicksTool.judge(stop, shot, PickCheck.DEFAULT_OK_FRACTION,
+                PickCheck.DEFAULT_MARGINAL_FRACTION, result);
+
+        assertEquals("off", result.get("status").getAsString(), result.toString());
+        assertEquals(90, Math.abs(result.getAsJsonObject("offset").get("rotation")
+                .getAsDouble()), 1);
+        assertEquals("halfTurn", result.get("rotationCheckedTo").getAsString());
+    }
+
+    private static void fill(Mat frame, Point centre, double width, double height, int grey) {
+        Point[] corners = new Point[4];
+        new RotatedRect(centre, new Size(width, height), 0).points(corners);
+        Imgproc.fillPoly(frame, List.of(new MatOfPoint(corners)), new Scalar(grey, grey, grey));
     }
 
     @Test

@@ -44,6 +44,12 @@ public class PickVisionTest {
         Imgproc.fillPoly(frame, List.of(new MatOfPoint(corners)), new Scalar(grey, grey, grey));
     }
 
+    private static PickDetector.Result detect(BufferedImage image, double longPx,
+            double shortPx) {
+        return PickDetector.detect(image, longPx, shortPx,
+                CheckJobPicksTool.NEAR_BODY_LENGTHS * longPx);
+    }
+
     private static BufferedImage image(Mat frame) {
         return OpenCvUtils.toBufferedImage(frame);
     }
@@ -53,7 +59,7 @@ public class PickVisionTest {
         Mat frame = ground(LIGHT);
         body(frame, WIDTH / 2.0 + 10, HEIGHT / 2.0 - 5, 60, 30, 20, DARK);
 
-        PickDetector.Detection found = PickDetector.detect(image(frame), 60, 30);
+        PickDetector.Detection found = detect(image(frame), 60, 30).part;
 
         assertNotNull(found);
         assertEquals(WIDTH / 2.0 + 10, found.x, PIXEL);
@@ -69,7 +75,7 @@ public class PickVisionTest {
         Mat frame = ground(DARK);
         body(frame, WIDTH / 2.0, HEIGHT / 2.0, 30, 60, 0, LIGHT);
 
-        PickDetector.Detection found = PickDetector.detect(image(frame), 60, 30);
+        PickDetector.Detection found = detect(image(frame), 60, 30).part;
 
         assertNotNull(found);
         assertTrue(found.light);
@@ -82,25 +88,27 @@ public class PickVisionTest {
         // A pocket edge across the search window, and a small blob right at the centre.
         body(frame, WIDTH / 2.0, HEIGHT / 2.0 - 70, WIDTH, 20, 0, DARK);
         body(frame, WIDTH / 2.0, HEIGHT / 2.0, 12, 12, 0, DARK);
-        body(frame, WIDTH / 2.0 - 40, HEIGHT / 2.0 + 30, 60, 30, 0, DARK);
+        body(frame, WIDTH / 2.0, HEIGHT / 2.0 + 25, 60, 30, 0, DARK);
 
-        PickDetector.Detection found = PickDetector.detect(image(frame), 60, 30);
+        PickDetector.Detection found = detect(image(frame), 60, 30).part;
 
         assertNotNull(found);
-        assertEquals(WIDTH / 2.0 - 40, found.x, PIXEL);
-        assertEquals(HEIGHT / 2.0 + 30, found.y, PIXEL);
+        assertEquals(WIDTH / 2.0, found.x, PIXEL);
+        assertEquals(HEIGHT / 2.0 + 25, found.y, PIXEL);
     }
 
     @Test
-    public void aPartOnePocketAwayIsStillMeasured() {
+    public void aPartOnePocketAwayIsReportedButNotJudged() {
         Mat frame = ground(LIGHT);
         // A 0603 at 20 px/mm, one 2 mm pitch from the centre.
         body(frame, WIDTH / 2.0 + 40, HEIGHT / 2.0, 32, 16, 0, DARK);
 
-        PickDetector.Detection found = PickDetector.detect(image(frame), 32, 16);
+        PickDetector.Result found = detect(image(frame), 32, 16);
 
-        assertNotNull(found);
-        assertEquals(WIDTH / 2.0 + 40, found.x, PIXEL);
+        assertNull(found.part);
+        assertNull(found.pocket);
+        assertNotNull(found.far);
+        assertEquals(WIDTH / 2.0 + 40, found.far.x, PIXEL);
     }
 
     @Test
@@ -112,8 +120,37 @@ public class PickVisionTest {
     }
 
     @Test
+    public void aSingleRowOfLeadsIsNotTakenForThePart() {
+        Mat frame = ground(DARK);
+        // One lit row of four SOIC leads (body 98 × 78 px), with no second row.
+        for (int i = 0; i < 4; i++) {
+            body(frame, WIDTH / 2.0 - 38 + i * 25, HEIGHT / 2.0 - 30, 10, 14, 0, LIGHT);
+        }
+
+        assertNull(detect(image(frame), 98, 78).part);
+    }
+
+    @Test
+    public void aTurnedPartInAStraightPocketTakesThePocketsAngle() {
+        Mat frame = ground(LIGHT);
+        body(frame, WIDTH / 2.0, HEIGHT / 2.0, 84, 52, 0, DARK);
+        body(frame, WIDTH / 2.0, HEIGHT / 2.0, 64, 32, 10, LIGHT);
+
+        PickDetector.Result found = detect(image(frame), 64, 32);
+
+        assertNotNull(found.pocket);
+        assertNotNull(found.part);
+        assertEquals(10, PickCheck.fold(found.part.longAxisImageDegrees, 180), DEGREE);
+        assertEquals(0, PickCheck.fold(found.pocket.longAxisImageDegrees, 180), DEGREE);
+        assertTrue(PickDetector.alignsOneWay(found.pocket, 64, 32, PickDetector.POCKET_MIN,
+                PickDetector.POCKET_MAX));
+    }
+
+    @Test
     public void anEmptyPickFindsNothing() {
-        assertNull(PickDetector.detect(image(ground(LIGHT)), 60, 30));
+        PickDetector.Result found = detect(image(ground(LIGHT)), 60, 30);
+        assertNull(found.pocket);
+        assertNull(found.part);
     }
 
     @Test
