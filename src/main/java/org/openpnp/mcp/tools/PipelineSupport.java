@@ -14,11 +14,12 @@ import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
 import org.openpnp.mcp.McpJson;
+import org.openpnp.mcp.McpSchema;
+import org.openpnp.model.Configuration;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
 import org.openpnp.spi.Camera;
 import org.openpnp.spi.Feeder;
-import org.openpnp.spi.Machine;
 import org.openpnp.vision.pipeline.CvPipeline;
 import org.openpnp.vision.pipeline.CvStage;
 import org.openpnp.vision.pipeline.PipelineHolder;
@@ -38,8 +39,18 @@ final class PipelineSupport {
     private PipelineSupport() {
     }
 
-    static PipelineHolder requireHolder(Machine machine, JsonObject arguments) {
-        Feeder feeder = FeederLookup.require(machine, arguments);
+    /** A feeder's pipeline, or bottom vision named by part or vision settings. */
+    static PipelineHolder requireHolder(Configuration configuration, JsonObject arguments) {
+        boolean feederNamed = McpJson.optionalString(arguments, FeederLookup.FEEDER_ID) != null;
+        if (feederNamed == BottomVisionTarget.isNamed(arguments)) {
+            throw new IllegalArgumentException("Name either a " + FeederLookup.FEEDER_ID
+                    + ", or a " + BottomVisionTarget.PART_ID + " and/or "
+                    + BottomVisionTarget.VISION_SETTINGS_ID + " for bottom vision");
+        }
+        if (!feederNamed) {
+            return BottomVisionTarget.require(configuration, arguments);
+        }
+        Feeder feeder = FeederLookup.require(configuration.getMachine(), arguments);
         if (!(feeder instanceof PipelineHolder)) {
             throw new IllegalArgumentException(feeder.getClass().getSimpleName()
                     + " feeders don't expose their pipeline to the MCP server yet");
@@ -59,6 +70,38 @@ final class PipelineSupport {
                         + "the MCP server");
             }
         }
+    }
+
+    /** Adds the properties that say which pipeline was meant. */
+    static McpSchema targetSchema(McpSchema schema) {
+        return schema
+                .string(FeederLookup.FEEDER_ID, "A feeder id from list_feeders")
+                .string(BottomVisionTarget.PART_ID,
+                        "For bottom vision: a part id; its effective bottom vision settings")
+                .string(BottomVisionTarget.VISION_SETTINGS_ID,
+                        "For bottom vision: a vision settings id, instead of the part's own");
+    }
+
+    /**
+     * The holder's live pipeline, once it is safe to edit: a feed or an alignment processes it on
+     * the machine thread, and machine actions must not bypass the operator's confirmation.
+     */
+    static CvPipeline requireEditablePipeline(Configuration configuration,
+            PipelineHolder holder) {
+        if (configuration.getMachine().isBusy()) {
+            throw new IllegalArgumentException("The machine is busy; try again when it is idle");
+        }
+        CvPipeline pipeline = holder.getPipeline();
+        requireNoMachineActions(pipeline);
+        return pipeline;
+    }
+
+    /** The index a stage goes to: before the named stage, or at the end when none is named. */
+    static int insertionIndex(CvPipeline pipeline, String before) {
+        if (before == null) {
+            return pipeline.getStages().size();
+        }
+        return pipeline.getStages().indexOf(requireStage(pipeline, before));
     }
 
     static CvStage requireStage(CvPipeline pipeline, String name) {

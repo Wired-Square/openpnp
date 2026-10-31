@@ -86,7 +86,7 @@ public class PipelineToolsTest {
 
     @Test
     public void getPipelineListsStagesAndProperties() throws Exception {
-        JsonArray stages = call(new GetPipelineTool(() -> machine), feederArgs(""))
+        JsonArray stages = call(new GetPipelineTool(Configuration::get), feederArgs(""))
                 .getStructuredContent().getAsJsonArray("stages");
 
         assertEquals(feeder.getPipeline().getStages().size(), stages.size());
@@ -100,13 +100,13 @@ public class PipelineToolsTest {
         ReferenceTrayFeeder tray = new ReferenceTrayFeeder();
         machine.addFeeder(tray);
 
-        assertThrows(IllegalArgumentException.class, () -> call(new GetPipelineTool(() -> machine),
+        assertThrows(IllegalArgumentException.class, () -> call(new GetPipelineTool(Configuration::get),
                 "{\"feederId\":\"" + tray.getId() + "\"}"));
     }
 
     @Test
     public void setPipelineStagePropertyConvertsAndSaves() throws Exception {
-        McpTool tool = new SetPipelineStagePropertyTool(() -> machine);
+        McpTool tool = new SetPipelineStagePropertyTool(Configuration::get);
 
         call(tool, feederArgs(",\"stage\":\"" + FILTER_STAGE
                 + "\",\"property\":\"minArea\",\"value\":250000"));
@@ -120,7 +120,7 @@ public class PipelineToolsTest {
 
     @Test
     public void badPropertiesAreRefused() {
-        McpTool tool = new SetPipelineStagePropertyTool(() -> machine);
+        McpTool tool = new SetPipelineStagePropertyTool(Configuration::get);
 
         assertThrows(IllegalArgumentException.class, () -> call(tool, feederArgs(
                 ",\"stage\":\"" + FILTER_STAGE + "\",\"property\":\"nope\",\"value\":1")));
@@ -132,7 +132,7 @@ public class PipelineToolsTest {
 
     @Test
     public void numbersAreConvertedExactlyOrRefused() throws Exception {
-        McpTool tool = new SetPipelineStagePropertyTool(() -> machine);
+        McpTool tool = new SetPipelineStagePropertyTool(Configuration::get);
 
         assertThrows(IllegalArgumentException.class, () -> call(tool, feederArgs(
                 ",\"stage\":\"highlights\",\"property\":\"threshold\",\"value\":3.7")));
@@ -151,9 +151,9 @@ public class PipelineToolsTest {
         feeder.getPipeline().add("actuate", new ActuatorWrite());
 
         assertThrows(IllegalArgumentException.class,
-                () -> call(new RunPipelineTool(() -> machine), feederArgs("")));
+                () -> call(new RunPipelineTool(Configuration::get), feederArgs("")));
         assertThrows(IllegalArgumentException.class,
-                () -> call(new SetPipelineStagePropertyTool(() -> machine), feederArgs(
+                () -> call(new SetPipelineStagePropertyTool(Configuration::get), feederArgs(
                         ",\"stage\":\"" + FILTER_STAGE + "\",\"property\":\"minArea\","
                                 + "\"value\":1")));
     }
@@ -162,7 +162,7 @@ public class PipelineToolsTest {
     public void runPipelineUsesACopyAndReturnsStagesAndAnImage() throws Exception {
         double minArea = ((FilterContours) feeder.getPipeline().getStage(FILTER_STAGE)).getMinArea();
 
-        McpToolResult result = call(new RunPipelineTool(() -> machine), feederArgs(
+        McpToolResult result = call(new RunPipelineTool(Configuration::get), feederArgs(
                 ",\"overrides\":[{\"stage\":\"" + FILTER_STAGE
                         + "\",\"property\":\"minArea\",\"value\":1}]"));
 

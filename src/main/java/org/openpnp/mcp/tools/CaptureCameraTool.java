@@ -9,7 +9,6 @@ import org.openpnp.mcp.McpTool;
 import org.openpnp.mcp.McpToolResult;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.spi.Camera;
-import org.openpnp.spi.Head;
 import org.openpnp.spi.Machine;
 
 import com.google.gson.JsonObject;
@@ -56,7 +55,7 @@ public final class CaptureCameraTool implements McpTool {
         if (machine.isBusy()) {
             throw new IllegalArgumentException("The machine is busy; try again when it is idle");
         }
-        Camera camera = findCamera(machine, McpJson.optionalString(arguments, "camera"));
+        Camera camera = CameraLookup.find(machine, McpJson.optionalString(arguments, "camera"));
         BufferedImage image = camera.capture();
 
         JsonObject result = new JsonObject();
@@ -67,24 +66,5 @@ public final class CaptureCameraTool implements McpTool {
         result.add("mmPerPixel",
                 McpJson.location(camera.getUnitsPerPixel().convertToUnits(LengthUnit.Millimeters)));
         return McpToolResult.json(result).withImage(camera.getName(), image);
-    }
-
-    private static Camera findCamera(Machine machine, String name) throws Exception {
-        if (name == null) {
-            return machine.getDefaultHead().getDefaultCamera();
-        }
-        for (Camera camera : machine.getCameras()) {
-            if (camera.getName().equals(name)) {
-                return camera;
-            }
-        }
-        for (Head head : machine.getHeads()) {
-            for (Camera camera : head.getCameras()) {
-                if (camera.getName().equals(name)) {
-                    return camera;
-                }
-            }
-        }
-        throw new IllegalArgumentException("No camera " + name);
     }
 }

@@ -450,9 +450,7 @@ public class ResultsPanel extends JPanel {
         public void actionPerformed(ActionEvent arg0) {
             boolean frozen = editor.isFrozen();
             if (!frozen) {
-                editor.setFrozen(true);
-                putValue(SMALL_ICON, Icons.freezeEnabled);
-                putValue(SHORT_DESCRIPTION, "Unfreeze image capture.");
+                showFrozen();
             }
             else {
                 editor.setFrozen(false);
@@ -462,6 +460,12 @@ public class ResultsPanel extends JPanel {
             }
         }
     };
+
+    void showFrozen() {
+        editor.setFrozen(true);
+        freezeAction.putValue(Action.SMALL_ICON, Icons.freezeEnabled);
+        freezeAction.putValue(Action.SHORT_DESCRIPTION, "Unfreeze image capture.");
+    }
 
     public final Action colorResultAction = new AbstractAction() {
         {

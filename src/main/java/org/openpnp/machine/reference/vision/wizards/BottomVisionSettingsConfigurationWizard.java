@@ -38,7 +38,6 @@ import org.openpnp.model.PartSettingsHolder;
 import org.openpnp.model.Placement;
 import org.openpnp.spi.Camera;
 import org.openpnp.spi.Nozzle;
-import org.openpnp.spi.NozzleTip;
 import org.openpnp.spi.PartAlignment;
 import org.openpnp.util.UiUtils;
 import org.openpnp.util.VisionUtils;
@@ -540,19 +539,16 @@ public class BottomVisionSettingsConfigurationWizard extends AbstractConfigurati
                     + "Alternatively, you can select a single part or package on the Parts or "
                     + "Packages tab for a \"dry-run\" with empty nozzle (like after a failed pick).");
         }
-        NozzleTip nt = nozzle.getNozzleTip();
-        if (nt == null) {
-            throw new Exception("A nozzle tip must be loaded on selected nozzle "+nozzle.getName()+".");
+        Location location;
+        try {
+            location = bottomVision.prepareStandalonePipeline(pipeline,
+                    pipelineParameterAssignments, camera, nozzle, part, pkg, angle,
+                    visionSettings);
         }
-        if (! pkg.getCompatibleNozzleTips().contains(nt)) {
-            throw new Exception("Nozzle tip "+nt.getName()+" loaded on selected nozzle "+nozzle.getName()
-            +" is not compatible with package "+pkg.getId()+" "+packageSource+".");
+        catch (Exception e) {
+            throw new Exception(e.getMessage() + " Package " + pkg.getId() + " was "
+                    + packageSource + ".", e);
         }
-        Location location = bottomVision.getCameraLocationAtPartHeight(part, 
-                camera,
-                nozzle, angle);
-        bottomVision.preparePipeline(pipeline, pipelineParameterAssignments, camera, pkg, nozzle, nt, 
-                location, location, visionSettings);
         if (edit) {
 
             pipelinePanel.openPipelineEditor("Bottom Vision Pipeline", pipeline, 

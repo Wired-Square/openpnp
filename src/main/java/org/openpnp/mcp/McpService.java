@@ -11,16 +11,23 @@ import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
 
 import org.openpnp.Main;
+import org.openpnp.mcp.tools.AddPipelineStageTool;
 import org.openpnp.mcp.tools.ApplyFeederRotationSuggestionTool;
 import org.openpnp.mcp.tools.CaptureCameraTool;
 import org.openpnp.mcp.tools.DismissFeederRotationSuggestionTool;
+import org.openpnp.mcp.tools.FreezePipelineFrameTool;
 import org.openpnp.mcp.tools.GetJobTool;
+import org.openpnp.mcp.tools.GetPipelineEditorsTool;
 import org.openpnp.mcp.tools.GetPipelineTool;
 import org.openpnp.mcp.tools.ListFeedersTool;
 import org.openpnp.mcp.tools.ListPackagesTool;
 import org.openpnp.mcp.tools.ListPartsTool;
 import org.openpnp.mcp.tools.MoveCameraToFeederTool;
+import org.openpnp.mcp.tools.MovePipelineStageTool;
+import org.openpnp.mcp.tools.RemovePipelineStageTool;
 import org.openpnp.mcp.tools.RunPipelineTool;
+import org.openpnp.mcp.tools.SaveCameraFrameTool;
+import org.openpnp.mcp.tools.SetFeederLocationTool;
 import org.openpnp.mcp.tools.SetFeederNoteTool;
 import org.openpnp.mcp.tools.SetPipelineStagePropertyTool;
 import org.openpnp.mcp.tools.SetPhotonSlotRotationTool;
@@ -67,10 +74,17 @@ public final class McpService {
                 new ApplyFeederRotationSuggestionTool(machine),
                 new SetPhotonSlotRotationTool(machine),
                 new SetFeederNoteTool(machine),
-                new GetPipelineTool(machine),
-                new RunPipelineTool(machine),
+                new GetPipelineTool(configuration),
+                new RunPipelineTool(configuration),
                 new CaptureCameraTool(machine),
-                new SetPipelineStagePropertyTool(machine),
+                new SaveCameraFrameTool(configuration),
+                new FreezePipelineFrameTool(configuration),
+                new GetPipelineEditorsTool(configuration),
+                new SetPipelineStagePropertyTool(configuration),
+                new AddPipelineStageTool(configuration),
+                new RemovePipelineStageTool(configuration),
+                new MovePipelineStageTool(configuration),
+                new SetFeederLocationTool(machine),
                 new MoveCameraToFeederTool(machine, confirmer)));
     }
 

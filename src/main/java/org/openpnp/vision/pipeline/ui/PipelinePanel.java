@@ -236,7 +236,18 @@ public class PipelinePanel extends JPanel {
         }
     }
 
-    private void refreshProperties() {
+    void refreshStages() {
+        stagesTableModel.refresh();
+    }
+
+    void selectStage(CvStage stage) {
+        int index = editor.getPipeline().getStages().indexOf(stage);
+        if (index >= 0) {
+            stagesTable.changeSelection(stagesTable.convertRowIndexToView(index), 0, false, false);
+        }
+    }
+
+    void refreshProperties() {
         CvStage stage = getSelectedStage();
         if (stage == null) {
             propertySheetPanel.setProperties(new Property[] {});

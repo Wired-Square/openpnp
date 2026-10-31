@@ -5,10 +5,13 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 
 import org.openpnp.util.UiUtils;
 import org.openpnp.vision.pipeline.CvPipeline;
@@ -184,6 +187,9 @@ public class CvPipelineEditor extends JPanel {
     private PipelinePanel pipelinePanel;
     private ResultsPanel resultsPanel;
 
+    /** Editors on screen, so a pipeline changed elsewhere (the MCP server) shows in them. EDT only. */
+    private static final Set<CvPipelineEditor> shownEditors = new HashSet<>();
+
     private boolean frozen;
     private String originalVersion = "";
 
@@ -219,6 +225,83 @@ public class CvPipelineEditor extends JPanel {
     
     public void initializeFocus() {
         pipelinePanel.initializeFocus();    	
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        shownEditors.add(this);
+    }
+
+    @Override
+    public void removeNotify() {
+        shownEditors.remove(this);
+        super.removeNotify();
+    }
+
+    /** The editors on screen, in no particular order. EDT only. */
+    public static List<CvPipelineEditor> getShownEditors() {
+        return List.copyOf(shownEditors);
+    }
+
+    public CvStage getSelectedStage() {
+        return pipelinePanel.getSelectedStage();
+    }
+
+    /**
+     * Shows a stage change made outside the editor in every editor of the pipeline on screen:
+     * selects the stage, rereads its properties and processes again. EDT only. The editors
+     * update later, so a pipeline error's message box doesn't block the caller.
+     *
+     * @return whether an editor was on screen.
+     */
+    public static boolean showStageChange(CvPipeline pipeline, CvStage stage) {
+        return updateEditorsOf(pipeline, editor -> {
+            editor.pipelinePanel.selectStage(stage);
+            editor.pipelinePanel.refreshProperties();
+            editor.process();
+        });
+    }
+
+    private static boolean updateEditorsOf(CvPipeline pipeline, Consumer<CvPipelineEditor> update) {
+        boolean shown = false;
+        for (CvPipelineEditor editor : List.copyOf(shownEditors)) {
+            if (editor.pipeline == pipeline) {
+                SwingUtilities.invokeLater(() -> update.accept(editor));
+                shown = true;
+            }
+        }
+        return shown;
+    }
+
+    /**
+     * Shows stages added, removed or moved outside the editor in every editor of the pipeline on
+     * screen, selecting the given stage if it is still there. Refreshing the stage table processes
+     * again. EDT only; the editors update later.
+     *
+     * @return whether an editor was on screen.
+     */
+    public static boolean showStructureChange(CvPipeline pipeline, CvStage selected) {
+        return updateEditorsOf(pipeline, editor -> {
+            editor.pipelinePanel.refreshStages();
+            if (selected != null) {
+                editor.pipelinePanel.selectStage(selected);
+            }
+            editor.pipelinePanel.refreshProperties();
+        });
+    }
+
+    /**
+     * Freezes every editor of the pipeline on screen on the pipeline's last captured image, as
+     * the Freeze button does, and processes again. EDT only.
+     *
+     * @return whether an editor was on screen.
+     */
+    public static boolean showFrozenFrame(CvPipeline pipeline) {
+        return updateEditorsOf(pipeline, editor -> {
+            editor.resultsPanel.showFrozen();
+            editor.process();
+        });
     }
     
     public CvPipeline getPipeline() {
