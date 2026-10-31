@@ -1,9 +1,13 @@
 package org.openpnp.mcp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openpnp.model.Length;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -65,6 +69,25 @@ public final class McpJson {
             throw new IllegalArgumentException(name + " is required");
         }
         return value;
+    }
+
+    /** @return the strings, or null when the argument is absent. */
+    public static List<String> optionalStrings(JsonObject arguments, String name) {
+        JsonElement element = arguments.get(name);
+        if (element == null || element.isJsonNull()) {
+            return null;
+        }
+        if (!element.isJsonArray()) {
+            throw new IllegalArgumentException(name + " must be an array of strings");
+        }
+        List<String> values = new ArrayList<>();
+        for (JsonElement value : (JsonArray) element) {
+            if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+                throw new IllegalArgumentException(name + " must be an array of strings");
+            }
+            values.add(value.getAsString());
+        }
+        return values;
     }
 
     public static double requiredNumber(JsonObject arguments, String name) {

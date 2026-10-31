@@ -27,6 +27,7 @@ import org.openpnp.machine.reference.ReferenceFeeder;
 import org.openpnp.machine.reference.feeder.wizards.ReferenceRotatedTrayFeederConfigurationWizard;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
+import org.openpnp.spi.NextPickLocatable;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.PropertySheetHolder;
 import org.pmw.tinylog.Logger;
@@ -40,7 +41,7 @@ import org.simpleframework.xml.core.Commit;
  * arbitrary X and Y count and the tray can be rotated at an arbitrary angle
  * relative to the machine.
  */
-public class ReferenceRotatedTrayFeeder extends ReferenceFeeder {
+public class ReferenceRotatedTrayFeeder extends ReferenceFeeder implements NextPickLocatable {
 
     @Attribute
     private int trayCountCols = 1;
@@ -96,6 +97,18 @@ public class ReferenceRotatedTrayFeeder extends ReferenceFeeder {
 
     @Override
     public Location getPickLocation() {
+        return getPickLocation(feedCount);
+    }
+
+    @Override
+    public Location getNextPickLocation() {
+        if (feedCount >= getEffectiveTrayCountCols() * getEffectiveTrayCountRows()) {
+            return null;
+        }
+        return getPickLocation(feedCount + 1);
+    }
+
+    private Location getPickLocation(int feedCount) {
         int feedCountBase0 = feedCount -1; // UI uses feedCount base 1, the following calculations are base 0
 
         // if feedCound is currently zero, assume its one

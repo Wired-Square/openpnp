@@ -28,6 +28,7 @@ import org.openpnp.machine.reference.ReferenceFeeder;
 import org.openpnp.machine.reference.feeder.wizards.ReferenceTrayFeederConfigurationWizard;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
+import org.openpnp.spi.NextPickLocatable;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.PropertySheetHolder;
 import org.pmw.tinylog.Logger;
@@ -39,7 +40,7 @@ import org.simpleframework.xml.Element;
  * Implementation of Feeder that indexes based on an offset. This allows a tray of parts to be
  * picked from without moving any tape. Can handle trays of arbitrary X and Y count.
  */
-public class ReferenceTrayFeeder extends ReferenceFeeder {
+public class ReferenceTrayFeeder extends ReferenceFeeder implements NextPickLocatable {
 
 
     @Attribute
@@ -54,6 +55,20 @@ public class ReferenceTrayFeeder extends ReferenceFeeder {
 
     @Override
     public Location getPickLocation() {
+        return getPickLocation(feedCount);
+    }
+
+    @Override
+    public Location getNextPickLocation() {
+        // As feed() refuses an empty tray whatever the feed options.
+        if (feedCount >= getEffectiveTrayCountX() * getEffectiveTrayCountY()) {
+            return null;
+        }
+        boolean advances = getFeedOptions() == FeedOptions.Normal || feedCount == 0;
+        return getPickLocation(advances ? feedCount + 1 : feedCount);
+    }
+
+    private Location getPickLocation(int feedCount) {
         int partX, partY;
         int feedCountBase0 = feedCount -1; // UI uses feedCount base 1, the following calculations are base 0
 

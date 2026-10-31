@@ -173,6 +173,11 @@ public class JobPanel extends JPanel {
     
     private State state = State.Stopped;
     
+    /** Whether a job is running, paused or winding down. EDT only. */
+    public boolean isJobActive() {
+        return state != State.Stopped;
+    }
+
     public JobPanel(Configuration configuration, MainFrame frame) {
         this.configuration = configuration;
         this.mainFrame = frame;

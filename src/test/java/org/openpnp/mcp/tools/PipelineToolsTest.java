@@ -258,6 +258,28 @@ public class PipelineToolsTest {
     }
 
     @Test
+    public void aMoveGoesToTheTraysNextCell() throws Exception {
+        enableAndHome();
+        ReferenceTrayFeeder tray = new ReferenceTrayFeeder();
+        tray.setLocation(new Location(LengthUnit.Millimeters, 50, 60, 0, 0));
+        tray.setOffsets(new Location(LengthUnit.Millimeters, 0, 4, 0, 0));
+        tray.setTrayCountX(1);
+        tray.setTrayCountY(3);
+        tray.setFeedCount(2);
+        machine.addFeeder(tray);
+
+        McpToolResult result = call(new MoveCameraToFeederTool(() -> machine, description -> true),
+                "{\"feederId\":\"" + tray.getId() + "\"}");
+
+        assertFalse(result.isError());
+        Location location = machine.getDefaultHead().getDefaultCamera().getLocation()
+                .convertToUnits(LengthUnit.Millimeters);
+        assertEquals(50, location.getX(), 1e-3);
+        // Two fed and picked: the next feed presents the third cell.
+        assertEquals(68, location.getY(), 1e-3);
+    }
+
+    @Test
     public void aMoveNeedsAnEnabledHomedMachine() throws Exception {
         assertThrows(IllegalArgumentException.class, () -> call(
                 new MoveCameraToFeederTool(() -> machine, description -> true), feederArgs("")));

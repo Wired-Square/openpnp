@@ -37,6 +37,7 @@ import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
 import org.openpnp.model.Point;
 import org.openpnp.spi.Camera;
+import org.openpnp.spi.NextPickLocatable;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.Head;
 import org.openpnp.spi.Machine;
@@ -74,7 +75,7 @@ import org.simpleframework.xml.core.Persist;
  * 
  * hole to part lateral is tape width / 2 - 0.5mm
  */
-public class ReferenceStripFeeder extends ReferenceFeeder {
+public class ReferenceStripFeeder extends ReferenceFeeder implements NextPickLocatable {
     // This is not used
     public enum TapeType {
         WhitePaper("White Paper"),
@@ -202,7 +203,20 @@ public class ReferenceStripFeeder extends ReferenceFeeder {
 
     @Override
     public Location getPickLocation() throws Exception {
-        int feedCount = this.feedCount;
+        return getPickLocation(this.feedCount);
+    }
+
+    @Override
+    public Location getNextPickLocation() throws Exception {
+        boolean advances = getFeedOptions() == FeedOptions.Normal || feedCount == 0;
+        int next = advances ? feedCount + 1 : feedCount;
+        if (maxFeedCount > 0 && next > maxFeedCount) {
+            return null;
+        }
+        return getPickLocation(next);
+    }
+
+    private Location getPickLocation(int feedCount) throws Exception {
 
         /*
          * As a special case, before the feeder has been fed we return the pick location

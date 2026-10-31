@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import javax.swing.SwingUtilities;
@@ -14,6 +15,7 @@ import org.openpnp.Main;
 import org.openpnp.mcp.tools.AddPipelineStageTool;
 import org.openpnp.mcp.tools.ApplyFeederRotationSuggestionTool;
 import org.openpnp.mcp.tools.CaptureCameraTool;
+import org.openpnp.mcp.tools.CheckJobPicksTool;
 import org.openpnp.mcp.tools.DismissFeederRotationSuggestionTool;
 import org.openpnp.mcp.tools.FreezePipelineFrameTool;
 import org.openpnp.mcp.tools.GetJobTool;
@@ -25,10 +27,12 @@ import org.openpnp.mcp.tools.ListPartsTool;
 import org.openpnp.mcp.tools.MoveCameraToFeederTool;
 import org.openpnp.mcp.tools.MovePipelineStageTool;
 import org.openpnp.mcp.tools.RemovePipelineStageTool;
+import org.openpnp.mcp.tools.ResolvePartSizesTool;
 import org.openpnp.mcp.tools.RunPipelineTool;
 import org.openpnp.mcp.tools.SaveCameraFrameTool;
 import org.openpnp.mcp.tools.SetFeederLocationTool;
 import org.openpnp.mcp.tools.SetFeederNoteTool;
+import org.openpnp.mcp.tools.SetPackageBodySizeTool;
 import org.openpnp.mcp.tools.SetPackagePickOffsetTool;
 import org.openpnp.mcp.tools.SetPipelineStagePropertyTool;
 import org.openpnp.mcp.tools.SetPhotonSlotRotationTool;
@@ -57,7 +61,8 @@ public final class McpService {
         this.tools = tools;
     }
 
-    public static void initialise(Supplier<Job> job, MotionConfirmer confirmer) {
+    public static void initialise(Supplier<Job> job, BooleanSupplier jobActive,
+            MotionConfirmer confirmer) {
         if (instance != null) {
             throw new IllegalStateException("McpService already initialised");
         }
@@ -87,7 +92,10 @@ public final class McpService {
                 new MovePipelineStageTool(configuration),
                 new SetFeederLocationTool(machine),
                 new SetPackagePickOffsetTool(configuration),
-                new MoveCameraToFeederTool(machine, confirmer)));
+                new ResolvePartSizesTool(configuration, job),
+                new SetPackageBodySizeTool(configuration),
+                new MoveCameraToFeederTool(machine, confirmer),
+                new CheckJobPicksTool(configuration, job, jobActive, confirmer)));
     }
 
     public static McpService get() {

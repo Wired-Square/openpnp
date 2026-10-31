@@ -6,7 +6,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import org.openpnp.machine.reference.ReferenceFeeder;
 import org.openpnp.mcp.McpJson;
 import org.openpnp.mcp.McpSchema;
 import org.openpnp.mcp.McpTool;
@@ -38,9 +37,9 @@ public final class MoveCameraToFeederTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Moves the top camera over a feeder's location (X and Y only) at safe Z, as a "
-                + "feed does before its vision. The operator must allow the move in OpenPnP "
-                + "first, and the call waits until they choose and the move ends; a refusal "
+        return "Moves the top camera over a feeder's next part (X and Y only) at safe Z: for "
+                + "tray and strip feeders the cell or part the next feed presents, otherwise the "
+                + "pick location. The operator must allow the move in OpenPnP first, and the call waits until they choose and the move ends; a refusal "
                 + "returns an error and nothing moves. One request at a time.";
     }
 
@@ -67,9 +66,12 @@ public final class MoveCameraToFeederTool implements McpTool {
     public McpToolResult call(JsonObject arguments) throws Exception {
         Machine machine = this.machine.get();
         Feeder feeder = FeederLookup.require(machine, arguments);
-        if (!(feeder instanceof ReferenceFeeder)
-                || ((ReferenceFeeder) feeder).getLocation() == null) {
-            throw new IllegalArgumentException(feeder.getName() + " has no location to move to");
+        Location pick = FeederLookup.nextPart(feeder);
+        if (pick == null) {
+            throw new IllegalArgumentException(feeder.getName() + " has no parts left");
+        }
+        if (!Double.isFinite(pick.getX()) || !Double.isFinite(pick.getY())) {
+            throw new IllegalArgumentException(feeder.getName() + " has no pick location");
         }
         if (!machine.isEnabled() || !machine.isHomed()) {
             throw new IllegalArgumentException("The machine must be enabled and homed");
@@ -80,8 +82,7 @@ public final class MoveCameraToFeederTool implements McpTool {
         Camera camera = machine.getDefaultHead().getDefaultCamera();
         // Only X and Y after rising to safe Z, as parking does, so the move is what the operator
         // reads.
-        Location target = ((ReferenceFeeder) feeder).getLocation()
-                .derive(null, null, Double.NaN, Double.NaN);
+        Location target = pick.derive(null, null, Double.NaN, Double.NaN);
         Location targetMm = target.convertToUnits(LengthUnit.Millimeters);
         String description = String.format(Locale.ROOT,
                 "Requested at %s: move camera \"%s\" over feeder \"%s\" to X %.2f, Y %.2f mm, "

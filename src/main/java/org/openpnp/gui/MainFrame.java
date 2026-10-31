@@ -851,7 +851,8 @@ public class MainFrame extends JFrame {
     }
 
     private void startMcpServer() {
-        McpService.initialise(jobPanel::getJob, new McpMotionConfirmer(this));
+        McpService.initialise(jobPanel::getJob, jobPanel::isJobActive,
+                new McpMotionConfirmer(this));
         try {
             McpService.get().applySettings();
         }
