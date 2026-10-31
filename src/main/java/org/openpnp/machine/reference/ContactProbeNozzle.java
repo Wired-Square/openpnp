@@ -235,7 +235,7 @@ public class ContactProbeNozzle extends ReferenceNozzle {
         }
 
         Part part = feeder.getPart();
-        Location pickLocation = feeder.getPickLocation();
+        Location pickLocation = getNozzlePickLocation(feeder);
         Location pickLocationPart = pickLocation;
         boolean partHeightProbing = false;
         if (feeder.isPartHeightAbovePickLocation()) {

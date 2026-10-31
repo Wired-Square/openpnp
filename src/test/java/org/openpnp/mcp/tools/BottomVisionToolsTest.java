@@ -392,6 +392,29 @@ public class BottomVisionToolsTest {
     }
 
     @Test
+    public void thePickDeviationIsMeasuredFromThePackagesPickPoint() throws Exception {
+        saveFrame(FRAME, camera.getWidth(), camera.getHeight());
+        String args = partArgs(",\"imageFile\":\"" + FRAME + "\"");
+        JsonObject first = call(new RunPipelineTool(() -> configuration), args)
+                .getStructuredContent().getAsJsonObject("alignment");
+
+        call(new SetPackagePickOffsetTool(() -> configuration),
+                "{\"packageId\":\"R0805\",\"x\":" + -first.get("partXMm").getAsDouble()
+                        + ",\"y\":" + -first.get("partYMm").getAsDouble() + "}");
+        JsonObject aligned = call(new RunPipelineTool(() -> configuration), args)
+                .getStructuredContent().getAsJsonObject("alignment");
+
+        assertEquals(first.get("partXMm").getAsDouble(),
+                first.get("pickDeviationXMm").getAsDouble(), EPSILON);
+        assertEquals(0, aligned.get("pickDeviationXMm").getAsDouble(), EPSILON);
+        assertEquals(0, aligned.get("pickDeviationYMm").getAsDouble(), EPSILON);
+        assertEquals(-first.get("partYMm").getAsDouble(), call(
+                new ListPackagesTool(() -> configuration), "{\"id\":\"R0805\"}")
+                .getStructuredContent().getAsJsonArray("packages").get(0).getAsJsonObject()
+                .getAsJsonObject("pickOffset").get("y").getAsDouble(), EPSILON);
+    }
+
+    @Test
     public void aFrameOfTheWrongSizeIsRefused() throws Exception {
         saveFrame(FRAME, camera.getWidth() / 2, camera.getHeight());
 

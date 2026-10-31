@@ -27,6 +27,8 @@ import org.openpnp.Translations;
 import org.openpnp.gui.components.ComponentDecorators;
 import org.openpnp.gui.support.AbstractConfigurationWizard;
 import org.openpnp.gui.support.DoubleConverter;
+import org.openpnp.gui.support.LengthConverter;
+import org.openpnp.gui.support.MutableLocationProxy;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -44,6 +46,8 @@ public class PackageSettingsWizard extends AbstractConfigurationWizard {
     private JTextField vacuumLevel;
     private JLabel lblBlowOffLevel;
     private JTextField blowOffLevel;
+    private JTextField pickOffsetX;
+    private JTextField pickOffsetY;
 
     public PackageSettingsWizard(org.openpnp.model.Package pkg) {
         this.pkg = pkg;
@@ -82,6 +86,36 @@ public class PackageSettingsWizard extends AbstractConfigurationWizard {
         blowOffLevel = new JTextField();
         vacuumBlowOffPanel.add(blowOffLevel, "4, 4, left, default");
         blowOffLevel.setColumns(10);
+
+        JPanel pickPanel = new JPanel();
+        pickPanel.setBorder(new TitledBorder(null, Translations.getString(
+                "PackageSettingsWizard.PickOffsetBorder.title"), //$NON-NLS-1$
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        contentPanel.add(pickPanel);
+        pickPanel.setLayout(new FormLayout(new ColumnSpec[] {
+                FormSpecs.RELATED_GAP_COLSPEC,
+                FormSpecs.DEFAULT_COLSPEC,
+                FormSpecs.RELATED_GAP_COLSPEC,
+                FormSpecs.DEFAULT_COLSPEC,
+                FormSpecs.RELATED_GAP_COLSPEC,
+                ColumnSpec.decode("default:grow"),},
+            new RowSpec[] {
+                FormSpecs.RELATED_GAP_ROWSPEC,
+                FormSpecs.DEFAULT_ROWSPEC,}));
+
+        JLabel lblPickOffset = new JLabel(Translations.getString(
+                "PackageSettingsWizard.PickOffsetLabel.text")); //$NON-NLS-1$
+        lblPickOffset.setToolTipText(Translations.getString(
+                "PackageSettingsWizard.PickOffsetLabel.toolTipText")); //$NON-NLS-1$
+        pickPanel.add(lblPickOffset, "2, 2, right, default");
+
+        pickOffsetX = new JTextField();
+        pickPanel.add(pickOffsetX, "4, 2, left, default");
+        pickOffsetX.setColumns(10);
+
+        pickOffsetY = new JTextField();
+        pickPanel.add(pickOffsetY, "6, 2, left, default");
+        pickOffsetY.setColumns(10);
     }
 
     @Override
@@ -91,7 +125,17 @@ public class PackageSettingsWizard extends AbstractConfigurationWizard {
         bind(UpdateStrategy.READ_WRITE, pkg, "pickVacuumLevel", vacuumLevel, "text", doubleConverter);
         bind(UpdateStrategy.READ_WRITE, pkg, "placeBlowOffLevel", blowOffLevel, "text", doubleConverter);
         
+        LengthConverter lengthConverter = new LengthConverter();
+        MutableLocationProxy pickOffsetProxy = new MutableLocationProxy();
+        bind(UpdateStrategy.READ_WRITE, pkg, "pickOffset", pickOffsetProxy, "location");
+        bind(UpdateStrategy.READ_WRITE, pickOffsetProxy, "lengthX", pickOffsetX, "text",
+                lengthConverter);
+        bind(UpdateStrategy.READ_WRITE, pickOffsetProxy, "lengthY", pickOffsetY, "text",
+                lengthConverter);
+
         ComponentDecorators.decorateWithAutoSelect(vacuumLevel);
         ComponentDecorators.decorateWithAutoSelect(blowOffLevel);
+        ComponentDecorators.decorateWithAutoSelectAndLengthConversion(pickOffsetX);
+        ComponentDecorators.decorateWithAutoSelectAndLengthConversion(pickOffsetY);
     }
 }

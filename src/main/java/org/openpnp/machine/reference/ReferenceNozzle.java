@@ -337,11 +337,24 @@ public class ReferenceNozzle extends AbstractNozzle implements HeadMountable {
         firePropertyChange("manualNozzleTipChangeLocation", oldValue, manualNozzleTipChangeLocation);
     }
 
+    /**
+     * Where this nozzle picks from the feeder: the feeder's part origin, moved by the package's
+     * pick offset.
+     */
+    protected Location getNozzlePickLocation(Feeder feeder) throws Exception {
+        Location pickLocation = feeder.getPickLocation();
+        Part part = feeder.getPart();
+        if (part == null || part.getPackage() == null) {
+            return pickLocation;
+        }
+        return part.getPackage().getNozzleLocation(pickLocation);
+    }
+
     @Override
     public void moveToPickLocation(Feeder feeder) throws Exception {
         // The default ReferenceNozzle implementation just moves to the feeder part pickLocation at safe Z.
         // But see Overrides such ContactProbeNozzle.
-        Location pickLocation = feeder.getPickLocation();
+        Location pickLocation = getNozzlePickLocation(feeder);
         if (feeder.isPartHeightAbovePickLocation()) {
             Length partHeight = getSafePartHeight(feeder.getPart());
             pickLocation = pickLocation.add(new Location(partHeight.getUnits(), 0, 0, partHeight.getValue(), 0));

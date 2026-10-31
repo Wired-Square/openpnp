@@ -844,7 +844,7 @@ public class ReferenceHeapFeeder extends ReferenceFeeder {
          */
         private void pickPart(Nozzle nozzle, Location location, Part part) throws Exception {
             // Move to pick location.
-            MovableUtils.moveToLocationAtSafeZ(nozzle, location);
+            MovableUtils.moveToLocationAtSafeZ(nozzle, part.getPackage().getNozzleLocation(location));
             // Pick
             nozzle.pick(part,null);
             // Retract

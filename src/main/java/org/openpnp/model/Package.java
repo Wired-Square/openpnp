@@ -51,6 +51,10 @@ public class Package extends AbstractPartSettingsHolder {
 
     @Element(required = false)
     private Footprint footprint;
+
+    /** Where the nozzle picks, relative to the footprint origin, in the footprint's frame. */
+    @Element(required = false)
+    private Location pickOffset = new Location(LengthUnit.Millimeters);
     
     @Element(required = false)
     private VisionCompositing visionCompositing;
@@ -125,6 +129,31 @@ public class Package extends AbstractPartSettingsHolder {
 
     public double getPickVacuumLevel() {
         return pickVacuumLevel;
+    }
+
+    public Location getPickOffset() {
+        return pickOffset;
+    }
+
+    /** Only X and Y are used. */
+    public void setPickOffset(Location pickOffset) {
+        Object oldValue = this.pickOffset;
+        this.pickOffset = pickOffset;
+        firePropertyChange("pickOffset", oldValue, pickOffset);
+    }
+
+    /**
+     * The pick offset in machine coordinates for a part whose footprint origin is at the given
+     * rotation: what to add to the part origin to get the nozzle location.
+     */
+    public Location getPickOffsetAt(double rotation) {
+        return new Location(pickOffset.getUnits(), pickOffset.getX(), pickOffset.getY(), 0, 0)
+                .rotateXy(rotation);
+    }
+
+    /** The nozzle location that holds this package's part with its origin at partLocation. */
+    public Location getNozzleLocation(Location partLocation) {
+        return partLocation.add(getPickOffsetAt(partLocation.getRotation()));
     }
 
     public Footprint getFootprint() {

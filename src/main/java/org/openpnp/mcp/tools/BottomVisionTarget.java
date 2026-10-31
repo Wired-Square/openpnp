@@ -245,7 +245,9 @@ final class BottomVisionTarget implements PipelineHolder {
         double angleOffset = ReferenceBottomVision.normaliseAngleOffset(
                 VisionUtils.getPixelAngle(camera, rect.angle) - wantedAngle, settings);
         Location partOffset;
+        double footprintRotation;
         if (isPreRotate()) {
+            footprintRotation = wantedAngle;
             // The nozzle turns by the angle offset before placing, swinging an off-centre part.
             Location offsets = featureOffset.rotateXy(-angleOffset)
                     .derive(null, null, null, angleOffset);
@@ -254,8 +256,12 @@ final class BottomVisionTarget implements PipelineHolder {
             partOffset = offsets.subtract(settings.getVisionOffset().rotateXy(wantedAngle));
         }
         else {
+            footprintRotation = angleOffset;
             partOffset = featureOffset.subtract(settings.getVisionOffset().rotateXy(angleOffset));
         }
+        Location pickDeviation = partOffset
+                .subtract(ReferenceBottomVision.getNominalOffsets(part, footprintRotation))
+                .convertToUnits(LengthUnit.Millimeters);
         featureOffset = featureOffset.convertToUnits(LengthUnit.Millimeters);
         partOffset = partOffset.convertToUnits(LengthUnit.Millimeters);
         json.addProperty("wantedAngle", wantedAngle);
@@ -264,6 +270,8 @@ final class BottomVisionTarget implements PipelineHolder {
         json.addProperty("angleOffset", McpJson.round(angleOffset));
         json.addProperty("partXMm", McpJson.round(partOffset.getX()));
         json.addProperty("partYMm", McpJson.round(partOffset.getY()));
+        json.addProperty("pickDeviationXMm", McpJson.round(pickDeviation.getX()));
+        json.addProperty("pickDeviationYMm", McpJson.round(pickDeviation.getY()));
         return json;
     }
 }

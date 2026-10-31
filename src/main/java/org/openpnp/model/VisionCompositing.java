@@ -77,6 +77,7 @@ public class VisionCompositing extends AbstractModelObject{
         Trapezoid, 
         Small, 
         VisionOffsets,
+        PickOffset,
         NoFootprint,
         NoCameraRoaming,
         RestrictedCameraRoaming,
@@ -836,15 +837,27 @@ public class VisionCompositing extends AbstractModelObject{
             else {
                 pads = footprint.getPads();
             }
+            Location pickOffset = pkg.getPickOffset().convertToUnits(units);
+            boolean hasPickOffset = pickOffset.getX() != 0 || pickOffset.getY() != 0;
             if (pads.isEmpty() 
                     || visionSettings.getVisionOffset().isInitialized()
+                    || hasPickOffset
                     || !camera.getRoamingRadius().isInitialized()) {
-                // No footprint, or vision offsets present, or no roaming radius set.
-                // Resort to classic single shot.
+                // No footprint, or vision or pick offsets present, or no roaming radius set.
+                // Resort to classic single shot, wide enough for a part held off its origin.
+                double shotDiameter = maxPartDiameter
+                        + 2*Math.hypot(pickOffset.getX(), pickOffset.getY());
                 compositeShots = new ArrayList<>();
                 compositeShots.add(new Shot(null, 0, 0, 
-                        maxPartDiameter, maxPartDiameter, maxPartDiameter/2, maxPartDiameter/2, false, ShotConfiguration.Unknown));
-                if (visionSettings.getVisionOffset().isInitialized()) {
+                        shotDiameter, shotDiameter, shotDiameter/2, shotDiameter/2, false, ShotConfiguration.Unknown));
+                if (hasPickOffset && !visionSettings.getVisionOffset().isInitialized()) {
+                    compositingSolution = CompositingSolution.PickOffset;
+                    diagnostics += "Package "+pkg.getId()+" has a pick offset "
+                        + lengthConverter.convertForward(pickOffset.getLengthX())+", "
+                        + lengthConverter.convertForward(pickOffset.getLengthY())
+                        + ", compositing unsupported. ";
+                }
+                else if (visionSettings.getVisionOffset().isInitialized()) {
                     compositingSolution = CompositingSolution.VisionOffsets;
                     diagnostics += visionSettings.getClass().getSimpleName()+" "+visionSettings.getName()
                         + " has Vision Offsets "

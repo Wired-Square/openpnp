@@ -22,6 +22,8 @@ public interface PartAlignment extends PartSettingsHolder, Named, Solutions.Subj
     {
         private Location location;
         private Boolean preRotated;
+        /** The offsets of a perfect pick, e.g. at a package's pick offset, in the same frame. */
+        private Location nominalLocation;
 
         public Location getLocation()
         {
@@ -35,8 +37,25 @@ public interface PartAlignment extends PartSettingsHolder, Named, Solutions.Subj
 
         public PartAlignmentOffset(Location loc, Boolean PreRotated)
         {
+            this(loc, PreRotated, new Location(loc.getUnits()));
+        }
+
+        public PartAlignmentOffset(Location loc, Boolean preRotated, Location nominalLocation)
+        {
             location=loc;
-            preRotated=PreRotated;
+            this.preRotated=preRotated;
+            this.nominalLocation=nominalLocation;
+        }
+
+        public Location getNominalLocation()
+        {
+            return nominalLocation;
+        }
+
+        /** How far the pick missed: the offsets less those of a perfect pick. */
+        public Location getPickError()
+        {
+            return location.subtract(nominalLocation);
         }
 
         public String toString() {

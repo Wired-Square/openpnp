@@ -29,6 +29,7 @@ import org.openpnp.mcp.tools.RunPipelineTool;
 import org.openpnp.mcp.tools.SaveCameraFrameTool;
 import org.openpnp.mcp.tools.SetFeederLocationTool;
 import org.openpnp.mcp.tools.SetFeederNoteTool;
+import org.openpnp.mcp.tools.SetPackagePickOffsetTool;
 import org.openpnp.mcp.tools.SetPipelineStagePropertyTool;
 import org.openpnp.mcp.tools.SetPhotonSlotRotationTool;
 import org.openpnp.mcp.tools.SuggestFeederRotationTool;
@@ -85,6 +86,7 @@ public final class McpService {
                 new RemovePipelineStageTool(configuration),
                 new MovePipelineStageTool(configuration),
                 new SetFeederLocationTool(machine),
+                new SetPackagePickOffsetTool(configuration),
                 new MoveCameraToFeederTool(machine, confirmer)));
     }
 

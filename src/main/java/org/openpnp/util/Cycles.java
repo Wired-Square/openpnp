@@ -6,6 +6,7 @@ import java.util.Map;
 import org.openpnp.model.Configuration;
 import org.openpnp.model.LengthUnit;
 import org.openpnp.model.Location;
+import org.openpnp.model.Part;
 import org.openpnp.spi.Actuator;
 import org.openpnp.spi.Nozzle;
 import org.openpnp.spi.Nozzle.RotationMode;
@@ -86,6 +87,11 @@ public class Cycles {
             // On a limited articulation nozzle, keep the rotation.
             discardLocation = discardLocation.derive(nozzle.getLocation(),
                     false, false, false, true);
+        }
+        Part part = nozzle.getPart();
+        if (part != null && part.getPackage() != null) {
+            // Drop the part's origin, not the nozzle, on the discard location.
+            discardLocation = part.getPackage().getNozzleLocation(discardLocation);
         }
         // move to the discard location
         nozzle.moveToPlacementLocation(discardLocation, null);

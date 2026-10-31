@@ -2175,6 +2175,10 @@ public class ReferencePnpJobProcessor extends AbstractPnpJobProcessor {
                 placementLocation = location;
             }
         }
+        else if (placement.getPart() != null && placement.getPart().getPackage() != null) {
+            // Unaligned, the part sits on the nozzle as it was picked.
+            placementLocation = placement.getPart().getPackage().getNozzleLocation(placementLocation);
+        }
 
         // Note, do not add the part's height to the placement location, this will be done later to allow
         // for on-the-fly part height probing.  

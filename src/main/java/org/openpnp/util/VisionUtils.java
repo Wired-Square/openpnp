@@ -290,7 +290,7 @@ public class VisionUtils {
 
             Feeder f = nozzle.getPartsFeeder();
             if (f != null && offsets != null) {
-                Location realError = offsets.getLocation();
+                Location realError = offsets.getPickError();
                 if (offsets.getPreRotated()) {
                     // Test alignments have no board, so the placement angle is already global.
                     double placementAngle = boardLocation == null

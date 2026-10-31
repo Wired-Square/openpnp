@@ -108,7 +108,8 @@ public class ReferenceBottomVision extends AbstractPartAlignment {
         BottomVisionSettings bottomVisionSettings = getInheritedVisionSettings(part);
 
         if (!isEnabled() || !bottomVisionSettings.isEnabled()) {
-            return new PartAlignmentOffset(new Location(LengthUnit.Millimeters), false);
+            Location nominal = getNominalOffsets(part, 0);
+            return new PartAlignmentOffset(nominal, false, nominal);
         }
 
         if (part == null || nozzle.getPart() == null) {
@@ -132,7 +133,8 @@ public class ReferenceBottomVision extends AbstractPartAlignment {
             double rotOff = nozzle.getRotationModeOffset() != null ? nozzle.getRotationModeOffset() : 0;
             nozzle.setRotationModeOffset(rotOff + offsets.getLocation().getRotation());
             Location newOffsets = offsets.getLocation().derive(null, null, null, 0.);
-            offsets = new PartAlignmentOffset(newOffsets, offsets.getPreRotated()); 
+            offsets = new PartAlignmentOffset(newOffsets, offsets.getPreRotated(),
+                    offsets.getNominalLocation());
         }
         return offsets;
     }
@@ -273,11 +275,12 @@ public class ReferenceBottomVision extends AbstractPartAlignment {
             offsets = offsets.subtract(bottomVisionSettings.getVisionOffset().rotateXy(wantedAngle));
 
             displayResult(OpenCvUtils.toBufferedImage(pipeline.getWorkingImage()), part, offsets, camera, nozzle);
-            offsetsCheck(part, nozzle, offsets);
+            offsetsCheck(part, nozzle, offsets, wantedAngle);
 
             partSizeCheck(part, bottomVisionSettings, rect, camera);
 
-            return new PartAlignment.PartAlignmentOffset(offsets, true);
+            return new PartAlignment.PartAlignmentOffset(offsets, true,
+                    getNominalOffsets(part, wantedAngle));
         }
     }
 
@@ -309,9 +312,10 @@ public class ReferenceBottomVision extends AbstractPartAlignment {
             offsets = offsets.subtract(bottomVisionSettings.getVisionOffset().rotateXy(offsets.getRotation()));
 
             displayResult(OpenCvUtils.toBufferedImage(pipeline.getWorkingImage()), part, offsets, camera, nozzle);
-            offsetsCheck(part, nozzle, offsets);
+            offsetsCheck(part, nozzle, offsets, offsets.getRotation());
 
-            return new PartAlignmentOffset(offsets, false);
+            return new PartAlignmentOffset(offsets, false,
+                    getNominalOffsets(part, offsets.getRotation()));
         }
     }
 
@@ -370,14 +374,38 @@ public class ReferenceBottomVision extends AbstractPartAlignment {
         return Utils2D.angleNorm(angleOffset, 180);
     }
 
-    protected void offsetsCheck(Part part, Nozzle nozzle, Location offsets) throws Exception {
+    /**
+     * The offsets of a part picked exactly at its package's pick offset, with its footprint at
+     * the given rotation: the part origin relative to the nozzle.
+     */
+    public static Location getNominalOffsets(Part part, double rotation) {
+        return getNominalOffsets(part == null ? null : part.getPackage(), rotation);
+    }
+
+    public static Location getNominalOffsets(Package pkg, double rotation) {
+        if (pkg == null) {
+            return new Location(LengthUnit.Millimeters);
+        }
+        Location pickOffset = pkg.getPickOffsetAt(rotation);
+        return new Location(pickOffset.getUnits(), -pickOffset.getX(), -pickOffset.getY(), 0, 0);
+    }
+
+    /**
+     * Refuses offsets that deviate from the nominal pick by more than the nozzle tip's Max. Pick
+     * Tolerance.
+     *
+     * @param rotation the footprint's rotation on the nozzle at the camera.
+     */
+    protected void offsetsCheck(Part part, Nozzle nozzle, Location offsets, double rotation)
+            throws Exception {
         if (nozzle.getNozzleTip() != null) {
             NozzleTip nt = nozzle.getNozzleTip();
-            Length offsetsLength = offsets.getLinearLengthTo(Location.origin);
+            Length offsetsLength = offsets.getLinearLengthTo(getNominalOffsets(part, rotation));
             Length maxPickTolerance = nt.getMaxPickTolerance();
             if (offsetsLength.compareTo(maxPickTolerance) > 0) {
                 LengthConverter lengthConverter = new LengthConverter(); 
-                throw new Exception("Part "+part.getId()+" bottom vision offsets length "+lengthConverter.convertForward(offsetsLength)
+                throw new Exception("Part "+part.getId()+" was picked "+lengthConverter.convertForward(offsetsLength)
+                +" from its package's pick point, which is"
                 +" larger than the allowed Max. Pick Tolerance "+lengthConverter.convertForward(maxPickTolerance)+" set on nozzle tip "
                 + nt.getName()+".");
             }
@@ -530,10 +558,16 @@ public class ReferenceBottomVision extends AbstractPartAlignment {
                     .subtract(nozzleTip.getMaxPickTolerance().multiply(1.2));
             pipeline.setProperty("footprint.maxWidth", maxDim);
             pipeline.setProperty("footprint.maxHeight", maxDim);
-            // Set alignment parameters.
-            pipeline.setProperty("MinAreaRect.center", wantedLocation);
+            // Set alignment parameters. Search where the vision centre of a part picked at its
+            // package's pick offset should be.
+            Location visionOffset = bottomVisionSettings.getVisionOffset();
+            Location expectedCenter = wantedLocation
+                    .add(getNominalOffsets(pkg, wantedLocation.getRotation()))
+                    .add(new Location(visionOffset.getUnits(), visionOffset.getX(),
+                            visionOffset.getY(), 0, 0).rotateXy(wantedLocation.getRotation()));
+            pipeline.setProperty("MinAreaRect.center", expectedCenter);
             pipeline.setProperty("MinAreaRect.expectedAngle", wantedLocation.getRotation());
-            pipeline.setProperty("DetectRectlinearSymmetry.center", wantedLocation);
+            pipeline.setProperty("DetectRectlinearSymmetry.center", expectedCenter);
             pipeline.setProperty("DetectRectlinearSymmetry.expectedAngle", wantedLocation.getRotation());
             // Set the background removal properties.
             pipeline.setProperty("DetectRectlinearSymmetry.searchDistance", nozzleTip.getMaxPickTolerance()

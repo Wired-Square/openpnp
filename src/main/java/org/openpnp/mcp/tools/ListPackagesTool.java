@@ -28,7 +28,8 @@ public final class ListPackagesTool implements McpTool {
 
     @Override
     public String getDescription() {
-        return "Lists packages with their footprint body size. Give an id to also get the pads "
+        return "Lists packages with their footprint body size and pick offset (where the "
+                + "nozzle picks, relative to the footprint origin, in the footprint's frame). Give an id to also get the pads "
                 + "(centre, size and rotation relative to the footprint zero; mark flags pads "
                 + "the operator marked, usually pin 1).";
     }
@@ -71,6 +72,7 @@ public final class ListPackagesTool implements McpTool {
         json.addProperty("id", pkg.getId());
         json.addProperty("description", pkg.getDescription());
         json.addProperty("tapeSpecification", pkg.getTapeSpecification());
+        json.add("pickOffset", McpJson.location(pkg.getPickOffset()));
         Footprint footprint = pkg.getFootprint();
         if (footprint == null) {
             return json;

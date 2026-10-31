@@ -211,8 +211,9 @@ public class SimulatedUpCamera extends ReferenceCamera {
                 // Just simulate something.
                 partHeightMm = 1.0;
             }
-            Location partUndersideLocation = l.subtract(new Location(LengthUnit.Millimeters, 
-                    0, 0, partHeightMm, 0));
+            // The nozzle holds the part at its package's pick offset from the part origin.
+            Location partUndersideLocation = l.subtract(pkg.getPickOffsetAt(l.getRotation()))
+                    .subtract(new Location(LengthUnit.Millimeters, 0, 0, partHeightMm, 0));
             offsets = partUndersideLocation.subtractWithRotation(getSimulatedLocation());
 
             // Transform footprint shapes to right-hand coordinate system.

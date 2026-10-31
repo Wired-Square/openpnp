@@ -1138,7 +1138,8 @@ public class CalibrationSolutions implements Solutions.Subject {
                // Place the part 180° rotated. This way we will detect the true nozzle rotation axis, which is 
                 // the true nozzle location, namely in the center of the two detected locations. Note that run-out 
                 // is cancelled out too, so run-out compensation is no prerequisite. 
-                Location placementLocation = location.derive(null, null, null, angle + 180.0);
+                Location placementLocation = testPart.getPackage().getNozzleLocation(
+                        location.derive(null, null, null, angle + 180.0));
                 nozzle.prepareForPickAndPlaceArticulation(pickLocation, placementLocation);
                 nozzle.moveToPickLocation(feeder);
                 nozzle.pick(testPart,null);
