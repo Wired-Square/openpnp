@@ -146,6 +146,73 @@ public class PickVisionTest {
                 PickDetector.POCKET_MAX));
     }
 
+    /** A light feature as the detector measures it, centred at x, y. */
+    private static PickDetector.Detection feature(double x, double y, double width,
+            double height) {
+        RotatedRect rect = new RotatedRect(new Point(x, y), new Size(width, height), 0);
+        return new PickDetector.Detection(rect, Math.max(width, height),
+                Math.min(width, height), width >= height ? 0 : 90, true, false);
+    }
+
+    private static PickDetector.Detection hull(List<PickDetector.Detection> features) {
+        return PickDetector.symmetricHull(features, 60, 30, new Point(0, 0));
+    }
+
+    @Test
+    public void twoTerminationsMakeAHullTheBodysSize() {
+        PickDetector.Detection found = hull(List.of(feature(-24, 0, 12, 30),
+                feature(24, 0, 12, 30)));
+
+        assertNotNull(found);
+        assertEquals(0, found.x, PIXEL);
+        assertEquals(60, found.longPx, PIXEL);
+    }
+
+    @Test
+    public void anUnpartneredGlintIsLeftOut() {
+        PickDetector.Detection found = hull(List.of(feature(-24, 0, 12, 30),
+                feature(24, 0, 12, 30), feature(20, 25, 8, 8)));
+
+        assertNotNull(found);
+        assertEquals(0, found.y, PIXEL);
+    }
+
+    @Test
+    public void aGlintOnTheMirrorLineBeyondThePartIsLeftOut() {
+        PickDetector.Detection found = hull(List.of(feature(-24, 0, 12, 30),
+                feature(24, 0, 12, 30), feature(0, -40, 8, 8)));
+
+        assertNotNull(found);
+        assertEquals(0, found.y, PIXEL);
+        assertEquals(30, found.shortPx, PIXEL);
+    }
+
+    @Test
+    public void twoPartsSideBySideAreNotOneHull() {
+        // Two chips 50 px apart across their short sides: every mirror line pairs all four
+        // terminations, and their hull is too big for one part, so nothing is judged.
+        assertNull(hull(List.of(feature(-24, 0, 12, 30), feature(24, 0, 12, 30),
+                feature(-24, 50, 12, 30), feature(24, 50, 12, 30))));
+    }
+
+    @Test
+    public void featuresThatDontMirrorMakeNoHull() {
+        assertNull(hull(List.of(feature(-24, 0, 12, 30))));
+        assertNull(hull(List.of(feature(-24, 0, 12, 30), feature(24, 0, 4, 4))));
+    }
+
+    @Test
+    public void anEmptyTightPocketIsNotTakenForAPart() {
+        Mat frame = ground(LIGHT);
+        // A pocket 1.1 × 1.0 the body with a slightly lighter floor and nothing in it.
+        body(frame, WIDTH / 2.0, HEIGHT / 2.0, 66, 34, 0, DARK);
+        body(frame, WIDTH / 2.0, HEIGHT / 2.0, 62, 30, 0, DARK + 30);
+
+        PickDetector.Result found = detect(image(frame), 60, 30);
+
+        assertNull(found.part);
+    }
+
     @Test
     public void anEmptyPickFindsNothing() {
         PickDetector.Result found = detect(image(ground(LIGHT)), 60, 30);

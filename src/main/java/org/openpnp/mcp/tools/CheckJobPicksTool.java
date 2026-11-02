@@ -699,8 +699,8 @@ public final class CheckJobPicksTool implements McpTool {
         for (int i = 0; i < route.size(); i++) {
             Stop stop = route.get(i);
             Location mm = stop.plannedPick.convertToUnits(LengthUnit.Millimeters);
-            stops.append(String.format(Locale.ROOT, "%s%d. %s at X %.2f, Y %.2f", i == 0 ? "" : "; ",
-                    i + 1, stop.feeder.getName(), mm.getX(), mm.getY()));
+            stops.append(String.format(Locale.ROOT, "%s%d. %s at X %.2f, Y %.2f",
+                    i == 0 ? "" : "; ", i + 1, stop.feeder.getName(), mm.getX(), mm.getY()));
             if (stop.feed) {
                 fed.add(stop.feeder.getName());
             }

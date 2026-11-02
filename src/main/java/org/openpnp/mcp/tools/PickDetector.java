@@ -3,6 +3,7 @@ package org.openpnp.mcp.tools;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
 import org.opencv.core.Mat;
@@ -15,6 +16,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openpnp.util.OpenCvUtils;
+import org.pmw.tinylog.Logger;
 
 /**
  * Finds the tape pocket and the part near the centre of a top camera frame, given the part's
@@ -43,8 +45,15 @@ final class PickDetector {
     static final double FEATURE_RADIUS_HALF_DIAGONALS = 1.5;
     /** A feature hull spans at most this many body lengths (leads stand out from the body). */
     static final double FEATURE_HULL_MAX = 2.0;
-    /** A feature hull spans at least this fraction of the body, each way. */
+    /** A feature hull spans at least this fraction of the body's length. */
+    static final double FEATURE_HULL_MIN_LONG = 0.8;
+    /** A feature hull spans at least this fraction of the body's width (leads can be short). */
     static final double FEATURE_HULL_MIN = 0.6;
+    /**
+     * A feature hull covers at most this many times the body's area: leads stand out from the
+     * body, but two parts side by side cover more.
+     */
+    static final double FEATURE_HULL_MAX_AREA = 2.2;
     /** Features smaller than this fraction of the body's shorter side are noise. */
     static final double FEATURE_MIN_SIDE = 0.06;
     /**
@@ -53,13 +62,22 @@ final class PickDetector {
      */
     static final double FEATURE_MATCH = 1.15;
     private static final int MIN_FEATURES = 2;
+    /** An outline inside a pocket covering this much of its area is the pocket or its floor. */
+    static final double POCKET_SELF = 0.8;
+    /** More features than this near the part is texture, not terminations or leads. */
+    static final int MAX_FEATURES = 40;
     /** A pocket holding a part at the pick point may be centred up to this far off. */
     static final double HOLDER_BODY_LENGTHS = 1;
     /**
-     * A feature's mirror image across a hull axis must land within this fraction of the body's
-     * shorter side of another feature: terminations and leads are symmetric, glints are not.
+     * A feature's mirror image across the symmetry line must land within this fraction of the
+     * body's shorter side of another feature: terminations and leads are symmetric, glints are
+     * not.
      */
     static final double MIRROR_TOLERANCE = 0.25;
+    /** A feature this close to the mirror line, as a fraction of the shorter side, is on it. */
+    static final double ON_LINE_TOLERANCE = 0.1;
+    /** Mirror partners differ in size by at most this factor each way. */
+    static final double FEATURE_SIMILAR = 1.6;
     private static final int BLUR_KERNEL_PX = 5;
     private static final double MAX_GREY = 255;
     private static final double HALF_TURN = 180;
@@ -110,7 +128,7 @@ final class PickDetector {
     }
 
     static final class Result {
-        /** The tape pocket at the pick point, or null where none shows (black tape, loose parts). */
+        /** The pocket at the pick point, or null where none shows (black tape, loose parts). */
         final Detection pocket;
         /** The part at the pick point, or null. */
         final Detection part;
@@ -163,6 +181,9 @@ final class PickDetector {
             Predicate<Detection> isPocket = d -> isPocket(d, longPx, shortPx);
             // A dark body can be pocket-sized too; the pocket is the larger outline around it.
             Detection globalPocket = largest(centre, dark, isPocket, nearPx);
+            Logger.debug("Pick check: body {}x{} px, {} dark and {} light outlines in the "
+                    + "window, pocket {} (window pixels)", fmt(longPx), fmt(shortPx),
+                    dark.size(), light.size(), describe(globalPocket));
             if (globalPocket == null) {
                 // Over the whole window a shadow or the dark surround can shift the threshold
                 // until the pocket merges with them; a box just big enough for a near pocket
@@ -173,6 +194,8 @@ final class PickDetector {
                         (int) Math.ceil(2 * half));
                 globalPocket = largest(centre, outlinesIn(region, local, false), isPocket,
                         nearPx);
+                Logger.debug("Pick check: pocket by the local threshold {}",
+                        describe(globalPocket));
             }
             Detection nearPocket = globalPocket;
             // A part in a pocket is nested in the pocket's outline, which external contours
@@ -204,6 +227,8 @@ final class PickDetector {
                         centre);
             }
             boolean pocketMayBePart = pocket != null && part == null && isBody.test(pocket);
+            Logger.debug("Pick check: pocket {}, part {}{}", describe(pocket), describe(part),
+                    part != null && part.fromFeatures ? " from features" : "");
             Detection far = farHull;
             if (pocket == null && part == null && far == null) {
                 far = nearest(centre, all,
@@ -247,6 +272,17 @@ final class PickDetector {
             }
         }
         return best;
+    }
+
+    private static String describe(Detection d) {
+        return d == null
+                ? "none"
+                : String.format(Locale.ROOT, "%sx%s px at %s,%s", fmt(d.longPx), fmt(d.shortPx),
+                        fmt(d.x), fmt(d.y));
+    }
+
+    private static String fmt(double value) {
+        return String.format(Locale.ROOT, "%.0f", value);
     }
 
     private static Detection shift(Detection d, Rect window) {
@@ -323,7 +359,16 @@ final class PickDetector {
 
     /** Outlines within the pocket's bounds, in search window coordinates. */
     private static List<Detection> outlinesInside(Mat region, Detection pocket, boolean light) {
-        return outlinesIn(region, pocket.rect.boundingRect(), light);
+        // A termination can touch the pocket wall but stays within its outline; light tape
+        // showing in the pocket's box crosses the outline's edge.
+        List<Detection> outlines = new ArrayList<>();
+        for (Detection d : outlinesIn(region, pocket.rect.boundingRect(), light, pocket.rect)) {
+            // The pocket's own outline or floor, thresholded again, is not its contents.
+            if (d.longPx * d.shortPx < POCKET_SELF * pocket.longPx * pocket.shortPx) {
+                outlines.add(d);
+            }
+        }
+        return outlines;
     }
 
     /**
@@ -331,6 +376,15 @@ final class PickDetector {
      * touching the box's edge are left out.
      */
     private static List<Detection> outlinesIn(Mat region, Rect box, boolean light) {
+        return outlinesIn(region, box, light, null);
+    }
+
+    /**
+     * @param within when given, outlines are kept if they lie wholly within it instead of if
+     *        clear of the box's edge
+     */
+    private static List<Detection> outlinesIn(Mat region, Rect box, boolean light,
+            RotatedRect within) {
         int left = Math.max(0, box.x);
         int top = Math.max(0, box.y);
         Rect bounds = new Rect(left, top,
@@ -352,15 +406,21 @@ final class PickDetector {
             binary.release();
             hierarchy.release();
         }
-        // Light tape showing at the edge of the pocket's box is not part of the part.
         List<Detection> outlines = new ArrayList<>();
         for (MatOfPoint contour : contours) {
-            Rect blob = Imgproc.boundingRect(contour);
-            boolean touchesEdge = blob.x <= bounds.x || blob.y <= bounds.y
-                    || blob.x + blob.width >= bounds.x + bounds.width
-                    || blob.y + blob.height >= bounds.y + bounds.height;
-            if (!touchesEdge) {
-                outlines.add(measure(contour.toArray(), light, false));
+            Detection outline = measure(contour.toArray(), light, false);
+            boolean keep;
+            if (within != null) {
+                keep = whollyWithin(outline, within);
+            }
+            else {
+                Rect blob = Imgproc.boundingRect(contour);
+                keep = blob.x > bounds.x && blob.y > bounds.y
+                        && blob.x + blob.width < bounds.x + bounds.width
+                        && blob.y + blob.height < bounds.y + bounds.height;
+            }
+            if (keep) {
+                outlines.add(outline);
             }
             contour.release();
         }
@@ -400,76 +460,151 @@ final class PickDetector {
             double shortPx, Detection pocket) {
         double radius = FEATURE_RADIUS_HALF_DIAGONALS * Math.hypot(longPx, shortPx) / 2;
         double minSide = FEATURE_MIN_SIDE * shortPx;
-        List<Point> points = new ArrayList<>();
-        List<Point> centres = new ArrayList<>();
+        List<Detection> candidates = new ArrayList<>();
         for (Detection d : light) {
             boolean near = pocket != null
                     ? inside(pocket, d.x, d.y)
                     : Math.hypot(d.x - centre.x, d.y - centre.y) <= radius;
             if (near && d.shortPx >= minSide && d.longPx < longPx) {
-                Point[] corners = new Point[4];
-                d.rect.points(corners);
-                points.addAll(List.of(corners));
-                centres.add(new Point(d.x, d.y));
+                candidates.add(d);
             }
         }
-        if (centres.size() < MIN_FEATURES) {
+        if (candidates.size() > MAX_FEATURES) {
+            Logger.debug("Pick check: {} features is texture, not a part", candidates.size());
             return null;
         }
-        Detection hull = measure(points.toArray(new Point[0]), true, true);
-        // A lone row of leads is thin; a real hull spans the body both ways.
-        if (hull.longPx > FEATURE_HULL_MAX * longPx || hull.longPx < FEATURE_HULL_MIN * longPx
-                || hull.shortPx < FEATURE_HULL_MIN * shortPx) {
-            return null;
-        }
-        double tolerance = MIRROR_TOLERANCE * shortPx;
-        double axis = Math.toRadians(hull.longAxisImageDegrees);
-        if (!mirrored(centres, hull, axis, tolerance)
-                && !mirrored(centres, hull, axis + Math.PI / 2, tolerance)) {
-            return null;
-        }
+        Point from = pocket != null ? new Point(pocket.x, pocket.y) : centre;
+        Detection hull = symmetricHull(candidates, longPx, shortPx, from);
+        Logger.debug("Pick check: {} features{}, symmetric hull {}", candidates.size(),
+                pocket != null ? " in the pocket" : " near the centre", describe(hull));
         return hull;
     }
 
     /**
-     * Whether the features mirror each other across the hull axis: each feature off the axis
-     * has a different feature at its mirror image, and at least two are off it. Features on the
-     * axis mirror themselves, so a single row of leads along it doesn't count.
+     * The hull of the largest set of features that mirror each other across one line, the most
+     * body-like and then the nearest the point on a tie: each feature off the line has a
+     * similar feature at its mirror image, and features on the line like the mirrored ones
+     * mirror themselves. Terminations and leads have such a line; stray glints
+     * are left out. Each pair of similar features proposes the line between them. A set needs
+     * at least two features off the line, and its hull must span the body both ways (a lone row
+     * of leads is thin) without being much larger (two parts side by side). Null if no set
+     * qualifies.
      */
-    private static boolean mirrored(List<Point> centres, Detection hull, double axis,
-            double tolerance) {
-        double ux = Math.cos(axis);
-        double uy = Math.sin(axis);
-        int offAxis = 0;
-        for (Point p : centres) {
-            double dx = p.x - hull.x;
-            double dy = p.y - hull.y;
-            double along = dx * ux + dy * uy;
-            double across = -dx * uy + dy * ux;
-            if (Math.abs(across) <= tolerance) {
-                continue;
-            }
-            offAxis++;
-            // Reflect across the axis: keep the along component, negate the across one.
-            double mx = hull.x + along * ux + across * uy;
-            double my = hull.y + along * uy - across * ux;
-            boolean partnered = false;
-            for (Point q : centres) {
-                if (q != p && Math.hypot(q.x - mx, q.y - my) <= tolerance) {
-                    partnered = true;
-                    break;
+    static Detection symmetricHull(List<Detection> features, double longPx, double shortPx,
+            Point from) {
+        double partnerTolerance = MIRROR_TOLERANCE * shortPx;
+        double lineTolerance = ON_LINE_TOLERANCE * shortPx;
+        Detection best = null;
+        int bestCount = 0;
+        double bestScore = Double.POSITIVE_INFINITY;
+        double bestDistance = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < features.size(); i++) {
+            for (int j = i + 1; j < features.size(); j++) {
+                Detection a = features.get(i);
+                Detection b = features.get(j);
+                double nx = b.x - a.x;
+                double ny = b.y - a.y;
+                double length = Math.hypot(nx, ny);
+                if (!similar(a, b) || length <= partnerTolerance) {
+                    continue;
+                }
+                // The perpendicular bisector of a and b: through their midpoint, normal along
+                // a to b, running along (-ny, nx).
+                nx /= length;
+                ny /= length;
+                double mx = (a.x + b.x) / 2;
+                double my = (a.y + b.y) / 2;
+                List<Detection> mirrored = new ArrayList<>();
+                List<Detection> onLine = new ArrayList<>();
+                for (Detection p : features) {
+                    double distance = (p.x - mx) * nx + (p.y - my) * ny;
+                    if (Math.abs(distance) <= lineTolerance) {
+                        onLine.add(p);
+                        continue;
+                    }
+                    double rx = p.x - 2 * distance * nx;
+                    double ry = p.y - 2 * distance * ny;
+                    for (Detection q : features) {
+                        if (q != p && similar(p, q)
+                                && Math.hypot(q.x - rx, q.y - ry) <= partnerTolerance) {
+                            mirrored.add(p);
+                            break;
+                        }
+                    }
+                }
+                if (mirrored.size() < MIN_FEATURES) {
+                    continue;
+                }
+                // A feature on the line is the part's (a SOT-23's lone lead) only if it is like
+                // the mirrored ones; a glint that happens to lie on the line is smaller.
+                List<Point> points = new ArrayList<>();
+                int count = mirrored.size();
+                addCorners(points, mirrored);
+                for (Detection p : onLine) {
+                    if (mirrored.stream().anyMatch(m -> similar(m, p))) {
+                        addCorners(points, List.of(p));
+                        count++;
+                    }
+                }
+                if (count < bestCount) {
+                    continue;
+                }
+                Detection hull = measure(points.toArray(new Point[0]), true, true);
+                if (hull.longPx > FEATURE_HULL_MAX * longPx
+                        || hull.longPx < FEATURE_HULL_MIN_LONG * longPx
+                        || hull.shortPx > FEATURE_HULL_MAX * shortPx
+                        || hull.shortPx < FEATURE_HULL_MIN * shortPx
+                        || hull.longPx * hull.shortPx > FEATURE_HULL_MAX_AREA * longPx * shortPx) {
+                    continue;
+                }
+                double score = Math.abs(Math.log(hull.longPx / longPx))
+                        + Math.abs(Math.log(hull.shortPx / shortPx));
+                double distance = Math.hypot(hull.x - from.x, hull.y - from.y);
+                if (count > bestCount || score < bestScore
+                        || (score == bestScore && distance < bestDistance)) {
+                    bestCount = count;
+                    bestScore = score;
+                    bestDistance = distance;
+                    best = hull;
                 }
             }
-            if (!partnered) {
-                return false;
-            }
         }
-        return offAxis >= MIN_FEATURES;
+        return best;
+    }
+
+    private static void addCorners(List<Point> points, List<Detection> outlines) {
+        for (Detection d : outlines) {
+            Point[] corners = new Point[4];
+            d.rect.points(corners);
+            points.addAll(List.of(corners));
+        }
+    }
+
+    /** Mirror partners are about the same size: two terminations, two leads. */
+    private static boolean similar(Detection a, Detection b) {
+        return Math.max(a.longPx, b.longPx) <= FEATURE_SIMILAR * Math.min(a.longPx, b.longPx)
+                && Math.max(a.shortPx, b.shortPx) <= FEATURE_SIMILAR
+                        * Math.min(a.shortPx, b.shortPx);
     }
 
     private static boolean inside(Detection outline, double x, double y) {
+        return inside(outline.rect, x, y);
+    }
+
+    private static boolean whollyWithin(Detection outline, RotatedRect rect) {
         Point[] corners = new Point[4];
         outline.rect.points(corners);
+        for (Point corner : corners) {
+            if (!inside(rect, corner.x, corner.y)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean inside(RotatedRect rect, double x, double y) {
+        Point[] corners = new Point[4];
+        rect.points(corners);
         MatOfPoint2f polygon = new MatOfPoint2f(corners);
         try {
             return Imgproc.pointPolygonTest(polygon, new Point(x, y), false) >= 0;

@@ -92,6 +92,21 @@ public class PickFramesTest {
     }
 
     @Test
+    public void aTerminationAgainstThePocketWallStillCounts() throws Exception {
+        JsonObject result = judge("tray-0603-end-at-wall.png", TRAY_MM_PER_PIXEL,
+                new ReferenceTrayFeeder(), 0, 1.6, 0.8);
+
+        // The left termination touches the pocket wall; both ends make the part.
+        assertEquals("ok", result.get("status").getAsString(), result.toString());
+        assertOffset(result, 0, -0.05);
+        JsonObject part = result.getAsJsonObject("part");
+        assertNotNull(part, result.toString());
+        assertTrue(part.get("fromFeatures").getAsBoolean());
+        assertFalse(result.has("reason") && result.get("reason").getAsString().contains("empty"),
+                result.toString());
+    }
+
+    @Test
     public void an0603sDarkBodyIsFoundFromItsTerminations() throws Exception {
         BufferedImage image = frame("tray-0603.png");
 
@@ -193,13 +208,12 @@ public class PickFramesTest {
         JsonObject result = judge("tray-minimelf.png", 0.01114, new ReferenceTrayFeeder(), 180,
                 3.3, 1.6);
 
-        // The glass MELF is found from its end caps and highlights, about 0.3 mm left of the
-        // pick (checked on the machine); the empty pocket beside it plays no part.
-        assertEquals(CheckJobPicksTool.MEASURED_BY_FEATURES,
-                result.get("measuredBy").getAsString(), result.toString());
-        assertOffset(result, -0.31, -0.05);
-        assertEquals(3.3, result.getAsJsonObject("part").get("longSide").getAsDouble(),
-                3 * MM);
+        // The glass MELF (about 0.3 mm left of the pick by eye) shows only end caps too thin for
+        // a hull and glints too short for one, so it isn't judged; the empty pocket beside it
+        // is a far match and nothing is suggested.
+        assertEquals(CheckJobPicksTool.STATUS_NOT_FOUND, result.get("status").getAsString(),
+                result.toString());
+        assertFalse(result.has("suggestedLocation"));
     }
 
     @Test
@@ -223,7 +237,7 @@ public class PickFramesTest {
         assertEquals(CheckJobPicksTool.MEASURED_BY_POCKET,
                 result.get("measuredBy").getAsString(), result.toString());
         assertOffset(result, -0.12, -0.13);
-        assertTrue(result.get("reason").getAsString().contains("pocket floor"));
+        assertTrue(result.get("reason").getAsString().contains("pocket floor"), result.toString());
     }
 
     @Test
