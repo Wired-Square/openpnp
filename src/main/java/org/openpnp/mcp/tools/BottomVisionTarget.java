@@ -204,13 +204,27 @@ final class BottomVisionTarget implements PipelineHolder {
                 + pkg.getId() + "; load one or name a nozzle");
     }
 
+    BottomVisionSettings getSettings() {
+        return settings;
+    }
+
+    /** The named part, or null when only the settings were named. */
+    Part getPart() {
+        return part;
+    }
+
     JsonObject describe() {
         JsonObject json = new JsonObject();
         json.addProperty("id", settings.getId());
         json.addProperty("name", settings.getName());
+        json.addProperty("enabled", settings.isEnabled());
+        json.addProperty("asymmetric", settings.isAsymmetric());
         json.add("visionOffset", McpJson.location(settings.getVisionOffset()));
         json.addProperty("maxRotation", settings.getMaxRotation().name());
+        json.addProperty("preRotateUsage", settings.getPreRotateUsage().name());
         json.addProperty("preRotate", isPreRotate());
+        json.addProperty("checkPartSizeMethod", settings.getCheckPartSizeMethod().name());
+        json.addProperty("checkSizeTolerancePercent", settings.getCheckSizeTolerancePercent());
         if (part != null) {
             json.addProperty(PART_ID, part.getId());
             json.addProperty(ANGLE, angle);
