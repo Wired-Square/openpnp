@@ -30,6 +30,7 @@ import org.openpnp.mcp.tools.RemovePipelineStageTool;
 import org.openpnp.mcp.tools.ResolvePartSizesTool;
 import org.openpnp.mcp.tools.RunPipelineTool;
 import org.openpnp.mcp.tools.SaveCameraFrameTool;
+import org.openpnp.mcp.tools.SetBottomVisionSettingsTool;
 import org.openpnp.mcp.tools.SetFeederLocationTool;
 import org.openpnp.mcp.tools.SetFeederNoteTool;
 import org.openpnp.mcp.tools.SetPackageBodySizeTool;
@@ -94,6 +95,7 @@ public final class McpService {
                 new SetPackagePickOffsetTool(configuration),
                 new ResolvePartSizesTool(configuration, job),
                 new SetPackageBodySizeTool(configuration),
+                new SetBottomVisionSettingsTool(configuration),
                 new MoveCameraToFeederTool(machine, confirmer),
                 new CheckJobPicksTool(configuration, job, jobActive, confirmer)));
     }
